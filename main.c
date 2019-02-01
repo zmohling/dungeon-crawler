@@ -24,7 +24,8 @@ int main(int argc, char *argv[])
     int y = 21;
     int MAX_ROOMS = 6;
 
-    char dungeon[y][x];
+    //char dungeon[y][x];
+    char *dungeon = (char *) malloc(x * y * sizeof(char));    
     Room rooms[MAX_ROOMS];
 
     /* Generate rooms */
@@ -42,6 +43,8 @@ int main(int argc, char *argv[])
 
     //printf("Attempts to generate: %d\n", attempts_to_generate);
     return 0;
+
+    free(dungeon);
 }
 
 void draw_dungeon(char *dungeon, Room *rooms, int x, int y)
@@ -163,7 +166,9 @@ void draw_corridors(char *dungeon, Room *rooms)
  */
 void generate_rooms(Room *rooms, int num_rooms, int x, int y)
 {
-    srand(time(NULL));
+    int seed = time(NULL);
+    srand(seed);
+    printf("Seed: %d\n", seed);
 
     int attempts_to_generate = 0;
     
