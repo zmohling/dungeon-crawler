@@ -10,39 +10,61 @@ typedef struct Room {
 } Room;
 
 /* Prototypes */
-void draw_dungeon(char *, Room *);
-void generate_rooms(Room *, int, int, int);
+void render(void);
+void generate_border(char *);
+void generate_rooms(char *, Room *, int, int, int);
+void generate_corridors(char *, Room *);
+void generate_staircases(char *, int, int);
 int intersects(Room, Room);
 int out_of_bounds(Room, int, int);
-void draw_corridors(char *, Room *);
-
-/* Debug vars */
 
 int main(int argc, char *argv[])
 {
-    int x = 80;
-    int y = 21;
-    int MAX_ROOMS = 6;
-
-    char *dungeon = (char *) calloc(x * y, sizeof(char)); // dynamic memory allocation for dungeon array    
-    Room rooms[MAX_ROOMS]; // rooms array  
-
-    generate_rooms(rooms, MAX_ROOMS, x, y); 
-    draw_corridors(dungeon, rooms);
-    draw_dungeon(dungeon, rooms);
-
-
-    free(dungeon); // free dungeon array
+    render();
 
     return 0;
 }
 
-/* Draw dungeon. NOTE: Must be called after other generate
- * and draw functions.
- * char *dungeon: Dungeon array.
- * Room *rooms: Room array.
+/*
+ * Generate and draw a dungeon
  */
-void draw_dungeon(char *dungeon, Room *rooms)
+void render(void)
+{
+    int x = 80;
+    int y = 21;
+    int MAX_ROOMS = 6;
+    Room rooms[MAX_ROOMS]; // rooms array  
+
+    char *dungeon = (char *) calloc(x * y, sizeof(char)); // dynamic memory allocation for dungeon array    
+
+    generate_border(dungeon);
+    generate_rooms(dungeon, rooms, MAX_ROOMS, x, y);
+    generate_corridors(dungeon, rooms);
+    generate_staircases(dungeon, x, y);
+
+    int i, j;
+    for (i = 0; i < 21; i++)
+    {
+        for (j = 0; j < 80; j++)
+        {
+            char *p;
+            p = (dungeon + (i * 80) + j);
+
+            printf("%c", *p);
+        }
+
+        printf("\n");
+    }
+
+    free(dungeon); // free dungeon array
+}
+
+/*
+ * Generate border around edges and initialize 
+ * dungeon array to spaces.
+ * char *dungeon: Dungeon array to write to.
+ */
+void generate_border(char *dungeon)
 {
     int i, j;
     for (i = 0; i < 21; i++)
@@ -52,13 +74,8 @@ void draw_dungeon(char *dungeon, Room *rooms)
             char *p;
             p = (dungeon + (i * 80) + j);
             
-            /* Set all zero'd bytes to spaces */
-            if (*p == 0)
-            {
-                *p = ' ';
-            }
+            *p = ' '; // set everything to spaces
 
-            /* Set border */
             if (j == 0 || j == 79)
             {
                 *p = '|';
@@ -68,32 +85,61 @@ void draw_dungeon(char *dungeon, Room *rooms)
             {
                 *p = '-';
             }
-
-            /* Set rooms */
-            int k;
-            for (k = 0; k < 6; k++)
-            {
-                Room room = rooms[k];
-                if (j >= room.x1 && j <= room.x2 && i >= room.y1 && i <= room.y2)
-                {
-                    *p = '.';
-                }
-            }
-
-            printf("%c", *p);
         }
-
-        printf("\n");
     }
 }
 
 /*
- * Draw corridors between rooms. NOTE: Must be called
+ * Generate 1-2 up and down staircases in
+ * rooms or corridors.
+ * char *dungeon: Dungeon array to write to.
+ * int x: Size of dungeon in x direction.
+ * int y: Size of dungeon in y direction.
+ */
+void generate_staircases(char *dungeon, int x, int y)
+{
+    int STAIR_MAX = 2;
+
+    int i;
+    for (i = 0; i < (rand() % STAIR_MAX + 1);)
+    {
+        int _x = rand() % x;
+        int _y = rand() % y;
+
+        char *p;
+        p = (dungeon + (_y * 80) + _x);
+
+        if (*p == '#' || *p == '.')
+        {
+            *p = '>';
+            i++;
+        }
+    }
+
+    int j;
+    for (j = 0; j < (rand() % STAIR_MAX + 1);)
+    {
+        int _x = rand() % x;
+        int _y = rand() % y;
+
+        char *p;
+        p = (dungeon + (_y * 80) + _x);
+
+        if (*p == '#' || *p == '.')
+        {
+            *p = '<';
+            j++;
+        }
+    }
+}
+
+/*
+ * Generate corridors between rooms. NOTE: Must be called
  * before draw_dungeon.
- * char *dungeon: Dungeon array.
+ * char *dungeon: Dungeon array to write to.
  * Room *rooms: Room array.
  */
-void draw_corridors(char *dungeon, Room *rooms)
+void generate_corridors(char *dungeon, Room *rooms)
 {
     Room connected_rooms[5];
     connected_rooms[0] = rooms[0];
@@ -121,8 +167,7 @@ void draw_corridors(char *dungeon, Room *rooms)
             }
         }
 
-        /* Draw corridors */
-        
+        /* Write corridors to dungeon */
         int x = rooms[i].x1;
         int y = rooms[i].y1;
             
@@ -134,7 +179,7 @@ void draw_corridors(char *dungeon, Room *rooms)
             char *p;
             p = (dungeon + (y * 80) + x);
 
-            *p = '#';
+            *p = (*p == '.') ? '.' : '#';
         }
                 
         while(y != closest_room.y1)
@@ -145,7 +190,7 @@ void draw_corridors(char *dungeon, Room *rooms)
             char *p;
             p = (dungeon + (y * 80) + x);
 
-            *p = '#';
+            *p = (*p == '.') ? '.' : '#';
         }
         
         connected_rooms[i] = rooms[i]; 
@@ -153,18 +198,19 @@ void draw_corridors(char *dungeon, Room *rooms)
 }
 
 /*
- * Populates *rooms array with num_rooms number of rooms
+ * Generates rooms for the dungeon to fit the
+ * given parameters.
+ * char *dungeon: Dungeon array to write to.
  * Room *rooms: Room array to populate.
  * int num_rooms: Number of rooms to generate.
  * int x: Size of dungeon in the x direction.
  * int y: Size of dungeon in the y direction.
- * int margin: Buffer of spaces between dungeon edge and room generation.
  */
-void generate_rooms(Room *rooms, int num_rooms, int x, int y)
+void generate_rooms(char *dungeon, Room *rooms, int num_rooms, int x, int y)
 {
     int seed = time(NULL);
     srand(seed);
-    printf("Seed: %d\n", seed);
+    //printf("Seed: %d\n", seed);
 
     int attempts_to_generate = 0;
     
@@ -175,6 +221,7 @@ void generate_rooms(Room *rooms, int num_rooms, int x, int y)
         int _out_of_bounds = 0;
         do {
 
+            /* Generate random room within bounds and margin of 2 */
             rooms[i].x1 = rand() % (x - 4) + 2;
             rooms[i].y1 = rand() % (y - 4) + 2;
             rooms[i].x2 = rooms[i].x1 + rand() % 12 + 4;
@@ -199,16 +246,28 @@ void generate_rooms(Room *rooms, int num_rooms, int x, int y)
                 exit(-1);
             }
             attempts_to_generate++;
-        } while(_intersects || _out_of_bounds);  
-    }
+        } while(_intersects || _out_of_bounds); // continue generating until the random room is in bounds not non-intersecting.
 
+        /* Write generated room to dungeon array */
+        int x, y;
+        for (y = rooms[i].y1; y <= rooms[i].y2; y++)
+        {
+            for (x = rooms[i].x1; x <= rooms[i].x2; x++)
+            {
+                char *p;
+                p = (dungeon + (y * 80) + x);
+
+                *p = '.';
+            }
+        }
+    }
 }
 
 /* 
  * Returns 1 (true) if the specified room is out of bounds. 
+ * Room room: Room which to check if in bounds.
  * int bound_x: Index of bound in the x direction.
  * int bound_y: Index of bound in the y direction.
- * int margin: Buffer of spaces between dungeon edge and room generation. 
  */
 int out_of_bounds(Room room, int bound_x, int bound_y)
 {
@@ -221,8 +280,9 @@ int out_of_bounds(Room room, int bound_x, int bound_y)
 }
 
 /*
- * Returns 1 (true) if the two specified rooms are intersecting 
- * margin: Number of spaces between rooms
+ * Returns 1 (true) if the two specified rooms are intersecting. 
+ * Room a: First room of the pair.
+ * Room b: Second room of the pair.
  */
 int intersects(Room a, Room b)
 {
