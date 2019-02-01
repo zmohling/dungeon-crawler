@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <stdbool.h>
+#include <math.h>
 
 typedef struct Room {
     int x1, y1, x2, y2;
@@ -13,6 +14,7 @@ void draw_dungeon(char *, Room *, int, int);
 void generate_rooms(Room *, int, int, int);
 int intersects(Room, Room);
 int out_of_bounds(Room, int, int);
+void draw_corridors(char *, Room *);
 
 /* Debug vars */
 
@@ -27,6 +29,7 @@ int main(int argc, char *argv[])
 
     /* Generate rooms */
     generate_rooms(rooms, MAX_ROOMS, x, y); 
+    draw_corridors(dungeon, rooms);
     draw_dungeon(dungeon, rooms, x, y);
 
     /*
@@ -51,7 +54,8 @@ void draw_dungeon(char *dungeon, Room *rooms, int x, int y)
             char *p;
             p = (dungeon + (i * 80) + j);
             
-            *(p) = ' ';
+            //*(p) = ' ';
+            *p = (*p != '#') ? ' ' : '#';
 
             if (j == 0 || j == 79)
             {
@@ -77,6 +81,75 @@ void draw_dungeon(char *dungeon, Room *rooms, int x, int y)
         }
 
         printf("\n");
+    }
+}
+
+void draw_corridors(char *dungeon, Room *rooms)
+{
+    Room connected_rooms[5];
+    connected_rooms[0] = rooms[0];
+
+    int i;
+    for (i = 1; i < 6; i++)
+    {
+        Room closest_room; 
+
+        int j;
+        for (j = (i - 1); j >= 0; j--)
+        {
+            if (j == (i - 1))
+            {
+                closest_room = connected_rooms[j];
+            } else {
+                int distance = sqrt(pow((rooms[i].x1 - connected_rooms[j].x1), 2) + pow((rooms[i].y1 - connected_rooms[j].y1), 2));
+                int closest_distance = sqrt(pow((rooms[i].x1 - closest_room.x1), 2) + pow((rooms[i].y1 - closest_room.y1), 2));
+                
+                if (distance < closest_distance)
+                {
+                    closest_room = connected_rooms[j];
+                }
+            }
+        }
+ 
+        //printf("Index: %d, (%d, %d) -> (%d, %d)\n", i, rooms[i].x1, rooms[i].y1, closest_room.x1, closest_room.y1);
+        
+        int x = rooms[i].x1;
+        int y = rooms[i].y1;
+            
+        while(x != closest_room.x1)
+        {
+            int direction = (x - closest_room.x1) / abs(x - closest_room.x1);
+            x = x - (direction * 1);
+
+
+            //printf("Current: (%d, %d), Goal: (%d, %d)\n", x, y, closest_room.x1, closest_room.y1);
+
+            if (x > 100)
+            {
+                exit(-1);
+            }
+
+            char *p;
+            p = (dungeon + (y * 80) + x);
+
+            *p = '#';
+            //*p = (*p != '.') ? '#' : '.';
+        }
+                
+        while(y != closest_room.y1)
+        {
+            int direction = (y - closest_room.y1) / abs(y - closest_room.y1);
+            y = y - (direction * 1);
+
+
+            char *p;
+            p = (dungeon + (y * 80) + x);
+
+            *p = '#';
+            //*p = (*p != '.') ? '#' : '.';
+        }
+        
+        connected_rooms[i] = rooms[i]; 
     }
 }
 
@@ -119,6 +192,11 @@ void generate_rooms(Room *rooms, int num_rooms, int x, int y)
 
             _out_of_bounds = out_of_bounds(rooms[i], (x - 1), (y - 1));
 
+            if (attempts_to_generate > 2000)
+            {
+                fprintf(stderr, "Error: Could not generate rooms.");
+                exit(-1);
+            }
             attempts_to_generate++;
         } while(_intersects || _out_of_bounds);  
     }
