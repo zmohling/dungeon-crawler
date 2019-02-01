@@ -10,7 +10,7 @@ typedef struct Room {
 } Room;
 
 /* Prototypes */
-void draw_dungeon(char *, Room *, int, int);
+void draw_dungeon(char *, Room *);
 void generate_rooms(Room *, int, int, int);
 int intersects(Room, Room);
 int out_of_bounds(Room, int, int);
@@ -24,30 +24,25 @@ int main(int argc, char *argv[])
     int y = 21;
     int MAX_ROOMS = 6;
 
-    //char dungeon[y][x];
-    char *dungeon = (char *) malloc(x * y * sizeof(char));    
-    Room rooms[MAX_ROOMS];
+    char *dungeon = (char *) calloc(x * y, sizeof(char)); // dynamic memory allocation for dungeon array    
+    Room rooms[MAX_ROOMS]; // rooms array  
 
-    /* Generate rooms */
     generate_rooms(rooms, MAX_ROOMS, x, y); 
     draw_corridors(dungeon, rooms);
-    draw_dungeon(dungeon, rooms, x, y);
+    draw_dungeon(dungeon, rooms);
 
-    /*
-    int i;
-    for (i = 0; i < MAX_ROOMS; i++)
-    {
-        printf("Room %d: (%d, %d) -> (%d, %d)\n", i, rooms[i].x1, rooms[i].y1, rooms[i].x2, rooms[i].y2);
-    }
-    */
 
-    //printf("Attempts to generate: %d\n", attempts_to_generate);
+    free(dungeon); // free dungeon array
+
     return 0;
-
-    free(dungeon);
 }
 
-void draw_dungeon(char *dungeon, Room *rooms, int x, int y)
+/* Draw dungeon. NOTE: Must be called after other generate
+ * and draw functions.
+ * char *dungeon: Dungeon array.
+ * Room *rooms: Room array.
+ */
+void draw_dungeon(char *dungeon, Room *rooms)
 {
     int i, j;
     for (i = 0; i < 21; i++)
@@ -57,19 +52,24 @@ void draw_dungeon(char *dungeon, Room *rooms, int x, int y)
             char *p;
             p = (dungeon + (i * 80) + j);
             
-            //*(p) = ' ';
-            *p = (*p != '#') ? ' ' : '#';
+            /* Set all zero'd bytes to spaces */
+            if (*p == 0)
+            {
+                *p = ' ';
+            }
 
+            /* Set border */
             if (j == 0 || j == 79)
             {
-                *(p) = '|';
+                *p = '|';
             }
 
             if (i == 0 || i == 20)
             {
-                *(p) = '-';
+                *p = '-';
             }
 
+            /* Set rooms */
             int k;
             for (k = 0; k < 6; k++)
             {
@@ -80,13 +80,19 @@ void draw_dungeon(char *dungeon, Room *rooms, int x, int y)
                 }
             }
 
-            printf("%c", *(p));
+            printf("%c", *p);
         }
 
         printf("\n");
     }
 }
 
+/*
+ * Draw corridors between rooms. NOTE: Must be called
+ * before draw_dungeon.
+ * char *dungeon: Dungeon array.
+ * Room *rooms: Room array.
+ */
 void draw_corridors(char *dungeon, Room *rooms)
 {
     Room connected_rooms[5];
@@ -97,6 +103,7 @@ void draw_corridors(char *dungeon, Room *rooms)
     {
         Room closest_room; 
 
+        /* Find the closest room using Euclidean distance formula */
         int j;
         for (j = (i - 1); j >= 0; j--)
         {
@@ -113,8 +120,8 @@ void draw_corridors(char *dungeon, Room *rooms)
                 }
             }
         }
- 
-        //printf("Index: %d, (%d, %d) -> (%d, %d)\n", i, rooms[i].x1, rooms[i].y1, closest_room.x1, closest_room.y1);
+
+        /* Draw corridors */
         
         int x = rooms[i].x1;
         int y = rooms[i].y1;
@@ -124,19 +131,10 @@ void draw_corridors(char *dungeon, Room *rooms)
             int direction = (x - closest_room.x1) / abs(x - closest_room.x1);
             x = x - (direction * 1);
 
-
-            //printf("Current: (%d, %d), Goal: (%d, %d)\n", x, y, closest_room.x1, closest_room.y1);
-
-            if (x > 100)
-            {
-                exit(-1);
-            }
-
             char *p;
             p = (dungeon + (y * 80) + x);
 
             *p = '#';
-            //*p = (*p != '.') ? '#' : '.';
         }
                 
         while(y != closest_room.y1)
@@ -144,12 +142,10 @@ void draw_corridors(char *dungeon, Room *rooms)
             int direction = (y - closest_room.y1) / abs(y - closest_room.y1);
             y = y - (direction * 1);
 
-
             char *p;
             p = (dungeon + (y * 80) + x);
 
             *p = '#';
-            //*p = (*p != '.') ? '#' : '.';
         }
         
         connected_rooms[i] = rooms[i]; 
@@ -218,7 +214,6 @@ int out_of_bounds(Room room, int bound_x, int bound_y)
 {
     if (room.x1 >= 2 && room.y1 >= 2 && room.x2 <= 77 && room.y2 <= 18)
     {
-        //printf("(%d, %d) ", room.x2, room.y2);
         return 0;
     }
 
