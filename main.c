@@ -15,7 +15,6 @@ int intersects(Room, Room);
 int out_of_bounds(Room, int, int);
 
 /* Debug vars */
-int attempts_to_generate = 0;
 
 int main(int argc, char *argv[])
 {
@@ -38,7 +37,7 @@ int main(int argc, char *argv[])
     }
     */
 
-    printf("Attempts to generate: %d\n", attempts_to_generate);
+    //printf("Attempts to generate: %d\n", attempts_to_generate);
     return 0;
 }
 
@@ -81,10 +80,20 @@ void draw_dungeon(char *dungeon, Room *rooms, int x, int y)
     }
 }
 
+/*
+ * Populates *rooms array with num_rooms number of rooms
+ * Room *rooms: Room array to populate.
+ * int num_rooms: Number of rooms to generate.
+ * int x: Size of dungeon in the x direction.
+ * int y: Size of dungeon in the y direction.
+ * int margin: Buffer of spaces between dungeon edge and room generation.
+ */
 void generate_rooms(Room *rooms, int num_rooms, int x, int y)
 {
     srand(time(NULL));
 
+    int attempts_to_generate = 0;
+    
     int i;
     for (i = 0; i < num_rooms; i++)
     {
@@ -116,6 +125,12 @@ void generate_rooms(Room *rooms, int num_rooms, int x, int y)
 
 }
 
+/* 
+ * Returns 1 (true) if the specified room is out of bounds. 
+ * int bound_x: Index of bound in the x direction.
+ * int bound_y: Index of bound in the y direction.
+ * int margin: Buffer of spaces between dungeon edge and room generation. 
+ */
 int out_of_bounds(Room room, int bound_x, int bound_y)
 {
     if (room.x1 >= 2 && room.y1 >= 2 && room.x2 <= 77 && room.y2 <= 18)
@@ -127,6 +142,10 @@ int out_of_bounds(Room room, int bound_x, int bound_y)
     return 1;
 }
 
+/*
+ * Returns 1 (true) if the two specified rooms are intersecting 
+ * margin: Number of spaces between rooms
+ */
 int intersects(Room a, Room b)
 {
     if (a.x1 > b.x2 + 1 || a.x2 < b.x1 - 1 || a.y1 > b.y2 + 1 || a.y2 < b.y1 - 1)
