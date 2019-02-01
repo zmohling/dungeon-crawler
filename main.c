@@ -2,7 +2,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
-#include <stdbool.h>
 #include <math.h>
 
 typedef struct Room {
@@ -26,7 +25,7 @@ int main(int argc, char *argv[])
 }
 
 /*
- * Generate and draw a dungeon
+ * Generate and draw a dungeon.
  */
 void render(void)
 {
@@ -42,6 +41,7 @@ void render(void)
     generate_corridors(dungeon, rooms);
     generate_staircases(dungeon, x, y);
 
+    /* Print to console */
     int i, j;
     for (i = 0; i < 21; i++)
     {
