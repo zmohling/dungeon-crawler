@@ -1,5 +1,5 @@
 SOURCE=main.c
-EXE=main
+EXE=dungeon-crawler
 FLAGS=-O -Werror -lm
 DEV_FLAGS=-Wall -ggdb3 -lm
 

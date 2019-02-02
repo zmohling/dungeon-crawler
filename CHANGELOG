@@ -1,3 +1,5 @@
+2019-02-01: Improved corridor generation
+2019-02-01: Added variable room number functionality
 2019-02-01: Created Turnin script
 2019-02-01: Changed function call order
 2019-01-31: Changed memory allocation to calloc
