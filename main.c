@@ -221,9 +221,8 @@ void generate_corridors(char *dungeon, Room *rooms, int num_rooms)
         }
 
         /* Write corridors to dungeon */
-        int x = (i % 2 == 0) ? rooms[i].x1 : rooms[i].x2; 
-        int y = (i % 2 == 0) ? rooms[i].y1 : rooms[i].y2; 
-        
+        int x = (i % 2 == 0) ? rooms[i].x1 : rooms[i].x2; // add randomness by writing corridor from second point on even indexes 
+        int y = (i % 2 == 0) ? rooms[i].y1 : rooms[i].y2;  
         int x_closest = (i % 2 == 0) ? closest_room.x1 : closest_room.x2;
         int y_closest = (i % 2 == 0) ? closest_room.y1 : closest_room.y2;
 
