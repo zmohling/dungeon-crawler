@@ -12,7 +12,7 @@ typedef struct Room {
 void render(void);
 void generate_border(char *);
 void generate_rooms(char *, Room *, int, int, int);
-void generate_corridors(char *, Room *);
+void generate_corridors(char *, Room *, int);
 void generate_staircases(char *, int, int);
 int intersects(Room, Room);
 int out_of_bounds(Room, int, int);
@@ -29,34 +29,37 @@ int main(int argc, char *argv[])
  */
 void render(void)
 {
+    int seed = time(NULL);
+    srand(seed);
+    //printf("Seed: %d\n", seed);
+    
     int x = 80;
     int y = 21;
-    int MAX_ROOMS = 6;
-    Room rooms[MAX_ROOMS]; // rooms array  
+    int NUM_ROOMS = 6 + (rand() % 2); // between 6 and 7 rooms
+    Room rooms[NUM_ROOMS]; // rooms array  
 
-    char *dungeon = (char *) calloc(x * y, sizeof(char)); // dynamic memory allocation for dungeon array    
+    char *dungeon = (char *) calloc(x * y, sizeof(char));
+    //char dungeon[y][x];
+    //memset(dungeon, ' ', y * x * sizeof(char));
 
     generate_border(dungeon);
-    generate_rooms(dungeon, rooms, MAX_ROOMS, x, y);
-    generate_corridors(dungeon, rooms);
+    generate_rooms(dungeon, rooms, NUM_ROOMS, x, y);
+    generate_corridors(dungeon, rooms, NUM_ROOMS);
     generate_staircases(dungeon, x, y);
 
     /* Print to console */
     int i, j;
-    for (i = 0; i < 21; i++)
+    for (i = 0; i < y; i++)
     {
-        for (j = 0; j < 80; j++)
+        for (j = 0; j < x; j++)
         {
-            char *p;
-            p = (dungeon + (i * 80) + j);
-
-            printf("%c", *p);
+            printf("%c", *(dungeon + (i * x) + j));
         }
 
         printf("\n");
     }
-
-    free(dungeon); // free dungeon array
+    
+    free(dungeon);
 }
 
 /*
@@ -90,114 +93,6 @@ void generate_border(char *dungeon)
 }
 
 /*
- * Generate 1-2 up and down staircases in
- * rooms or corridors.
- * char *dungeon: Dungeon array to write to.
- * int x: Size of dungeon in x direction.
- * int y: Size of dungeon in y direction.
- */
-void generate_staircases(char *dungeon, int x, int y)
-{
-    int STAIR_MAX = 2;
-
-    int i;
-    for (i = 0; i < (rand() % STAIR_MAX + 1);)
-    {
-        int _x = rand() % x;
-        int _y = rand() % y;
-
-        char *p;
-        p = (dungeon + (_y * 80) + _x);
-
-        if (*p == '#' || *p == '.')
-        {
-            *p = '>';
-            i++;
-        }
-    }
-
-    int j;
-    for (j = 0; j < (rand() % STAIR_MAX + 1);)
-    {
-        int _x = rand() % x;
-        int _y = rand() % y;
-
-        char *p;
-        p = (dungeon + (_y * 80) + _x);
-
-        if (*p == '#' || *p == '.')
-        {
-            *p = '<';
-            j++;
-        }
-    }
-}
-
-/*
- * Generate corridors between rooms. NOTE: Must be called
- * before draw_dungeon.
- * char *dungeon: Dungeon array to write to.
- * Room *rooms: Room array.
- */
-void generate_corridors(char *dungeon, Room *rooms)
-{
-    Room connected_rooms[5];
-    connected_rooms[0] = rooms[0];
-
-    int i;
-    for (i = 1; i < 6; i++)
-    {
-        Room closest_room; 
-
-        /* Find the closest room using Euclidean distance formula */
-        int j;
-        for (j = (i - 1); j >= 0; j--)
-        {
-            if (j == (i - 1))
-            {
-                closest_room = connected_rooms[j];
-            } else {
-                int distance = sqrt(pow((rooms[i].x1 - connected_rooms[j].x1), 2) + pow((rooms[i].y1 - connected_rooms[j].y1), 2));
-                int closest_distance = sqrt(pow((rooms[i].x1 - closest_room.x1), 2) + pow((rooms[i].y1 - closest_room.y1), 2));
-                
-                if (distance < closest_distance)
-                {
-                    closest_room = connected_rooms[j];
-                }
-            }
-        }
-
-        /* Write corridors to dungeon */
-        int x = rooms[i].x1;
-        int y = rooms[i].y1;
-            
-        while(x != closest_room.x1)
-        {
-            int direction = (x - closest_room.x1) / abs(x - closest_room.x1);
-            x = x - (direction * 1);
-
-            char *p;
-            p = (dungeon + (y * 80) + x);
-
-            *p = (*p == '.') ? '.' : '#';
-        }
-                
-        while(y != closest_room.y1)
-        {
-            int direction = (y - closest_room.y1) / abs(y - closest_room.y1);
-            y = y - (direction * 1);
-
-            char *p;
-            p = (dungeon + (y * 80) + x);
-
-            *p = (*p == '.') ? '.' : '#';
-        }
-        
-        connected_rooms[i] = rooms[i]; 
-    }
-}
-
-/*
  * Generates rooms for the dungeon to fit the
  * given parameters.
  * char *dungeon: Dungeon array to write to.
@@ -208,9 +103,6 @@ void generate_corridors(char *dungeon, Room *rooms)
  */
 void generate_rooms(char *dungeon, Room *rooms, int num_rooms, int x, int y)
 {
-    int seed = time(NULL);
-    srand(seed);
-    //printf("Seed: %d\n", seed);
 
     int attempts_to_generate = 0;
     
@@ -292,4 +184,115 @@ int intersects(Room a, Room b)
     }
     
     return 1;
+}
+
+/*
+ * Generate corridors between rooms. 
+ * char *dungeon: Dungeon array to write to.
+ * Room *rooms: Room array.
+ * int num_rooms: Number of rooms in *rooms
+ */
+void generate_corridors(char *dungeon, Room *rooms, int num_rooms)
+{
+    Room connected_rooms[num_rooms];
+    connected_rooms[0] = rooms[0];
+
+    int i;
+    for (i = 1; i < num_rooms; i++)
+    {
+        Room closest_room; 
+
+        /* Find the closest room using Euclidean distance formula */
+        int j;
+        for (j = (i - 1); j >= 0; j--)
+        {
+            if (j == (i - 1))
+            {
+                closest_room = connected_rooms[j];
+            } else {
+                int distance = sqrt(pow((rooms[i].x1 - connected_rooms[j].x1), 2) + pow((rooms[i].y1 - connected_rooms[j].y1), 2));
+                int closest_distance = sqrt(pow((rooms[i].x1 - closest_room.x1), 2) + pow((rooms[i].y1 - closest_room.y1), 2));
+                
+                if (distance < closest_distance)
+                {
+                    closest_room = connected_rooms[j];
+                }
+            }
+        }
+
+        /* Write corridors to dungeon */
+        int x = (i % 2 == 0) ? rooms[i].x1 : rooms[i].x2; 
+        int y = (i % 2 == 0) ? rooms[i].y1 : rooms[i].y2; 
+        
+        int x_closest = (i % 2 == 0) ? closest_room.x1 : closest_room.x2;
+        int y_closest = (i % 2 == 0) ? closest_room.y1 : closest_room.y2;
+
+        while(x != x_closest) 
+        {
+            int direction = (x - x_closest) / abs(x - x_closest);
+            x = x - (direction * 1);
+
+            char *p;
+            p = (dungeon + (y * 80) + x);
+
+            *p = (*p == '.') ? '.' : '#';
+        }
+                
+        while(y != y_closest)
+        {
+            int direction = (y - y_closest) / abs(y - y_closest);
+            y = y - (direction * 1);
+
+            char *p;
+            p = (dungeon + (y * 80) + x);
+
+            *p = (*p == '.') ? '.' : '#';
+        }
+        
+        connected_rooms[i] = rooms[i]; 
+    }
+}
+
+/*
+ * Generate 1-2 up and down staircases in
+ * rooms or corridors.
+ * char *dungeon: Dungeon array to write to.
+ * int x: Size of dungeon in x direction.
+ * int y: Size of dungeon in y direction.
+ */
+void generate_staircases(char *dungeon, int x, int y)
+{
+    int STAIR_MAX = 3;
+
+    int i;
+    for (i = 0; i < (rand() % STAIR_MAX + 1);)
+    {
+        int _x = rand() % x;
+        int _y = rand() % y;
+
+        char *p;
+        p = (dungeon + (_y * 80) + _x);
+
+        if (*p == '#' || *p == '.')
+        {
+            *p = '>';
+            i++;
+        }
+    }
+
+    int j;
+    for (j = 0; j < (rand() % STAIR_MAX + 1);)
+    {
+        int _x = rand() % x;
+        int _y = rand() % y;
+
+        char *p;
+        p = (dungeon + (_y * 80) + _x);
+
+        if (*p == '#' || *p == '.')
+        {
+            *p = '<';
+            j++;
+        }
+    }
 }

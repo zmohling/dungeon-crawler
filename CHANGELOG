@@ -1,0 +1,10 @@
+2019-02-01: Created Turnin script
+2019-02-01: Changed function call order
+2019-01-31: Changed memory allocation to calloc
+2019-01-31: Fixed memory allocation error
+2019-01-31: Add generation of corridors between rooms
+2019-01-31: Main documentation
+2019-01-31: Add random room generation
+2019-01-31: Add draw_dungeon outline
+2019-01-30: Add Makefile
+2019-01-29: First commit

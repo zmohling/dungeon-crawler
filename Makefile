@@ -7,4 +7,4 @@ all: $(SOURCE) clean
 	gcc $(SOURCE) -o $(EXE) $(DEV_FLAGS)
 
 clean:
-	rm -f $(EXE) *~ 
+	rm -f $(EXE) *~ vgcore.* 
