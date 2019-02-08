@@ -4,30 +4,32 @@
 #include <time.h>
 #include <math.h>
 
+#include "dungeon-generation.h"
+
 typedef struct Room {
     int x1, y1, x2, y2;
 } Room;
 
 /* Prototypes */
-void render(void);
+char * generate(void);
 void generate_border(char *);
 void generate_rooms(char *, Room *, int, int, int);
 void generate_corridors(char *, Room *, int);
 void generate_staircases(char *, int, int);
 int intersects(Room, Room);
 int out_of_bounds(Room, int, int);
-
+/*
 int main(int argc, char *argv[])
 {
-    render();
+    generate();
 
     return 0;
 }
-
+*/
 /*
  * Generate and draw a dungeon.
  */
-void render(void)
+char * generate(void)
 {
     int seed = time(NULL);
     srand(seed);
@@ -38,7 +40,8 @@ void render(void)
     int NUM_ROOMS = 6 + (rand() % 2); // between 6 and 7 rooms
     Room rooms[NUM_ROOMS]; // rooms array  
 
-    char *dungeon = (char *) calloc(x * y, sizeof(char));
+    static char *dungeon;
+    dungeon = (char *) calloc(x * y, sizeof(char));
     //char dungeon[y][x];
     //memset(dungeon, ' ', y * x * sizeof(char));
 
@@ -58,8 +61,9 @@ void render(void)
 
         printf("\n");
     }
-    
-    free(dungeon);
+   
+    return dungeon;
+    //free(dungeon);
 }
 
 /*
