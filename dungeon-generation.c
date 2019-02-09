@@ -147,9 +147,9 @@ int generate_rooms(dungeon_t *d)
 
         /* Write generated room to dungeon array */
         int x, y;
-        for (y = d->rooms[i].coordinates.y; y <= (d->rooms[i].coordinates.y + d->rooms[i].height); y++)
+        for (y = d->rooms[i].coordinates.y; y < (d->rooms[i].coordinates.y + d->rooms[i].height); y++)
         {
-            for (x = d->rooms[i].coordinates.x; x <= (d->rooms[i].coordinates.x + d->rooms[i].width); x++)
+            for (x = d->rooms[i].coordinates.x; x < (d->rooms[i].coordinates.x + d->rooms[i].width); x++)
             {
                 d->map[y][x] = ter_floor_room;
             }
@@ -240,13 +240,13 @@ int generate_corridors(dungeon_t *d)
         }
 
         /* Write corridors to dungeon */
-        int x = (i % 2 == 0) ? d->rooms[i].coordinates.x : d->rooms[i].coordinates.x + d->rooms[i].width; // add randomness by writing corridor from second point on even indexes 
+        int x = (i % 2 == 0) ? d->rooms[i].coordinates.x : d->rooms[i].coordinates.x + d->rooms[i].width - 1; // add randomness by writing corridor from second point on even indexes 
 
-        int y = (i % 2 == 0) ? d->rooms[i].coordinates.y : d->rooms[i].coordinates.y + d->rooms[i].height;
+        int y = (i % 2 == 0) ? d->rooms[i].coordinates.y : d->rooms[i].coordinates.y + d->rooms[i].height - 1;
         
-        int x_closest = (i % 2 == 0) ? closest_room.coordinates.x : closest_room.coordinates.x + closest_room.width;
+        int x_closest = (i % 2 == 0) ? closest_room.coordinates.x : closest_room.coordinates.x + closest_room.width - 1;
 
-        int y_closest = (i % 2 == 0) ? closest_room.coordinates.y : closest_room.coordinates.y + closest_room.height;
+        int y_closest = (i % 2 == 0) ? closest_room.coordinates.y : closest_room.coordinates.y + closest_room.height - 1;
 
         while(x != x_closest) 
         {

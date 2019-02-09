@@ -124,7 +124,20 @@ int main(int argc, char *argv[])
 
     free(path);
     //free(dungeon);
-    
+   
+    printf("PC Coordinates\n\tx: %d, y: %d\n", dungeon.pc_coordinates.x, dungeon.pc_coordinates.y);
+    printf("Number of rooms: %d\n", dungeon.num_rooms);
+
+    int i;
+    for (i = 0; i < dungeon.num_rooms; i++)
+    {
+        printf("\tRoom %d:\n", i);
+        printf("\t\tx: %d, y: %d\n", dungeon.rooms[i].coordinates.x, dungeon.rooms[i].coordinates.y);
+        printf("\t\twidth: %d\n", dungeon.rooms[i].width);
+        printf("\t\theight: %d\n", dungeon.rooms[i].height);
+    }
+
+
     render(&dungeon);
     
     return 0;

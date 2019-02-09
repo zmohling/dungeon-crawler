@@ -1,3 +1,7 @@
+CHANGELOG (GIT LOG)
+2019-02-08: Rendering with hardness considered
+2019-02-08: Refactoring, dungeon struct revisions
+2019-02-08: Add dungeon.h, refactoring
 2019-02-08: Created file headers, write dungeon to binary
 2019-02-07: Refactoring
 2019-02-01: Changed Makefile binary name
