@@ -41,13 +41,13 @@ typedef struct dungeon {
     uint8_t hardness[DUNGEON_Y][DUNGEON_X];
     
     uint16_t num_rooms;
-    room_t rooms[MAX_ROOMS];
+    room_t *rooms;
 
     uint16_t num_stairs_up;
-    point_t stairs_up[STAIRS_MAX];
+    point_t *stairs_up;
 
     uint16_t num_stairs_down;
-    point_t stairs_down[STAIRS_MAX];
+    point_t *stairs_down;
 } dungeon_t;
 
 #endif

@@ -111,6 +111,7 @@ int generate_rooms(dungeon_t *d)
     int attempts_to_generate = 0;
 
     d->num_rooms = rand() % (MAX_ROOMS - MIN_ROOMS + 1) + MIN_ROOMS;
+    d->rooms = malloc(d->num_rooms * sizeof(room_t));
 
     uint8_t i;
     for (i = 0; i < d->num_rooms; i++)
@@ -279,6 +280,8 @@ int generate_corridors(dungeon_t *d)
 int generate_staircases(dungeon_t *d)
 {
     d->num_stairs_up = rand() % STAIRS_MAX + 1;
+    d->stairs_up = malloc(d->num_stairs_up * sizeof(point_t));
+
     int i;
     for (i = 0; i < d->num_stairs_up;)
     {
@@ -299,6 +302,8 @@ int generate_staircases(dungeon_t *d)
     }
 
     d->num_stairs_down = rand() % STAIRS_MAX + 1;
+    d->stairs_down = malloc(d->num_stairs_down * sizeof(point_t));
+
     int j;
     for (j = 0; j < d->num_stairs_down;)
     {
@@ -336,5 +341,69 @@ int generate_hardness(dungeon_t *d)
             }
         }
     }
+    return 0;
+}
+
+/*
+ * Generate terrain for dungeons 
+ * which have been read from disk.
+ */
+int generate_terrain(dungeon_t *d)
+{  
+    /* Generate immutable border and walls */
+    generate_border(d);
+
+    /* Generate room terrain */
+    int i, j;
+    for (i = 0; i < d->num_rooms; i++)
+    {
+        int x, y;
+        for (y = d->rooms[i].coordinates.y; y < (d->rooms[i].coordinates.y + d->rooms[i].height); y++)
+        {
+            for (x = d->rooms[i].coordinates.x; x < (d->rooms[i].coordinates.x + d->rooms[i].width); x++)
+            {
+                d->map[y][x] = ter_floor_room;
+            }
+        }
+    }
+   
+    /* Generate up stairs terrain */
+    for (i = 0; i < d->num_stairs_up; i++)
+    {
+        d->map[d->stairs_up[i].y][d->stairs_up[i].x] = ter_stairs_up;
+    }
+
+    /* Generate down stairs terrain */
+    for (i = 0; i < d->num_stairs_down; i++)
+    {
+        d->map[d->stairs_down[i].y][d->stairs_down[i].x] = ter_stairs_down;
+    }
+
+    /* Generate corridor terrain */
+    for (i = 0; i < DUNGEON_Y; i++)
+    {
+        for (j = 0; j < DUNGEON_X; j++)
+        {
+            terrain_t *t = &(d->map[i][j]);
+            
+            if (j == 0 || j == 79)
+            {
+                *t = ter_wall_immutable; 
+            }
+
+            if (i == 0 || i == 20)
+            {
+                *t = ter_wall_immutable; 
+            }
+
+            uint8_t h = d->hardness[i][j];
+
+            if (h == 0 && *t == ter_wall)
+            {
+                *t = ter_floor_hall;
+            }
+        }
+    }
+
     return 0;
 }
