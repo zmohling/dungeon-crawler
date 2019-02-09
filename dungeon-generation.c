@@ -405,5 +405,8 @@ int generate_terrain(dungeon_t *d)
         }
     }
 
+    /* pc_coordinates */
+    d->map[d->pc_coordinates.y][d->pc_coordinates.x] = ter_player;
+
     return 0;
 }
