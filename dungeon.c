@@ -7,17 +7,19 @@
 #include <string.h>
 
 #include "dungeon-generation.h"
+#include "dungeon.h"
 
-char * read_dungeon_from_disk(char *path) {
+int read_dungeon_from_disk(char *path) {
     
     FILE *f;
     if ((f = fopen(path, "r")) != NULL)
     {
 
     }
+    return 0;
 }
 
-char * write_dungeon_to_disk(char *path) {
+int write_dungeon_to_disk(char *path) {
     
     FILE *f;
     if ((f = fopen(path, "w")) == NULL)
@@ -31,7 +33,59 @@ char * write_dungeon_to_disk(char *path) {
 
     fclose(f);
 
-    return generate();
+    return 0;
+}
+
+int render(dungeon_t *d)
+{
+    int i, j;
+    for (i = 0; i < DUNGEON_Y; i++)
+    {
+        for (j = 0; j < DUNGEON_X; j++)
+        {
+            char c;
+
+            /* Border */
+            if (j == 0 || j == (DUNGEON_X - 1))
+            {
+                c = '|';
+            } else if (i == 0 || i == (DUNGEON_Y - 1))
+            {
+                c = '-';
+            }
+
+            /* Terrain */
+            terrain_t t = d->map[i][j];
+            switch(t) {
+                case ter_wall_immutable:
+                    c = '%';
+                    break;
+                case ter_wall:
+                    c = ' ';
+                    break;
+                case ter_floor_room:
+                    c = '.';
+                    break;
+                case ter_floor_hall:
+                    c = '#';
+                    break;
+                case ter_stairs_up:
+                    c = '>';
+                    break;
+                case ter_stairs_down:
+                    c = '<';
+                    break;
+                default:
+                    c = '+';
+            }
+
+            printf("%c", c);
+        }
+
+        printf("\n");
+    }
+
+    return 0;
 }
 
 int main(int argc, char *argv[])
@@ -65,11 +119,13 @@ int main(int argc, char *argv[])
     strcpy(path, home);
     strcat(path, "/.rlg327/dungeon");
 
-    char *dungeon;
-    dungeon = write_dungeon_to_disk(path);
+    dungeon_t dungeon;
+    generate(&dungeon);
 
     free(path);
-    free(dungeon);
+    //free(dungeon);
+    
+    render(&dungeon);
     
     return 0;
 }

@@ -1,4 +1,4 @@
-SOURCE=main.c dungeon-generation.c dungeon-io.c
+SOURCE=dungeon.c dungeon-generation.c
 EXE=dungeon-crawler
 FLAGS=-O -Werror -lm
 DEV_FLAGS=-Wall -ggdb3 -lm

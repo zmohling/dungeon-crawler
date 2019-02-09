@@ -11,7 +11,7 @@
 #define ROOM_MIN_Y  3
 #define ROOM_MAX_X  15
 #define ROOM_MAX_Y  10
-#define MAX_STAIRS  2
+#define STAIRS_MAX  3
 
 typedef enum __attribute__ ((__packed__)) terrain_type {
   ter_debug,
@@ -44,10 +44,10 @@ typedef struct dungeon {
     room_t rooms[MAX_ROOMS];
 
     uint16_t num_stairs_up;
-    point_t stairs_up[MAX_STAIRS];
+    point_t stairs_up[STAIRS_MAX];
 
     uint16_t num_stairs_down;
-    point_t *stairs_down[MAX_STAIRS];
+    point_t stairs_down[STAIRS_MAX];
 } dungeon_t;
 
 #endif

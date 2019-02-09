@@ -45,19 +45,26 @@ int generate(dungeon_t *d)
     generate_rooms(d);
     generate_corridors(d);
     generate_staircases(d);
+    generate_hardness(d);
 
-    /* Print to console */
+    /*
     int i, j;
-    for (i = 0; i < y; i++)
+    for (i = 0; i < DUNGEON_Y; i++)
     {
-        for (j = 0; j < x; j++)
+        for (j = 0; j < DUNGEON_X; j++)
         {
-            printf("%c", *(dungeon + (i * x) + j));
+            if (d->hardness[i][j] == 0)
+            {
+                printf("%c", '#');
+            } else {
+                printf("%c", ' '); 
+            }
         }
 
         printf("\n");
     }
-   
+    */
+
     return 0;
     //free(dungeon);
 }
@@ -67,7 +74,7 @@ int generate(dungeon_t *d)
  * dungeon array to spaces.
  * char *dungeon: Dungeon array to write to.
  */
-void generate_border(dungeon_t *d)
+int generate_border(dungeon_t *d)
 {
     int i, j;
     for (i = 0; i < DUNGEON_Y; i++)
@@ -87,6 +94,7 @@ void generate_border(dungeon_t *d)
             }
         }
     }
+    return 0;
 }
 
 /*
@@ -101,7 +109,9 @@ void generate_border(dungeon_t *d)
 int generate_rooms(dungeon_t *d)
 {
     int attempts_to_generate = 0;
-    
+
+    d->num_rooms = rand() % (MAX_ROOMS - MIN_ROOMS + 1) + MIN_ROOMS;
+
     uint8_t i;
     for (i = 0; i < d->num_rooms; i++)
     {
@@ -119,13 +129,13 @@ int generate_rooms(dungeon_t *d)
             int j;
             for (j = (i - 1); j >= 0; j--)
             {
-               if (_intersects = intersects(d->rooms[i], d->rooms[j]))
+               if ((_intersects = intersects(&(d->rooms[i]), &(d->rooms[j]))))
                {
                    break;
                }
             }
 
-            _out_of_bounds = out_of_bounds(rooms[i], (x - 1), (y - 1));
+            _out_of_bounds = out_of_bounds(&(d->rooms[i]), (DUNGEON_X - 1), (DUNGEON_Y- 1));
 
             if (attempts_to_generate > 2000)
             {
@@ -137,17 +147,15 @@ int generate_rooms(dungeon_t *d)
 
         /* Write generated room to dungeon array */
         int x, y;
-        for (y = rooms[i].y1; y <= rooms[i].y2; y++)
+        for (y = d->rooms[i].coordinates.y; y <= (d->rooms[i].coordinates.y + d->rooms[i].height); y++)
         {
-            for (x = rooms[i].x1; x <= rooms[i].x2; x++)
+            for (x = d->rooms[i].coordinates.x; x <= (d->rooms[i].coordinates.x + d->rooms[i].width); x++)
             {
-                char *p;
-                p = (dungeon + (y * 80) + x);
-
-                *p = '.';
+                d->map[y][x] = ter_floor_room;
             }
         }
     }
+    return 0;
 }
 
 /* 
@@ -156,14 +164,19 @@ int generate_rooms(dungeon_t *d)
  * int bound_x: Index of bound in the x direction.
  * int bound_y: Index of bound in the y direction.
  */
-int out_of_bounds(Room room, int bound_x, int bound_y)
+bool out_of_bounds(room_t *room, int bound_x, int bound_y)
 {
-    if (room.x1 >= 2 && room.y1 >= 2 && room.x2 <= 77 && room.y2 <= 18)
+    int room_x1 = room->coordinates.x;
+    int room_y1 = room->coordinates.y;
+    int room_x2 = room_x1 + room->width;
+    int room_y2 = room_y1 + room->height;
+    
+    if (room_x1 >= 2 && room_y1 >= 2 && room_x2 <= 77 && room_y2 <= 18)
     {
-        return 0;
+        return false;
     }
 
-    return 1;
+    return true;
 }
 
 /*
@@ -171,14 +184,24 @@ int out_of_bounds(Room room, int bound_x, int bound_y)
  * Room a: First room of the pair.
  * Room b: Second room of the pair.
  */
-int intersects(room_t a, room_t b)
+bool intersects(room_t *a, room_t *b)
 {
-    if (a.x1 > b.x2 + 1 || a.x2 < b.x1 - 1 || a.y1 > b.y2 + 1 || a.y2 < b.y1 - 1)
+    int a_x1 = a->coordinates.x;
+    int a_y1 = a->coordinates.y;
+    int a_x2 = a_x1 + a->width;
+    int a_y2 = a_y1 + a->height;
+    
+    int b_x1 = b->coordinates.x;
+    int b_y1 = b->coordinates.y;
+    int b_x2 = b_x1 + b->width;
+    int b_y2 = b_y1 + b->height;
+
+    if (a_x1 > b_x2 + 1 || a_x2 < b_x1 - 1 || a_y1 > b_y2 + 1 || a_y2 < b_y1 - 1)
     {
-        return 0;
+        return false;
     }
     
-    return 1;
+    return true;
 }
 
 /*
@@ -187,15 +210,15 @@ int intersects(room_t a, room_t b)
  * Room *rooms: Room array.
  * int num_rooms: Number of rooms in *rooms
  */
-void generate_corridors(char *dungeon, Room *rooms, int num_rooms)
+int generate_corridors(dungeon_t *d)
 {
-    Room connected_rooms[num_rooms];
-    connected_rooms[0] = rooms[0];
+    room_t connected_rooms[d->num_rooms];
+    connected_rooms[0] = d->rooms[0];
 
     int i;
-    for (i = 1; i < num_rooms; i++)
+    for (i = 1; i < d->num_rooms; i++)
     {
-        Room closest_room; 
+        room_t closest_room; 
 
         /* Find the closest room using Euclidean distance formula */
         int j;
@@ -205,9 +228,10 @@ void generate_corridors(char *dungeon, Room *rooms, int num_rooms)
             {
                 closest_room = connected_rooms[j];
             } else {
-                int distance = sqrt(pow((rooms[i].x1 - connected_rooms[j].x1), 2) + pow((rooms[i].y1 - connected_rooms[j].y1), 2));
-                int closest_distance = sqrt(pow((rooms[i].x1 - closest_room.x1), 2) + pow((rooms[i].y1 - closest_room.y1), 2));
+                int distance = sqrt(pow((d->rooms[i].coordinates.x - connected_rooms[j].coordinates.x), 2) + pow((d->rooms[i].coordinates.y - connected_rooms[j].coordinates.y), 2));
                 
+                int closest_distance = sqrt(pow((d->rooms[i].coordinates.x - closest_room.coordinates.x), 2) + pow((d->rooms[i].coordinates.y - closest_room.coordinates.y), 2));
+
                 if (distance < closest_distance)
                 {
                     closest_room = connected_rooms[j];
@@ -216,20 +240,20 @@ void generate_corridors(char *dungeon, Room *rooms, int num_rooms)
         }
 
         /* Write corridors to dungeon */
-        int x = (i % 2 == 0) ? rooms[i].x1 : rooms[i].x2; // add randomness by writing corridor from second point on even indexes 
-        int y = (i % 2 == 0) ? rooms[i].y1 : rooms[i].y2;  
-        int x_closest = (i % 2 == 0) ? closest_room.x1 : closest_room.x2;
-        int y_closest = (i % 2 == 0) ? closest_room.y1 : closest_room.y2;
+        int x = (i % 2 == 0) ? d->rooms[i].coordinates.x : d->rooms[i].coordinates.x + d->rooms[i].width; // add randomness by writing corridor from second point on even indexes 
+
+        int y = (i % 2 == 0) ? d->rooms[i].coordinates.y : d->rooms[i].coordinates.y + d->rooms[i].height;
+        
+        int x_closest = (i % 2 == 0) ? closest_room.coordinates.x : closest_room.coordinates.x + closest_room.width;
+
+        int y_closest = (i % 2 == 0) ? closest_room.coordinates.y : closest_room.coordinates.y + closest_room.height;
 
         while(x != x_closest) 
         {
             int direction = (x - x_closest) / abs(x - x_closest);
             x = x - (direction * 1);
 
-            char *p;
-            p = (dungeon + (y * 80) + x);
-
-            *p = (*p == '.') ? '.' : '#';
+            d->map[y][x] = (d->map[y][x] == ter_floor_room) ? ter_floor_room : ter_floor_hall;
         }
                 
         while(y != y_closest)
@@ -237,14 +261,12 @@ void generate_corridors(char *dungeon, Room *rooms, int num_rooms)
             int direction = (y - y_closest) / abs(y - y_closest);
             y = y - (direction * 1);
 
-            char *p;
-            p = (dungeon + (y * 80) + x);
-
-            *p = (*p == '.') ? '.' : '#';
+            d->map[y][x] = (d->map[y][x] == ter_floor_room) ? ter_floor_room : ter_floor_hall;
         }
         
-        connected_rooms[i] = rooms[i]; 
+        connected_rooms[i] = d->rooms[i]; 
     }
+    return 0;
 }
 
 /*
@@ -254,62 +276,65 @@ void generate_corridors(char *dungeon, Room *rooms, int num_rooms)
  * int x: Size of dungeon in x direction.
  * int y: Size of dungeon in y direction.
  */
-void generate_staircases(char *dungeon, int x, int y)
+int generate_staircases(dungeon_t *d)
 {
-    int STAIR_MAX = 3;
-
+    d->num_stairs_up = rand() % STAIRS_MAX + 1;
     int i;
-    for (i = 0; i < (rand() % STAIR_MAX + 1);)
+    for (i = 0; i < d->num_stairs_up;)
     {
-        int _x = rand() % x;
-        int _y = rand() % y;
+        int _x = rand() % DUNGEON_X;
+        int _y = rand() % DUNGEON_Y;
 
-        char *p;
-        p = (dungeon + (_y * 80) + _x);
+        terrain_t *p;
+        p = &(d->map[_y][_x]);
 
-        if (*p == '#' || *p == '.')
+        if (*p == ter_floor_hall || *p == ter_floor_room)
         {
-            *p = '>';
+            point_t coord = {_x, _y};
+            d->stairs_up[i] = coord; 
+
+            *p = ter_stairs_up;
             i++;
         }
     }
 
+    d->num_stairs_down = rand() % STAIRS_MAX + 1;
     int j;
-    for (j = 0; j < (rand() % STAIR_MAX + 1);)
+    for (j = 0; j < d->num_stairs_down;)
     {
-        int _x = rand() % x;
-        int _y = rand() % y;
+        int _x = rand() % DUNGEON_X;
+        int _y = rand() % DUNGEON_Y;
 
-        char *p;
-        p = (dungeon + (_y * 80) + _x);
+        terrain_t *p;
+        p = &(d->map[_y][_x]);
 
-        if (*p == '#' || *p == '.')
+        if (*p == ter_floor_hall || *p == ter_floor_room)
         {
-            *p = '<';
+            point_t coord = {_x, _y};
+            d->stairs_down[j] = coord; 
+
+            *p = ter_stairs_down;
             j++;
         }
     }
+    return 0;
 }
 
-void generate_hardness(char *dungeon, uint8_t *hardness_array)
+int generate_hardness(dungeon_t *d)
 {
     int i, j;
-    for (i = 0; i < 21; i++)
+    for (i = 0; i < DUNGEON_Y; i++)
     {
-        for (j = 0; j < 80; j++)
+        for (j = 0; j < DUNGEON_X; j++)
         {
-            char *p;
-            p = (dungeon + (i * 80) + j);
-            
-            char *p;
-            p = (dungeon + (i * 80) + j);
-
-            if (*p == ' ' || *p == '-' || *p == '|')
+            terrain_t t = d->map[i][j];
+            if (t == ter_wall || t == ter_wall_immutable)
             {
-                hardness_array[i][j] = 255;
+                d->hardness[i][j] = rand() % 254 + 1;
             } else {
-                hardness_array[i][j] = 0;
+                d->hardness[i][j] = 0;
             }
         }
     }
+    return 0;
 }
