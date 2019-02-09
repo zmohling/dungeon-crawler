@@ -1,5 +1,5 @@
-#ifndef DUNGEON_GEN
-#define DUNGEON_GEN
+#ifndef DUNGEON_GENERATION_H
+# define DUNGEON_GENERATION_H
 
 #include <stdbool.h>
 #include "dungeon.h"

@@ -2,6 +2,7 @@
 # define DUNGEON_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #define DUNGEON_X   80
 #define DUNGEON_Y   21
@@ -50,5 +51,9 @@ typedef struct dungeon {
     uint16_t num_stairs_down;
     point_t *stairs_down;
 } dungeon_t;
+
+int render(dungeon_t *);
+bool includes(int, char *[], char *);
+int deep_free_dungeon(dungeon_t *);
 
 #endif
