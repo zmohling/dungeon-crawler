@@ -10,7 +10,7 @@
 int main(int argc, char *argv[])
 {
     /* Check arguments */
-    if (argc < 2 || argc > 3)
+    if (argc > 3)
     {
         fprintf(stderr, "Ussage: %s [--save][--load]\n", argv[0]);
         exit(-1);

@@ -1,4 +1,9 @@
 CHANGELOG (GIT LOG)
+2019-02-09: Polishing for submission of HW 1.02
+2019-02-09: Add dungeon-io functionality, refactoring.
+2019-02-09: Add write dungeon to file feature
+2019-02-09: Add read dungeon from file feature
+2019-02-08: Fixed room size bug
 2019-02-08: Rendering with hardness considered
 2019-02-08: Refactoring, dungeon struct revisions
 2019-02-08: Add dungeon.h, refactoring
