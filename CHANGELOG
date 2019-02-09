@@ -1,3 +1,5 @@
+2019-02-08: Created file headers, write dungeon to binary
+2019-02-07: Refactoring
 2019-02-01: Changed Makefile binary name
 2019-02-01: Improved corridor generation
 2019-02-01: Added variable room number functionality

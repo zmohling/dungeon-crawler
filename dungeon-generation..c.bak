@@ -42,9 +42,9 @@ int generate(dungeon_t *d)
     //memset(dungeon, ' ', y * x * sizeof(char));
 
     generate_border(d);
-    generate_rooms(d);
-    generate_corridors(d);
-    generate_staircases(d);
+    generate_rooms(dungeon, rooms, NUM_ROOMS, x, y);
+    generate_corridors(dungeon, rooms, NUM_ROOMS);
+    generate_staircases(dungeon, x, y);
 
     /* Print to console */
     int i, j;
@@ -58,7 +58,7 @@ int generate(dungeon_t *d)
         printf("\n");
     }
    
-    return 0;
+    return dungeon;
     //free(dungeon);
 }
 
@@ -67,23 +67,26 @@ int generate(dungeon_t *d)
  * dungeon array to spaces.
  * char *dungeon: Dungeon array to write to.
  */
-void generate_border(dungeon_t *d)
+void generate_border(char *dungeon)
 {
     int i, j;
-    for (i = 0; i < DUNGEON_Y; i++)
+    for (i = 0; i < 21; i++)
     {
-        for (j = 0; j < DUNGEON_X; j++)
+        for (j = 0; j < 80; j++)
         {
-            d->map[i][j] = ter_wall; 
+            char *p;
+            p = (dungeon + (i * 80) + j);
+            
+            *p = ' '; // set everything to spaces
 
             if (j == 0 || j == 79)
             {
-                d->map[i][j] = ter_wall_immutable; 
+                *p = '|';
             }
 
             if (i == 0 || i == 20)
             {
-                d->map[i][j] = ter_wall_immutable; 
+                *p = '-';
             }
         }
     }
@@ -98,28 +101,30 @@ void generate_border(dungeon_t *d)
  * int x: Size of dungeon in the x direction.
  * int y: Size of dungeon in the y direction.
  */
-int generate_rooms(dungeon_t *d)
+void generate_rooms(char *dungeon, Room *rooms, int num_rooms, int x, int y)
 {
+
     int attempts_to_generate = 0;
     
-    uint8_t i;
-    for (i = 0; i < d->num_rooms; i++)
+    int i;
+    for (i = 0; i < num_rooms; i++)
     {
-        bool _intersects = false;
-        bool _out_of_bounds = false;
+        int _intersects = 0;
+        int _out_of_bounds = 0;
         do {
 
             /* Generate random room within bounds and margin of 2 */
-            d->rooms[i].coordinates.x = rand() % (DUNGEON_X - 4) + 2;
-            d->rooms[i].coordinates.y = rand() % (DUNGEON_Y - 4) + 2;
-
-            d->rooms[i].width = rand() % (ROOM_MAX_X - 4) + 4;
-            d->rooms[i].height = rand() % (ROOM_MAX_Y - 3) + 3;
+            rooms[i].x1 = rand() % (x - 4) + 2;
+            rooms[i].y1 = rand() % (y - 4) + 2;
+            rooms[i].x2 = rooms[i].x1 + rand() % 12 + 4;
+            rooms[i].y2 = rooms[i].y1 + rand() % 9 + 3;
 
             int j;
             for (j = (i - 1); j >= 0; j--)
             {
-               if (_intersects = intersects(d->rooms[i], d->rooms[j]))
+               _intersects = intersects(rooms[i], rooms[j]);
+
+               if (_intersects == 1)
                {
                    break;
                }
@@ -171,7 +176,7 @@ int out_of_bounds(Room room, int bound_x, int bound_y)
  * Room a: First room of the pair.
  * Room b: Second room of the pair.
  */
-int intersects(room_t a, room_t b)
+int intersects(Room a, Room b)
 {
     if (a.x1 > b.x2 + 1 || a.x2 < b.x1 - 1 || a.y1 > b.y2 + 1 || a.y2 < b.y1 - 1)
     {

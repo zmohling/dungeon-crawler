@@ -1,14 +1,15 @@
 #ifndef DUNGEON_GEN
 #define DUNGEON_GEN
 
-typedef struct Room Room;
+#include <stdbool.h>
+#include "dungeon.h"
 
-char * generate(void);
-void generate_border(char *);
-void generate_rooms(char *, Room *, int, int, int);
-void generate_corridors(char *, Room *, int);
-void generate_staircases(char *, int, int);
-int intersects(Room, Room);
-int out_of_bounds(Room, int, int);
+int generate(dungeon_t *);
+int generate_border(dungeon_t *);
+int generate_rooms(dungeon_t *);
+int generate_corridors(dungeon_t *);
+int generate_staircases(dungeon_t *);
+bool intersects(room_t *, room_t *);
+bool out_of_bounds(room_t, int, int);
 
 #endif
