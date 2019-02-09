@@ -46,19 +46,19 @@ int render(dungeon_t *d)
             char c;
 
             /* Border */
-            if (j == 0 || j == (DUNGEON_X - 1))
-            {
-                c = '|';
-            } else if (i == 0 || i == (DUNGEON_Y - 1))
+            
+            if (i == 0 || i == (DUNGEON_Y - 1))
             {
                 c = '-';
+            } else if (j == 0 || j == (DUNGEON_X - 1))
+            {
+                c = '|';
             }
 
             /* Terrain */
             terrain_t t = d->map[i][j];
             switch(t) {
                 case ter_wall_immutable:
-                    c = '%';
                     break;
                 case ter_wall:
                     c = ' ';
