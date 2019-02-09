@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 
     /* Initialize path to ~/.rlg327/ */
     char *path;
-    path_init(path);
+    path_init(&path);
 
     /* Dungeon*/
     dungeon_t dungeon;
@@ -125,4 +125,6 @@ int deep_free_dungeon(dungeon_t *d)
     free(d->rooms);
     free(d->stairs_up);
     free(d->stairs_down);
+
+    return 0;
 }

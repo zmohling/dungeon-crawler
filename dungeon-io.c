@@ -10,7 +10,7 @@
 #include "dungeon-io.h"
 #include "dungeon.h"
 
-int path_init(char *path)
+int path_init(char **path)
 {
     /* FS setup */
     char *home = getenv("HOME");
@@ -29,9 +29,13 @@ int path_init(char *path)
     }
 
     /* Dot file directory's path */
-    path = malloc(strlen(home) + strlen("/.rlg327/dungeon") + 1);
-    strcpy(path, home);
-    strcat(path, "/.rlg327/dungeon");
+    *path = malloc(strlen(home) + strlen("/.rlg327/dungeon") + 1);
+    strcpy(*path, home);
+    strcat(*path, "/.rlg327/dungeon");
+
+    free(dir);
+
+    return 0;
 }
 
 int read_dungeon_from_disk(dungeon_t *d, char *path) {
