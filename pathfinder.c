@@ -24,7 +24,7 @@ static int32_t tunnel_compare(const void *key, const void *with) {
 
 /*
  * Write a distance map for non-tunneling monsters
- * to dungeon_t *d
+ * to dungeon_t *d with Dijkstra's Algorithm.
  */
 void non_tunnel_distance_map(dungeon_t *d) {
     static graph_node_t graph[DUNGEON_Y][DUNGEON_X], *min;
@@ -136,6 +136,10 @@ void non_tunnel_distance_map(dungeon_t *d) {
     heap_delete(&h);
 }
 
+/*
+ * Write a distance map for tunneling monsters
+ * to dungeon_t *d with Dijkstra's Algorithm.
+ */
 void tunnel_distance_map(dungeon_t *d) {
     static graph_node_t graph[DUNGEON_Y][DUNGEON_X], *min;
     static uint32_t initialized = 0;
