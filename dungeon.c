@@ -537,12 +537,9 @@ int path_init(char **path) {
     }
 
     /* Dot file directory's path */
-    //*path = malloc(strlen(home) + strlen("/.rlg327/dungeon") + 1);
-    *path = malloc(
-        strlen(home) +
-        strlen("/courses/com-s-327/.extra_files/saved_dungeons/01.rlg327") + 1);
+    *path = malloc(strlen(home) + strlen("/.rlg327/dungeon") + 1);
     strcpy(*path, home);
-    strcat(*path, "/courses/com-s-327/.extra_files/saved_dungeons/01.rlg327");
+    strcat(*path, "/.rlg327/dungeon");
 
     free(dir);
 

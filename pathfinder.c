@@ -1,5 +1,5 @@
-#include "pathfinder.h"
 #include <stdlib.h>
+#include "pathfinder.h"
 #include "dungeon.h"
 
 /* Static dungeon var for comparators */
@@ -31,6 +31,7 @@ void non_tunnel_distance_map(dungeon_t *d) {
     uint32_t x, y;
     heap_t h;
 
+    /* Initialize node positions and static dungeon */
     if (!initialized) {
         initialized = 1;
         d_static = d;
@@ -42,15 +43,19 @@ void non_tunnel_distance_map(dungeon_t *d) {
         }
     }
 
+    /* Set "cost" to maximum value */
     for (y = 0; y < DUNGEON_Y; y++) {
         for (x = 0; x < DUNGEON_X; x++) {
             d->non_tunnel_distance_map[y][x] = UINT8_MAX;
         }
     }
+
+    /* PC location is of "cost" zero. */
     d->non_tunnel_distance_map[d->pc_coordinates.y][d->pc_coordinates.x] = 0;
 
     heap_init(&h, non_tunnel_compare, NULL);
 
+    /* Insert all graph_node_ts into heap */
     for (y = 0; y < DUNGEON_Y; y++) {
         for (x = 0; x < DUNGEON_X; x++) {
             if (mapxy(x, y) != ter_wall && mapxy(x, y) != ter_wall_immutable) {
@@ -130,12 +135,12 @@ void non_tunnel_distance_map(dungeon_t *d) {
 }
 
 void tunnel_distance_map(dungeon_t *d) {
-    heap_t h;
-    uint32_t x, y;
-    int size;
     static graph_node_t graph[DUNGEON_Y][DUNGEON_X], *min;
     static uint32_t initialized = 0;
+    uint32_t x, y;
+    heap_t h;
 
+    /* Initialize node positions and static dungeon */
     if (!initialized) {
         initialized = 1;
         d_static = d;
@@ -147,15 +152,19 @@ void tunnel_distance_map(dungeon_t *d) {
         }
     }
 
+    /* Set "cost" to maximum value */
     for (y = 0; y < DUNGEON_Y; y++) {
         for (x = 0; x < DUNGEON_X; x++) {
             d->tunnel_distance_map[y][x] = UINT8_MAX;
         }
     }
+
+    /* PC location is of "cost" zero. */
     d->tunnel_distance_map[d->pc_coordinates.y][d->pc_coordinates.x] = 0;
 
     heap_init(&h, tunnel_compare, NULL);
 
+    /* Insert all graph_node_ts into heap */
     for (y = 0; y < DUNGEON_Y; y++) {
         for (x = 0; x < DUNGEON_X; x++) {
             if (mapxy(x, y) != ter_wall_immutable) {
@@ -164,12 +173,9 @@ void tunnel_distance_map(dungeon_t *d) {
         }
     }
 
-    size = h.size;
     while ((min = heap_remove_min(&h))) {
-        if (--size != h.size) {
-            exit(1);
-        }
         min->hn = NULL;
+        
         if ((graph[min->pos.y - 1][min->pos.x - 1].hn) &&
             (d->tunnel_distance_map[min->pos.y - 1][min->pos.x - 1] >
              d->tunnel_distance_map[min->pos.y][min->pos.x] +
@@ -251,5 +257,6 @@ void tunnel_distance_map(dungeon_t *d) {
                 &h, graph[min->pos.y + 1][min->pos.x + 1].hn);
         }
     }
+
     heap_delete(&h);
 }
