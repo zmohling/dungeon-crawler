@@ -1,4 +1,5 @@
 #include <stdlib.h>
+
 #include "pathfinder.h"
 #include "dungeon.h"
 
@@ -131,6 +132,7 @@ void non_tunnel_distance_map(dungeon_t *d) {
                 &h, graph[min->pos.y + 1][min->pos.x + 1].hn);
         }
     }
+
     heap_delete(&h);
 }
 

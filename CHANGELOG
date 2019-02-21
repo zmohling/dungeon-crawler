@@ -1,4 +1,9 @@
 CHANGELOG (GIT LOG)
+2019-02-21: Fixed heap compiler warning
+2019-02-21: Add linter, formatting
+2019-02-21: Add dijkstra distance mapping
+2019-02-20: Condensed code to single dungeon file
+2019-02-09: Changed default switch behavior
 2019-02-09: Polishing for submission of HW 1.02
 2019-02-09: Add dungeon-io functionality, refactoring.
 2019-02-09: Add write dungeon to file feature
