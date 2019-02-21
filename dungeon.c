@@ -50,11 +50,11 @@ int main(int argc, char *argv[]) {
     int i, j;
     for (i = 0; i < DUNGEON_Y; i++) {
         for (j = 0; j < DUNGEON_X; j++) {
-            uint8_t temp = dungeon.pc_distance[i][j] % 10;
+            uint8_t temp = dungeon.non_tunnel_distance_map[i][j] % 10;
             if (i == dungeon.pc_coordinates.y &&
                 j == dungeon.pc_coordinates.x) {
                 printf("@");
-            } else if (dungeon.pc_distance[i][j] < UINT8_MAX) {
+            } else if (dungeon.non_tunnel_distance_map[i][j] < UINT8_MAX) {
                 printf("%d", temp);
             } else {
                 printf(" ");
@@ -65,11 +65,11 @@ int main(int argc, char *argv[]) {
 
     for (i = 0; i < DUNGEON_Y; i++) {
         for (j = 0; j < DUNGEON_X; j++) {
-            uint8_t temp = dungeon.pc_tunnel[i][j] % 10;
+            uint8_t temp = dungeon.tunnel_distance_map[i][j] % 10;
             if (i == dungeon.pc_coordinates.y &&
                 j == dungeon.pc_coordinates.x) {
                 printf("@");
-            } else if (dungeon.pc_tunnel[i][j] < UINT8_MAX) {
+            } else if (dungeon.tunnel_distance_map[i][j] < UINT8_MAX) {
                 printf("%d", temp);
             } else {
                 printf("X");

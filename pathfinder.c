@@ -1,21 +1,24 @@
-#include <stdlib.h>
-
-#include "dungeon.h"
 #include "pathfinder.h"
+#include <stdlib.h>
+#include "dungeon.h"
 
 /* Static dungeon var for comparators */
 static dungeon_t *d_static;
 static int32_t non_tunnel_compare(const void *key, const void *with) {
-    return ((int32_t)d_static->pc_distance[((graph_node_t *)key)->pos.y]
-                                          [((graph_node_t *)key)->pos.x] -
-            (int32_t)d_static->pc_distance[((graph_node_t *)with)->pos.y]
-                                          [((graph_node_t *)with)->pos.x]);
+    return (
+        (int32_t)
+            d_static->non_tunnel_distance_map[((graph_node_t *)key)->pos.y]
+                                             [((graph_node_t *)key)->pos.x] -
+        (int32_t)
+            d_static->non_tunnel_distance_map[((graph_node_t *)with)->pos.y]
+                                             [((graph_node_t *)with)->pos.x]);
 }
 static int32_t tunnel_compare(const void *key, const void *with) {
-    return ((int32_t)d_static->pc_tunnel[((graph_node_t *)key)->pos.y]
-                                        [((graph_node_t *)key)->pos.x] -
-            (int32_t)d_static->pc_tunnel[((graph_node_t *)with)->pos.y]
-                                        [((graph_node_t *)with)->pos.x]);
+    return (
+        (int32_t)d_static->tunnel_distance_map[((graph_node_t *)key)->pos.y]
+                                              [((graph_node_t *)key)->pos.x] -
+        (int32_t)d_static->tunnel_distance_map[((graph_node_t *)with)->pos.y]
+                                              [((graph_node_t *)with)->pos.x]);
 }
 
 /*
@@ -41,10 +44,10 @@ void non_tunnel_distance_map(dungeon_t *d) {
 
     for (y = 0; y < DUNGEON_Y; y++) {
         for (x = 0; x < DUNGEON_X; x++) {
-            d->pc_distance[y][x] = UINT8_MAX;
+            d->non_tunnel_distance_map[y][x] = UINT8_MAX;
         }
     }
-    d->pc_distance[d->pc_coordinates.y][d->pc_coordinates.x] = 0;
+    d->non_tunnel_distance_map[d->pc_coordinates.y][d->pc_coordinates.x] = 0;
 
     heap_init(&h, non_tunnel_compare, NULL);
 
@@ -59,66 +62,66 @@ void non_tunnel_distance_map(dungeon_t *d) {
     while ((min = heap_remove_min(&h))) {
         min->hn = NULL;
         if ((graph[min->pos.y - 1][min->pos.x - 1].hn) &&
-            (d->pc_distance[min->pos.y - 1][min->pos.x - 1] >
-             d->pc_distance[min->pos.y][min->pos.x] + 1)) {
-            d->pc_distance[min->pos.y - 1][min->pos.x - 1] =
-                d->pc_distance[min->pos.y][min->pos.x] + 1;
+            (d->non_tunnel_distance_map[min->pos.y - 1][min->pos.x - 1] >
+             d->non_tunnel_distance_map[min->pos.y][min->pos.x] + 1)) {
+            d->non_tunnel_distance_map[min->pos.y - 1][min->pos.x - 1] =
+                d->non_tunnel_distance_map[min->pos.y][min->pos.x] + 1;
             heap_decrease_key_no_replace(
                 &h, graph[min->pos.y - 1][min->pos.x - 1].hn);
         }
         if ((graph[min->pos.y - 1][min->pos.x].hn) &&
-            (d->pc_distance[min->pos.y - 1][min->pos.x] >
-             d->pc_distance[min->pos.y][min->pos.x] + 1)) {
-            d->pc_distance[min->pos.y - 1][min->pos.x] =
-                d->pc_distance[min->pos.y][min->pos.x] + 1;
+            (d->non_tunnel_distance_map[min->pos.y - 1][min->pos.x] >
+             d->non_tunnel_distance_map[min->pos.y][min->pos.x] + 1)) {
+            d->non_tunnel_distance_map[min->pos.y - 1][min->pos.x] =
+                d->non_tunnel_distance_map[min->pos.y][min->pos.x] + 1;
             heap_decrease_key_no_replace(&h,
                                          graph[min->pos.y - 1][min->pos.x].hn);
         }
         if ((graph[min->pos.y - 1][min->pos.x + 1].hn) &&
-            (d->pc_distance[min->pos.y - 1][min->pos.x + 1] >
-             d->pc_distance[min->pos.y][min->pos.x] + 1)) {
-            d->pc_distance[min->pos.y - 1][min->pos.x + 1] =
-                d->pc_distance[min->pos.y][min->pos.x] + 1;
+            (d->non_tunnel_distance_map[min->pos.y - 1][min->pos.x + 1] >
+             d->non_tunnel_distance_map[min->pos.y][min->pos.x] + 1)) {
+            d->non_tunnel_distance_map[min->pos.y - 1][min->pos.x + 1] =
+                d->non_tunnel_distance_map[min->pos.y][min->pos.x] + 1;
             heap_decrease_key_no_replace(
                 &h, graph[min->pos.y - 1][min->pos.x + 1].hn);
         }
         if ((graph[min->pos.y][min->pos.x - 1].hn) &&
-            (d->pc_distance[min->pos.y][min->pos.x - 1] >
-             d->pc_distance[min->pos.y][min->pos.x] + 1)) {
-            d->pc_distance[min->pos.y][min->pos.x - 1] =
-                d->pc_distance[min->pos.y][min->pos.x] + 1;
+            (d->non_tunnel_distance_map[min->pos.y][min->pos.x - 1] >
+             d->non_tunnel_distance_map[min->pos.y][min->pos.x] + 1)) {
+            d->non_tunnel_distance_map[min->pos.y][min->pos.x - 1] =
+                d->non_tunnel_distance_map[min->pos.y][min->pos.x] + 1;
             heap_decrease_key_no_replace(&h,
                                          graph[min->pos.y][min->pos.x - 1].hn);
         }
         if ((graph[min->pos.y][min->pos.x + 1].hn) &&
-            (d->pc_distance[min->pos.y][min->pos.x + 1] >
-             d->pc_distance[min->pos.y][min->pos.x] + 1)) {
-            d->pc_distance[min->pos.y][min->pos.x + 1] =
-                d->pc_distance[min->pos.y][min->pos.x] + 1;
+            (d->non_tunnel_distance_map[min->pos.y][min->pos.x + 1] >
+             d->non_tunnel_distance_map[min->pos.y][min->pos.x] + 1)) {
+            d->non_tunnel_distance_map[min->pos.y][min->pos.x + 1] =
+                d->non_tunnel_distance_map[min->pos.y][min->pos.x] + 1;
             heap_decrease_key_no_replace(&h,
                                          graph[min->pos.y][min->pos.x + 1].hn);
         }
         if ((graph[min->pos.y + 1][min->pos.x - 1].hn) &&
-            (d->pc_distance[min->pos.y + 1][min->pos.x - 1] >
-             d->pc_distance[min->pos.y][min->pos.x] + 1)) {
-            d->pc_distance[min->pos.y + 1][min->pos.x - 1] =
-                d->pc_distance[min->pos.y][min->pos.x] + 1;
+            (d->non_tunnel_distance_map[min->pos.y + 1][min->pos.x - 1] >
+             d->non_tunnel_distance_map[min->pos.y][min->pos.x] + 1)) {
+            d->non_tunnel_distance_map[min->pos.y + 1][min->pos.x - 1] =
+                d->non_tunnel_distance_map[min->pos.y][min->pos.x] + 1;
             heap_decrease_key_no_replace(
                 &h, graph[min->pos.y + 1][min->pos.x - 1].hn);
         }
         if ((graph[min->pos.y + 1][min->pos.x].hn) &&
-            (d->pc_distance[min->pos.y + 1][min->pos.x] >
-             d->pc_distance[min->pos.y][min->pos.x] + 1)) {
-            d->pc_distance[min->pos.y + 1][min->pos.x] =
-                d->pc_distance[min->pos.y][min->pos.x] + 1;
+            (d->non_tunnel_distance_map[min->pos.y + 1][min->pos.x] >
+             d->non_tunnel_distance_map[min->pos.y][min->pos.x] + 1)) {
+            d->non_tunnel_distance_map[min->pos.y + 1][min->pos.x] =
+                d->non_tunnel_distance_map[min->pos.y][min->pos.x] + 1;
             heap_decrease_key_no_replace(&h,
                                          graph[min->pos.y + 1][min->pos.x].hn);
         }
         if ((graph[min->pos.y + 1][min->pos.x + 1].hn) &&
-            (d->pc_distance[min->pos.y + 1][min->pos.x + 1] >
-             d->pc_distance[min->pos.y][min->pos.x] + 1)) {
-            d->pc_distance[min->pos.y + 1][min->pos.x + 1] =
-                d->pc_distance[min->pos.y][min->pos.x] + 1;
+            (d->non_tunnel_distance_map[min->pos.y + 1][min->pos.x + 1] >
+             d->non_tunnel_distance_map[min->pos.y][min->pos.x] + 1)) {
+            d->non_tunnel_distance_map[min->pos.y + 1][min->pos.x + 1] =
+                d->non_tunnel_distance_map[min->pos.y][min->pos.x] + 1;
             heap_decrease_key_no_replace(
                 &h, graph[min->pos.y + 1][min->pos.x + 1].hn);
         }
@@ -146,10 +149,10 @@ void tunnel_distance_map(dungeon_t *d) {
 
     for (y = 0; y < DUNGEON_Y; y++) {
         for (x = 0; x < DUNGEON_X; x++) {
-            d->pc_tunnel[y][x] = 255;
+            d->tunnel_distance_map[y][x] = UINT8_MAX;
         }
     }
-    d->pc_tunnel[d->pc_coordinates.y][d->pc_coordinates.x] = 0;
+    d->tunnel_distance_map[d->pc_coordinates.y][d->pc_coordinates.x] = 0;
 
     heap_init(&h, tunnel_compare, NULL);
 
@@ -168,81 +171,81 @@ void tunnel_distance_map(dungeon_t *d) {
         }
         min->hn = NULL;
         if ((graph[min->pos.y - 1][min->pos.x - 1].hn) &&
-            (d->pc_tunnel[min->pos.y - 1][min->pos.x - 1] >
-             d->pc_tunnel[min->pos.y][min->pos.x] +
+            (d->tunnel_distance_map[min->pos.y - 1][min->pos.x - 1] >
+             d->tunnel_distance_map[min->pos.y][min->pos.x] +
                  tunnel_cost(min->pos.x, min->pos.y))) {
-            d->pc_tunnel[min->pos.y - 1][min->pos.x - 1] =
-                (d->pc_tunnel[min->pos.y][min->pos.x] +
+            d->tunnel_distance_map[min->pos.y - 1][min->pos.x - 1] =
+                (d->tunnel_distance_map[min->pos.y][min->pos.x] +
                  tunnel_cost(min->pos.x, min->pos.y));
             heap_decrease_key_no_replace(
                 &h, graph[min->pos.y - 1][min->pos.x - 1].hn);
         }
         if ((graph[min->pos.y - 1][min->pos.x].hn) &&
-            (d->pc_tunnel[min->pos.y - 1][min->pos.x] >
-             d->pc_tunnel[min->pos.y][min->pos.x] +
+            (d->tunnel_distance_map[min->pos.y - 1][min->pos.x] >
+             d->tunnel_distance_map[min->pos.y][min->pos.x] +
                  tunnel_cost(min->pos.x, min->pos.y))) {
-            d->pc_tunnel[min->pos.y - 1][min->pos.x] =
-                (d->pc_tunnel[min->pos.y][min->pos.x] +
+            d->tunnel_distance_map[min->pos.y - 1][min->pos.x] =
+                (d->tunnel_distance_map[min->pos.y][min->pos.x] +
                  tunnel_cost(min->pos.x, min->pos.y));
             heap_decrease_key_no_replace(&h,
                                          graph[min->pos.y - 1][min->pos.x].hn);
         }
         if ((graph[min->pos.y - 1][min->pos.x + 1].hn) &&
-            (d->pc_tunnel[min->pos.y - 1][min->pos.x + 1] >
-             d->pc_tunnel[min->pos.y][min->pos.x] +
+            (d->tunnel_distance_map[min->pos.y - 1][min->pos.x + 1] >
+             d->tunnel_distance_map[min->pos.y][min->pos.x] +
                  tunnel_cost(min->pos.x, min->pos.y))) {
-            d->pc_tunnel[min->pos.y - 1][min->pos.x + 1] =
-                (d->pc_tunnel[min->pos.y][min->pos.x] +
+            d->tunnel_distance_map[min->pos.y - 1][min->pos.x + 1] =
+                (d->tunnel_distance_map[min->pos.y][min->pos.x] +
                  tunnel_cost(min->pos.x, min->pos.y));
             heap_decrease_key_no_replace(
                 &h, graph[min->pos.y - 1][min->pos.x + 1].hn);
         }
         if ((graph[min->pos.y][min->pos.x - 1].hn) &&
-            (d->pc_tunnel[min->pos.y][min->pos.x - 1] >
-             d->pc_tunnel[min->pos.y][min->pos.x] +
+            (d->tunnel_distance_map[min->pos.y][min->pos.x - 1] >
+             d->tunnel_distance_map[min->pos.y][min->pos.x] +
                  tunnel_cost(min->pos.x, min->pos.y))) {
-            d->pc_tunnel[min->pos.y][min->pos.x - 1] =
-                (d->pc_tunnel[min->pos.y][min->pos.x] +
+            d->tunnel_distance_map[min->pos.y][min->pos.x - 1] =
+                (d->tunnel_distance_map[min->pos.y][min->pos.x] +
                  tunnel_cost(min->pos.x, min->pos.y));
             heap_decrease_key_no_replace(&h,
                                          graph[min->pos.y][min->pos.x - 1].hn);
         }
         if ((graph[min->pos.y][min->pos.x + 1].hn) &&
-            (d->pc_tunnel[min->pos.y][min->pos.x + 1] >
-             d->pc_tunnel[min->pos.y][min->pos.x] +
+            (d->tunnel_distance_map[min->pos.y][min->pos.x + 1] >
+             d->tunnel_distance_map[min->pos.y][min->pos.x] +
                  tunnel_cost(min->pos.x, min->pos.y))) {
-            d->pc_tunnel[min->pos.y][min->pos.x + 1] =
-                (d->pc_tunnel[min->pos.y][min->pos.x] +
+            d->tunnel_distance_map[min->pos.y][min->pos.x + 1] =
+                (d->tunnel_distance_map[min->pos.y][min->pos.x] +
                  tunnel_cost(min->pos.x, min->pos.y));
             heap_decrease_key_no_replace(&h,
                                          graph[min->pos.y][min->pos.x + 1].hn);
         }
         if ((graph[min->pos.y + 1][min->pos.x - 1].hn) &&
-            (d->pc_tunnel[min->pos.y + 1][min->pos.x - 1] >
-             d->pc_tunnel[min->pos.y][min->pos.x] +
+            (d->tunnel_distance_map[min->pos.y + 1][min->pos.x - 1] >
+             d->tunnel_distance_map[min->pos.y][min->pos.x] +
                  tunnel_cost(min->pos.x, min->pos.y))) {
-            d->pc_tunnel[min->pos.y + 1][min->pos.x - 1] =
-                (d->pc_tunnel[min->pos.y][min->pos.x] +
+            d->tunnel_distance_map[min->pos.y + 1][min->pos.x - 1] =
+                (d->tunnel_distance_map[min->pos.y][min->pos.x] +
                  tunnel_cost(min->pos.x, min->pos.y));
             heap_decrease_key_no_replace(
                 &h, graph[min->pos.y + 1][min->pos.x - 1].hn);
         }
         if ((graph[min->pos.y + 1][min->pos.x].hn) &&
-            (d->pc_tunnel[min->pos.y + 1][min->pos.x] >
-             d->pc_tunnel[min->pos.y][min->pos.x] +
+            (d->tunnel_distance_map[min->pos.y + 1][min->pos.x] >
+             d->tunnel_distance_map[min->pos.y][min->pos.x] +
                  tunnel_cost(min->pos.x, min->pos.y))) {
-            d->pc_tunnel[min->pos.y + 1][min->pos.x] =
-                (d->pc_tunnel[min->pos.y][min->pos.x] +
+            d->tunnel_distance_map[min->pos.y + 1][min->pos.x] =
+                (d->tunnel_distance_map[min->pos.y][min->pos.x] +
                  tunnel_cost(min->pos.x, min->pos.y));
             heap_decrease_key_no_replace(&h,
                                          graph[min->pos.y + 1][min->pos.x].hn);
         }
         if ((graph[min->pos.y + 1][min->pos.x + 1].hn) &&
-            (d->pc_tunnel[min->pos.y + 1][min->pos.x + 1] >
-             d->pc_tunnel[min->pos.y][min->pos.x] +
+            (d->tunnel_distance_map[min->pos.y + 1][min->pos.x + 1] >
+             d->tunnel_distance_map[min->pos.y][min->pos.x] +
                  tunnel_cost(min->pos.x, min->pos.y))) {
-            d->pc_tunnel[min->pos.y + 1][min->pos.x + 1] =
-                (d->pc_tunnel[min->pos.y][min->pos.x] +
+            d->tunnel_distance_map[min->pos.y + 1][min->pos.x + 1] =
+                (d->tunnel_distance_map[min->pos.y][min->pos.x] +
                  tunnel_cost(min->pos.x, min->pos.y));
             heap_decrease_key_no_replace(
                 &h, graph[min->pos.y + 1][min->pos.x + 1].hn);
