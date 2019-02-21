@@ -38,7 +38,9 @@ typedef struct room {
 
 typedef struct dungeon {
     point_t pc_coordinates;
-   
+    uint8_t pc_distance[DUNGEON_Y][DUNGEON_X];
+    uint8_t pc_tunnel[DUNGEON_Y][DUNGEON_X];
+
     terrain_t map[DUNGEON_Y][DUNGEON_X];
     uint8_t hardness[DUNGEON_Y][DUNGEON_X];
     
