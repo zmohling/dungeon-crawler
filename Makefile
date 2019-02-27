@@ -1,5 +1,5 @@
-SOURCE=main.c dungeon.c pathfinder.c heap.c
-EXE=dungeon-crawler
+SOURCE=dungeon_crawler.c dungeon.c path_finder.c heap.c character.c move.c util.c
+EXE=dungeon_crawler
 FLAGS=-O -Werror -lm
 DEV_FLAGS=-Wall -ggdb3 -lm
 

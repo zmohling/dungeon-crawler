@@ -6,91 +6,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <time.h>
 
 #include "dungeon.h"
 #include "heap.h"
-#include "pathfinder.h"
+#include "path_finder.h"
 
-int main(int argc, char *argv[]) {
-    /* Check arguments */
-    if (argc > 3) {
-        fprintf(stderr, "Ussage: %s [--save][--load]\n", argv[0]);
-        exit(-1);
-    }
-
-    /* Initialize path to ~/.rlg327/ */
-    char *path;
-    path_init(&path);
-
-    /* Dungeon*/
-    dungeon_t dungeon;
-
-    /* Load switch */
-    char *load_switch_str = "--load";
-    if (contains(argc, argv, load_switch_str)) {
-        read_dungeon_from_disk(&dungeon, path);
-        generate_terrain(&dungeon);
-    } else {
-        generate(&dungeon);
-        dungeon.pc_coordinates.x = dungeon.rooms[0].coordinates.x;
-        dungeon.pc_coordinates.y = dungeon.rooms[0].coordinates.y;
-        dungeon.map[dungeon.pc_coordinates.y][dungeon.pc_coordinates.x] =
-            ter_player;
-    }
-
-    /* Render */
-    render(&dungeon);
-    non_tunnel_distance_map(&dungeon);
-    tunnel_distance_map(&dungeon);
-
-    /* Render Distance maps - temporary */
-    int i, j;
-    for (i = 0; i < DUNGEON_Y; i++) {
-        for (j = 0; j < DUNGEON_X; j++) {
-            uint8_t temp = dungeon.non_tunnel_distance_map[i][j] % 10;
-            if (i == dungeon.pc_coordinates.y &&
-                j == dungeon.pc_coordinates.x) {
-                printf("@");
-            } else if (dungeon.non_tunnel_distance_map[i][j] < UINT8_MAX) {
-                printf("%d", temp);
-            } else {
-                printf(" ");
-            }
-        }
-        printf("\n");
-    }
-
-    for (i = 0; i < DUNGEON_Y; i++) {
-        for (j = 0; j < DUNGEON_X; j++) {
-            uint8_t temp = dungeon.tunnel_distance_map[i][j] % 10;
-            if (i == dungeon.pc_coordinates.y &&
-                j == dungeon.pc_coordinates.x) {
-                printf("@");
-            } else if (dungeon.tunnel_distance_map[i][j] < UINT8_MAX) {
-                printf("%d", temp);
-            } else {
-                printf("X");
-            }
-        }
-        printf("\n");
-    }
-
-    /* Save switch */
-    char *save_str = "--save";
-    if (contains(argc, argv, save_str)) {
-        write_dungeon_to_disk(&dungeon, path);
-    }
-
-    free(path);
-    deep_free_dungeon(&dungeon);
-
-    return 0;
-}
-
-int render(dungeon_t *d) {
+int render_dungeon(dungeon_t *d) {
     int i, j;
     for (i = 0; i < DUNGEON_Y; i++) {
         for (j = 0; j < DUNGEON_X; j++) {
@@ -140,22 +62,6 @@ int render(dungeon_t *d) {
 }
 
 /*
- * Iterates through *argv for specified
- * switch *s. Returns true if *argv contains
- * the string *s.
- */
-bool contains(int argc, char *argv[], char *s) {
-    int i;
-    for (i = 0; i < argc; i++) {
-        if (!(strcmp(argv[i], s))) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-/*
  * Free allocated memory in
  * dungeon struct.
  */
@@ -170,7 +76,7 @@ int deep_free_dungeon(dungeon_t *d) {
 /*
  * Generate the random dungeon.
  */
-int generate(dungeon_t *d) {
+int generate_dungeon(dungeon_t *d) {
     int seed = time(NULL);
     srand(seed);
 
@@ -447,9 +353,9 @@ int generate_hardness(dungeon_t *d) {
         for (j = 0; j < DUNGEON_X; j++) {
             terrain_t t = d->map[i][j];
             if (t == ter_wall || t == ter_wall_immutable) {
-                d->hardness[i][j] = rand() % 254 + 1;
+                d->hardness_map[i][j] = rand() % 254 + 1;
             } else {
-                d->hardness[i][j] = 0;
+                d->hardness_map[i][j] = 0;
             }
         }
     }
@@ -500,7 +406,7 @@ int generate_terrain(dungeon_t *d) {
                 *t = ter_wall_immutable;
             }
 
-            uint8_t h = d->hardness[i][j];
+            uint8_t h = d->hardness_map[i][j];
 
             if (h == 0 && *t == ter_wall) {
                 *t = ter_floor_hall;
@@ -508,40 +414,8 @@ int generate_terrain(dungeon_t *d) {
         }
     }
 
-    /* pc_coordinates */
-    d->map[d->pc_coordinates.y][d->pc_coordinates.x] = ter_player;
-
-    return 0;
-}
-
-/*
- * Initialize path to ~/.rlg327/ and
- * make it if not already existent. Returns
- * complete path the dungeon file.
- */
-int path_init(char **path) {
-    /* FS setup */
-    char *home = getenv("HOME");
-    char *dir = malloc(strlen(home) + strlen("/.rlg327/") + 1);
-    strcpy(dir, home);
-    strcat(dir, "/.rlg327/");
-
-    if (mkdir(dir, 0755)) {
-        /* errno == 17 is an existing directory */
-        if (errno != 17) {
-            fprintf(stderr,
-                    "Error: ~/.rlg327/ could not be found nor created. (%d)\n",
-                    errno);
-            exit(-1);
-        }
-    }
-
-    /* Dot file directory's path */
-    *path = malloc(strlen(home) + strlen("/.rlg327/dungeon") + 1);
-    strcpy(*path, home);
-    strcat(*path, "/.rlg327/dungeon");
-
-    free(dir);
+    /* pc.position */
+    d->map[d->pc.position.y][d->pc.position.x] = ter_player;
 
     return 0;
 }
@@ -574,25 +448,25 @@ int read_dungeon_from_disk(dungeon_t *d, char *path) {
     }
     file_size = be32toh(file_size);
 
-    /* pc_coordinates */
-    if (!fread(&(d->pc_coordinates.x), sizeof(char), 1, f)) {
-        fprintf(stderr, "Error: could not load <pc_coordinates.x>. (%d)\n",
+    /* pc.position */
+    if (!fread(&(d->pc.position.x), sizeof(char), 1, f)) {
+        fprintf(stderr, "Error: could not load <pc.position.x>. (%d)\n",
                 errno);
         exit(-9);
     }
-    if (!fread(&(d->pc_coordinates.y), sizeof(char), 1, f)) {
-        fprintf(stderr, "Error: could not load <pc_coordinates.y>. (%d)\n",
+    if (!fread(&(d->pc.position.y), sizeof(char), 1, f)) {
+        fprintf(stderr, "Error: could not load <pc.position.y>. (%d)\n",
                 errno);
         exit(-10);
     }
 
-    /* hardness */
+    /* hardness_map */
     int i, j;
     for (i = 0; i < DUNGEON_Y; i++) {
         for (j = 0; j < DUNGEON_X; j++) {
-            if (!fread(&(d->hardness[i][j]), sizeof(uint8_t), 1, f)) {
+            if (!fread(&(d->hardness_map[i][j]), sizeof(uint8_t), 1, f)) {
                 fprintf(stderr,
-                        "Error: could not load <hardness[%d][%d]>. (%d)\n", i,
+                        "Error: could not load <hardness_map[%d][%d]>. (%d)\n", i,
                         j, errno);
                 exit(-11);
             }
@@ -745,25 +619,25 @@ int write_dungeon_to_disk(dungeon_t *d, char *path) {
         exit(-38);
     }
 
-    /* pc_coordinates */
-    if (!fwrite(&(d->pc_coordinates.x), sizeof(char), 1, f)) {
-        fprintf(stderr, "Error: could not save <pc_coordinates.x>. (%d)\n",
+    /* pc.position */
+    if (!fwrite(&(d->pc.position.x), sizeof(char), 1, f)) {
+        fprintf(stderr, "Error: could not save <pc.position.x>. (%d)\n",
                 errno);
         exit(-39);
     }
-    if (!fwrite(&(d->pc_coordinates.y), sizeof(char), 1, f)) {
-        fprintf(stderr, "Error: could not save <pc_coordinates.y>. (%d)\n",
+    if (!fwrite(&(d->pc.position.y), sizeof(char), 1, f)) {
+        fprintf(stderr, "Error: could not save <pc.position.y>. (%d)\n",
                 errno);
         exit(-40);
     }
 
-    /* hardness */
+    /* hardness_map */
     int i, j;
     for (i = 0; i < DUNGEON_Y; i++) {
         for (j = 0; j < DUNGEON_X; j++) {
-            if (!fwrite(&(d->hardness[i][j]), sizeof(uint8_t), 1, f)) {
+            if (!fwrite(&(d->hardness_map[i][j]), sizeof(uint8_t), 1, f)) {
                 fprintf(stderr,
-                        "Error: could not save <hardness[%d][%d]>. (%d)\n", i,
+                        "Error: could not save <hardness_map[%d][%d]>. (%d)\n", i,
                         j, errno);
                 exit(-41);
             }
