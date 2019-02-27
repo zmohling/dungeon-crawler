@@ -11,6 +11,8 @@
 #define NPC_ERRATIC     0x08
 #define PC              0x80
 
+typedef struct dungeon dungeon_t;
+
 typedef struct npc {
     int8_t characteristics;
 
@@ -28,5 +30,7 @@ typedef struct character {
 
     point_t position;
 } character_t;
+
+int character_add_npc(dungeon_t *);
 
 #endif

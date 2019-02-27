@@ -4,6 +4,28 @@
 #include "dungeon.h"
 #include "path_finder.h"
 #include "util.h"
+#include "character.h"
+
+int test() {
+    static int sequencer = 0;
+
+
+    character_t c;
+    c.is_alive = true;
+    c.speed = (rand() % 16) + 5;
+    c.sequence_num = sequencer++;
+
+    c.is_pc = false;
+    c.position.x = 0;
+    c.position.y = 0;
+
+    c.npc.has_seen_pc = false;
+    character_assign_characteristics(&c);
+
+    printf("%x", c.npc.characteristics & 0xff);
+
+    return 0;
+}
 
 int main(int argc, char *argv[]) {
     /* Check arguments */
@@ -36,6 +58,9 @@ int main(int argc, char *argv[]) {
     render_dungeon(&dungeon);
     non_tunnel_distance_map(&dungeon);
     tunnel_distance_map(&dungeon);
+
+
+    //test();
 
     /* Save switch */
     char *save_str = "--save";

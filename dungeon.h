@@ -3,8 +3,8 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "geometry.h"
 #include "character.h"
+#include "geometry.h"
 #include "heap.h"
 
 #define DUNGEON_X 80
@@ -16,7 +16,8 @@
 #define ROOM_MAX_X 15
 #define ROOM_MAX_Y 10
 #define STAIRS_MAX 3
-#define PC_SPEED   10
+#define PC_SPEED 10
+#define MONSTERS_MAX 20
 
 typedef enum __attribute__((__packed__)) terrain_type {
     ter_player,
@@ -39,7 +40,7 @@ typedef struct room {
 typedef struct dungeon {
     character_t pc;
     heap_t event_queue;
-    uint8_t num_monsters; 
+    uint8_t num_monsters;
 
     character_t *character_map[DUNGEON_Y][DUNGEON_X];
     uint8_t non_tunnel_distance_map[DUNGEON_Y][DUNGEON_X];
