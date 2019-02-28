@@ -1,41 +1,23 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
+#include "character.h"
 #include "dungeon.h"
+#include "event_simulator.h"
 #include "path_finder.h"
 #include "util.h"
-#include "character.h"
-#include "event_simulator.h"
-
-/*
-int test() {
-    static int sequencer = 0;
-
-
-    character_t c;
-    c.is_alive = true;
-    c.speed = (rand() % 16) + 5;
-    c.sequence_num = sequencer++;
-
-    c.is_pc = false;
-    c.position.x = 0;
-    c.position.y = 0;
-
-    c.npc.has_seen_pc = false;
-    character_assign_characteristics(&c);
-
-    printf("%x", c.npc.characteristics & 0xff);
-
-    return 0;
-}
-*/
 
 int main(int argc, char *argv[]) {
     /* Check arguments */
-    if (argc > 3) {
-        fprintf(stderr, "Ussage: %s [--save][--load]\n", argv[0]);
+    if (argc > 5) {
+        fprintf(stderr, "Ussage: %s [--save][--load][--nummon]\n", argv[0]);
         exit(-1);
     }
+
+    /* Random seed */
+    int seed = time(NULL);
+    srand(seed);
 
     /* Initialize path to ~/.rlg327/ */
     char *path;
@@ -43,26 +25,51 @@ int main(int argc, char *argv[]) {
 
     /* Dungeon*/
     dungeon_t dungeon;
+    dungeon.pc = malloc(sizeof(character_t));
+
+    /* Number of monsters switch */
+    char *num_monsters_str = "--nummon";
+    int n = 5;
+    if (contains(argc, argv, num_monsters_str, &n)) {
+        n = atoi(argv[n + 1]);
+
+        if (n > MONSTERS_MAX) {
+            dungeon.num_monsters = MONSTERS_MAX;
+            fprintf(stderr, "Exceded maxium monster count of 10.\n");
+
+            fprintf(stderr, "Ussage: %s [--save][--load][--nummon]\n", argv[0]);
+            exit(1);
+        } else if (n <= 0) {
+            dungeon.num_monsters = 1;
+            fprintf(stderr, "At least one monster is requred.\n");
+            fprintf(stderr, "Ussage: %s [--save][--load][--nummon]\n", argv[0]);
+            exit(1);
+        } else {
+            dungeon.num_monsters = n;
+        }
+    } else {
+        dungeon.num_monsters = n;
+    }
 
     /* Load switch */
     char *load_switch_str = "--load";
-    if (contains(argc, argv, load_switch_str)) {
+    if (contains(argc, argv, load_switch_str, &n)) {
         read_dungeon_from_disk(&dungeon, path);
         generate_terrain(&dungeon);
     } else {
         generate_dungeon(&dungeon);
     }
 
-    /* Render */
-    dungeon.num_monsters = 4;
-    event_simulator_start(&dungeon);
-    //test();
-
     /* Save switch */
     char *save_str = "--save";
-    if (contains(argc, argv, save_str)) {
+    if (contains(argc, argv, save_str, &n)) {
         write_dungeon_to_disk(&dungeon, path);
     }
+
+    /* Start Game */
+    event_simulator_start(&dungeon);
+
+
 
     free(path);
     deep_free_dungeon(&dungeon);

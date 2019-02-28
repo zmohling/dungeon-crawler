@@ -13,10 +13,11 @@
  * switch *s. Returns true if *argv contains
  * the string *s.
  */
-bool contains(int argc, char *argv[], char *s) {
+bool contains(int argc, char *argv[], char *s, int *n) {
     int i;
     for (i = 0; i < argc; i++) {
         if (!(strcmp(argv[i], s))) {
+            *n = i;
             return true;
         }
     }
@@ -47,9 +48,9 @@ int path_init(char **path) {
     }
 
     /* Dot file directory's path */
-    *path = malloc(strlen(home) + strlen("/.rlg327/00.rlg327") + 1);
+    *path = malloc(strlen(home) + strlen("/.rlg327/dungeon") + 1);
     strcpy(*path, home);
-    strcat(*path, "/.rlg327/00.rlg327");
+    strcat(*path, "/.rlg327/dungeon");
 
     free(dir);
 

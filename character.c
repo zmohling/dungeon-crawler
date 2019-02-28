@@ -14,19 +14,26 @@ character_t character_add(dungeon_t *d) {
     c.sequence_num = sequencer++;
 
     point_t position = get_valid_point(d);
-    c.position.x = position.x;
-    c.position.y = position.y;
 
     if (c.sequence_num == 0) {
         c.is_pc = true;
         c.speed = PC_SPEED;
         c.symbol = '@';
+
+        /* Special Case for loading dungeons from disk */
+        if (d->pc == NULL) {
+            c.position.x = position.x;
+            c.position.y = position.y;
+        }
     } else {
         c.is_pc = false;
         c.speed = rand() % 16 + 5;
         c.npc = calloc(1, sizeof(npc_t));
         c.npc->characteristics = assign_characteristics();
         c.symbol = (char)c.npc->characteristics;
+
+        c.position.x = position.x;
+        c.position.y = position.y;
     }
 
     return c;
@@ -34,8 +41,8 @@ character_t character_add(dungeon_t *d) {
 
 bool npc_exists(dungeon_t *d) {
     int i;
-    for(i = 1; i < (d->num_monsters + 1); i++) {
-        if(d->characters[i].is_alive) {
+    for (i = 1; i < (d->num_monsters + 1); i++) {
+        if (d->characters[i].is_alive) {
             return true;
         }
     }

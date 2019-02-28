@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
 #include "dungeon.h"
 #include "heap.h"
@@ -78,6 +77,8 @@ int deep_free_dungeon(dungeon_t *d) {
     free(d->rooms);
     free(d->stairs_up);
     free(d->stairs_down);
+    //free(d->characters);
+    //free(d->events);
 
     int i;
     for (i = 0; i < (d->num_monsters + 1); i++) {
@@ -87,8 +88,6 @@ int deep_free_dungeon(dungeon_t *d) {
         }
     }
 
-    // free(d->characters);
-    free(d->events);
 
     return 0;
 }
@@ -97,8 +96,6 @@ int deep_free_dungeon(dungeon_t *d) {
  * Generate the random dungeon.
  */
 int generate_dungeon(dungeon_t *d) {
-    int seed = time(NULL);
-    srand(seed);
 
     generate_border(d);
     generate_rooms(d);

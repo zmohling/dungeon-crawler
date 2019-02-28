@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-bool contains(int, char *[], char *);
+bool contains(int, char *[], char *, int *);
 int path_init(char **);
 
 #endif
