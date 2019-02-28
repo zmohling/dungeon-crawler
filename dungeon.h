@@ -39,7 +39,7 @@ typedef struct room {
 } room_t;
 
 typedef struct dungeon {
-    character_t pc;
+    character_t *pc;
 
     heap_t event_queue;
     event_t *events;

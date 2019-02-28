@@ -1,5 +1,6 @@
 #include "event_simulator.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include "dungeon.h"
 
 static int32_t event_compare(const void *key, const void *with) {
@@ -21,22 +22,40 @@ static event_t new_event(character_t *c) {
 }
 
 static int game_loop(dungeon_t *d) {
-    while ()
+    while (d->pc->is_alive || npc_exists(d)) {
+
+        event_t *e = (event_t *) heap_remove_min(&(d->event_queue));
+        if (!e->c->is_alive) {
+            continue;
+        }
+
+        e->turn += (1000 / e->c->speed);
+        heap_insert(&(d->event_queue), e);
+    }
 
     return 0;
 }
 
 int event_simulator_start(dungeon_t *d) {
+    d->events = malloc(sizeof(event_t) * d->num_monsters);
+    d->characters =
+        malloc(sizeof(character_t) * (d->num_monsters + 1));  // plus one for PC
 
     heap_init(&(d->event_queue), event_compare, NULL);
-    d->events = malloc(sizeof(event_t) * d->num_monsters);
 
     int i;
-    for (i = 0; i < d->num_monsters; i++) {
+    for (i = 0; i < (d->num_monsters + 1); i++) {
         d->characters[i] = character_add(d);
+        d->character_map[d->characters[i].position.y]
+                        [d->characters[i].position.x] = &(d->characters[i]);
+
         d->events[i] = new_event(&(d->characters[i]));
         heap_insert(&(d->event_queue), &(d->events[i]));
     }
+
+    d->pc = &(d->characters[0]);
+
+    game_loop(d);
 
     return 0;
 }

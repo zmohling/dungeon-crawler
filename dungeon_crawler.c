@@ -51,18 +51,13 @@ int main(int argc, char *argv[]) {
         generate_terrain(&dungeon);
     } else {
         generate_dungeon(&dungeon);
-        dungeon.pc.position.x = dungeon.rooms[0].coordinates.x;
-        dungeon.pc.position.y = dungeon.rooms[0].coordinates.y;
-        dungeon.map[dungeon.pc.position.y][dungeon.pc.position.x] =
-            ter_player;
     }
 
     /* Render */
-    non_tunnel_distance_map(&dungeon);
-    tunnel_distance_map(&dungeon);
-
     dungeon.num_monsters = 10;
     event_simulator_start(&dungeon);
+    non_tunnel_distance_map(&dungeon);
+    tunnel_distance_map(&dungeon);
     render_dungeon(&dungeon);
     //test();
 

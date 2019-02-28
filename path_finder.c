@@ -53,7 +53,7 @@ void non_tunnel_distance_map(dungeon_t *d) {
     }
 
     /* PC location is of "cost" zero. */
-    d->non_tunnel_distance_map[d->pc.position.y][d->pc.position.x] = 0;
+    d->non_tunnel_distance_map[d->pc->position.y][d->pc->position.x] = 0;
 
     heap_init(&h, non_tunnel_compare, NULL);
 
@@ -191,7 +191,7 @@ void tunnel_distance_map(dungeon_t *d) {
     }
 
     /* PC location is of "cost" zero. */
-    d->tunnel_distance_map[d->pc.position.y][d->pc.position.x] = 0;
+    d->tunnel_distance_map[d->pc->position.y][d->pc->position.x] = 0;
 
     heap_init(&h, tunnel_compare, NULL);
 

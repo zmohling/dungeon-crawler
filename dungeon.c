@@ -26,8 +26,14 @@ int render_dungeon(dungeon_t *d) {
             }
 
             /* Characters */
-            if(d->character_map[i][j] != NULL) {
-                printf("%x", d->character_map[i][j]->symbol & 0xff);
+            character_t *character = d->character_map[i][j];
+            if (character != NULL) {
+                if (character->is_pc == true) {
+                    printf("%c", character->symbol);
+                } else {
+                    printf("%x", d->character_map[i][j]->symbol & 0xff);
+                }
+
                 continue;
             }
 
@@ -76,21 +82,15 @@ int deep_free_dungeon(dungeon_t *d) {
     free(d->stairs_up);
     free(d->stairs_down);
 
-    int x, y;
-    for(y = 0; y < DUNGEON_Y; y++) {
-        for (x = 0; x < DUNGEON_X; x++) {
-            character_t *c = d->character_map[y][x];
-            if (c != NULL) {
-                if (c->npc != NULL) {
-                    free(c->npc);
-                }
-
-                free(c);
-            }
+    int i;
+    for (i = 0; i < (d->num_monsters + 1); i++) {
+        character_t *c = &(d->characters[i]);
+        if (c->npc != NULL) {
+            free(c->npc);
         }
     }
 
-    free(d->characters);
+    //free(d->characters);
     free(d->events);
 
     return 0;
@@ -438,7 +438,7 @@ int generate_terrain(dungeon_t *d) {
     }
 
     /* pc.position */
-    d->map[d->pc.position.y][d->pc.position.x] = ter_player;
+    // d->map[d->pc.position.y][d->pc->position.x] = ter_player;
 
     return 0;
 }
@@ -492,11 +492,11 @@ int read_dungeon_from_disk(dungeon_t *d, char *path) {
     file_size = be32toh(file_size);
 
     /* pc.position */
-    if (!fread(&(d->pc.position.x), sizeof(char), 1, f)) {
+    if (!fread(&(d->pc->position.x), sizeof(char), 1, f)) {
         fprintf(stderr, "Error: could not load <pc.position.x>. (%d)\n", errno);
         exit(-9);
     }
-    if (!fread(&(d->pc.position.y), sizeof(char), 1, f)) {
+    if (!fread(&(d->pc->position.y), sizeof(char), 1, f)) {
         fprintf(stderr, "Error: could not load <pc.position.y>. (%d)\n", errno);
         exit(-10);
     }
@@ -661,11 +661,11 @@ int write_dungeon_to_disk(dungeon_t *d, char *path) {
     }
 
     /* pc.position */
-    if (!fwrite(&(d->pc.position.x), sizeof(char), 1, f)) {
+    if (!fwrite(&(d->pc->position.x), sizeof(char), 1, f)) {
         fprintf(stderr, "Error: could not save <pc.position.x>. (%d)\n", errno);
         exit(-39);
     }
-    if (!fwrite(&(d->pc.position.y), sizeof(char), 1, f)) {
+    if (!fwrite(&(d->pc->position.y), sizeof(char), 1, f)) {
         fprintf(stderr, "Error: could not save <pc.position.y>. (%d)\n", errno);
         exit(-40);
     }
