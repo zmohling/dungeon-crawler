@@ -54,11 +54,8 @@ int main(int argc, char *argv[]) {
     }
 
     /* Render */
-    dungeon.num_monsters = 10;
+    dungeon.num_monsters = 4;
     event_simulator_start(&dungeon);
-    non_tunnel_distance_map(&dungeon);
-    tunnel_distance_map(&dungeon);
-    render_dungeon(&dungeon);
     //test();
 
     /* Save switch */

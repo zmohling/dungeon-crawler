@@ -24,7 +24,7 @@ character_t character_add(dungeon_t *d) {
     } else {
         c.is_pc = false;
         c.speed = rand() % 16 + 5;
-        c.npc = malloc(sizeof(npc_t));
+        c.npc = calloc(1, sizeof(npc_t));
         c.npc->characteristics = assign_characteristics();
         c.symbol = (char)c.npc->characteristics;
     }

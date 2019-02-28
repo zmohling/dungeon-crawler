@@ -57,9 +57,6 @@ int render_dungeon(dungeon_t *d) {
                 case ter_stairs_down:
                     c = '>';
                     break;
-                case ter_player:
-                    c = '@';
-                    break;
                 default:
                     c = '+';
             }
