@@ -87,7 +87,7 @@ int deep_free_dungeon(dungeon_t *d) {
         }
     }
 
-    //free(d->characters);
+    // free(d->characters);
     free(d->events);
 
     return 0;
@@ -120,11 +120,11 @@ int generate_border(dungeon_t *d) {
         for (j = 0; j < DUNGEON_X; j++) {
             d->map[i][j] = ter_wall;
 
-            if (j == 0 || j == 79) {
+            if (j == 0 || j == (DUNGEON_X - 1)) {
                 d->map[i][j] = ter_wall_immutable;
             }
 
-            if (i == 0 || i == 20) {
+            if (i == 0 || i == (DUNGEON_Y - 1)) {
                 d->map[i][j] = ter_wall_immutable;
             }
         }
@@ -372,8 +372,10 @@ int generate_hardness(dungeon_t *d) {
     for (i = 0; i < DUNGEON_Y; i++) {
         for (j = 0; j < DUNGEON_X; j++) {
             terrain_t t = d->map[i][j];
-            if (t == ter_wall || t == ter_wall_immutable) {
+            if (t == ter_wall) {
                 d->hardness_map[i][j] = rand() % 254 + 1;
+            } else if (t == ter_wall_immutable) {
+                d->hardness_map[i][j] = 255;
             } else {
                 d->hardness_map[i][j] = 0;
             }
@@ -418,11 +420,11 @@ int generate_terrain(dungeon_t *d) {
         for (j = 0; j < DUNGEON_X; j++) {
             terrain_t *t = &(d->map[i][j]);
 
-            if (j == 0 || j == 79) {
+            if (j == 0 || j == (DUNGEON_X - 1)) {
                 *t = ter_wall_immutable;
             }
 
-            if (i == 0 || i == 20) {
+            if (i == 0 || i == (DUNGEON_Y - 1)) {
                 *t = ter_wall_immutable;
             }
 
@@ -444,11 +446,13 @@ point_t get_valid_point(dungeon_t *d) {
     point_t p;
 
     do {
-        uint32_t rand_y = rand() % DUNGEON_Y + 1;
-        uint32_t rand_x = rand() % DUNGEON_X + 1;
+        uint32_t rand_y = rand() % (DUNGEON_Y - 3) + 2;
+        uint32_t rand_x = rand() % (DUNGEON_X + 3) + 2;
 
         if (d->hardness_map[rand_y][rand_x] == 0 &&
-            d->character_map[rand_y][rand_x] == NULL) {
+            d->character_map[rand_y][rand_x] == NULL &&
+            d->map[rand_y][rand_x] != ter_wall &&
+            d->map[rand_y][rand_x] != ter_wall_immutable) {
             p.x = rand_x;
             p.y = rand_y;
 
