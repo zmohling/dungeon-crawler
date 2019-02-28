@@ -6,6 +6,7 @@
 #include "character.h"
 #include "geometry.h"
 #include "heap.h"
+#include "event_simulator.h"
 
 #define DUNGEON_X 80
 #define DUNGEON_Y 21
@@ -39,14 +40,18 @@ typedef struct room {
 
 typedef struct dungeon {
     character_t pc;
-    heap_t event_queue;
-    uint8_t num_monsters;
 
+    heap_t event_queue;
+    event_t *events;
     character_t *character_map[DUNGEON_Y][DUNGEON_X];
+    character_t *characters;
+
     uint8_t non_tunnel_distance_map[DUNGEON_Y][DUNGEON_X];
     uint8_t tunnel_distance_map[DUNGEON_Y][DUNGEON_X];
     terrain_t map[DUNGEON_Y][DUNGEON_X];
     uint8_t hardness_map[DUNGEON_Y][DUNGEON_X];
+
+    uint8_t num_monsters;
 
     uint16_t num_rooms;
     room_t *rooms;

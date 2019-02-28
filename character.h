@@ -32,6 +32,6 @@ typedef struct character {
     point_t position;
 } character_t;
 
-int character_add_npc(dungeon_t *);
+character_t * character_add_npc(dungeon_t *);
 
 #endif

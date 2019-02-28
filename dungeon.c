@@ -80,12 +80,18 @@ int deep_free_dungeon(dungeon_t *d) {
     for(y = 0; y < DUNGEON_Y; y++) {
         for (x = 0; x < DUNGEON_X; x++) {
             character_t *c = d->character_map[y][x];
+            if (c != NULL) {
+                if (c->npc != NULL) {
+                    free(c->npc);
+                }
 
-            if (c != NULL && c->npc != NULL) {
-                //free (c->npc);
+                free(c);
             }
         }
     }
+
+    free(d->characters);
+    free(d->events);
 
     return 0;
 }

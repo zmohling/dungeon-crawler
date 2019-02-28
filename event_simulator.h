@@ -4,8 +4,6 @@
 #include <stdint.h>
 #include "character.h"
 
-typedef struct dungeon dungeon_t;
-
 typedef struct event {
     uint32_t turn;
     character_t *c;
