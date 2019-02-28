@@ -21,7 +21,7 @@ character_t character_add(dungeon_t *d) {
         c.symbol = '@';
 
         /* Special Case for loading dungeons from disk */
-        if (d->pc == NULL) {
+        if (d->pc != NULL) {
             c.position.x = position.x;
             c.position.y = position.y;
         }
