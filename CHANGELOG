@@ -1,4 +1,12 @@
 CHANGELOG (GIT LOG)
+2019-02-28: Nummon command option added
+2019-02-28: Tunneling implemented and tweaked
+2019-02-28: NPC now chase PC
+2019-02-27: Sequence numbers working
+2019-02-27: Added event queue
+2019-02-27: Render monsters to dungeon
+2019-02-27: Added characteristics assignment
+2019-02-27: Added character source and modified dungeon struct
 2019-02-21: Polishing for submission of HW 1.03
 2019-02-21: Fixed pathfinder immutable terrain bug
 2019-02-21: Fixed heap compiler warning

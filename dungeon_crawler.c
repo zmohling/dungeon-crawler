@@ -69,8 +69,6 @@ int main(int argc, char *argv[]) {
     /* Start Game */
     event_simulator_start(&dungeon);
 
-
-
     free(path);
     deep_free_dungeon(&dungeon);
 

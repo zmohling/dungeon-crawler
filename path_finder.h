@@ -5,9 +5,9 @@
 #include "heap.h"
 
 #define mapxy(x, y) (d->map[y][x])
-#define tunnel_cost(x, y)         \
+#define tunnel_cost(x, y)             \
     (d->hardness_map[y][x] < (85 * 1) \
-         ? 1                      \
+         ? 1                          \
          : (d->hardness_map[y][x] < (85 * 2) + 1 ? 2 : 3))
 
 typedef struct graph_node {

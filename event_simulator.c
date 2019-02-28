@@ -1,10 +1,10 @@
 #include "event_simulator.h"
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include "dungeon.h"
-#include "path_finder.h"
 #include "move.h"
+#include "path_finder.h"
 
 static int32_t event_compare(const void *key, const void *with) {
     if ((((event_t *)key)->turn) == (((event_t *)with)->turn)) {
@@ -26,8 +26,7 @@ static event_t new_event(character_t *c) {
 
 static int game_loop(dungeon_t *d) {
     while (d->pc->is_alive && npc_exists(d)) {
-
-        event_t *e = (event_t *) heap_remove_min(&(d->event_queue));
+        event_t *e = (event_t *)heap_remove_min(&(d->event_queue));
         if (!e->c->is_alive) {
             continue;
         }
@@ -37,7 +36,6 @@ static int game_loop(dungeon_t *d) {
             usleep(250000);
 
         } else {
-
             move_npc(d, e->c);
         }
 
@@ -53,8 +51,8 @@ static int game_loop(dungeon_t *d) {
 
 int event_simulator_start(dungeon_t *d) {
     d->events = calloc(1, sizeof(event_t) * d->num_monsters);
-    d->characters =
-        calloc(1, sizeof(character_t) * (d->num_monsters + 1));  // plus one for PC
+    d->characters = calloc(
+        1, sizeof(character_t) * (d->num_monsters + 1));  // plus one for PC
 
     heap_init(&(d->event_queue), event_compare, NULL);
 

@@ -1,15 +1,15 @@
 #ifndef CHARACTER_H
 #define CHARACTER_H
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include "geometry.h"
 
 #define NPC_INTELLIGENT 0x01
-#define NPC_TELEPATHIC  0x02
-#define NPC_TUNNELING   0x04
-#define NPC_ERRATIC     0x08
-#define PC              0x80
+#define NPC_TELEPATHIC 0x02
+#define NPC_TUNNELING 0x04
+#define NPC_ERRATIC 0x08
+#define PC 0x80
 
 typedef struct dungeon dungeon_t;
 

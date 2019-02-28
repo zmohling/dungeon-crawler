@@ -4,9 +4,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "character.h"
+#include "event_simulator.h"
 #include "geometry.h"
 #include "heap.h"
-#include "event_simulator.h"
 
 #define DUNGEON_X 80
 #define DUNGEON_Y 21

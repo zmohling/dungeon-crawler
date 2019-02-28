@@ -1,12 +1,22 @@
 DUNGEON CRAWLER - ASSIGNMENT_NUM
 
 SUMMARY:
-The current state of this rouguelike game is limited to dungeon generation, writing a dungeon to
-disk, reading dungeon from disk, and displaying distance maps. 
+This roguelike dungeon game is now implemented with path-finding monsters. The (eventually)
+playable character does not currently move, but the monsters chase him.
 
-By executing dungeon-crawler exclusively with the --save switch, the program will generate a randomized dungeon, and save it to ~/.rlg327/dungeon upon exiting. The directory and file will be generated if they do not exist during the point of execution. The --load switch will load the dungeon instead of generating a new one. The --load switch exclusively will not create the missing files, but these too switches can be used in conjuncture.
+DUNGEON CRAWLER
+    --save   : Save a randomly generated dungeon to binary file in ~/.rlg327/dungeon. This file
+                will be created if does not already exist.
+    --load   : Load a saved dungeon from disk. (See Known Issues)
+    --nummon : Tell the game how many monsters to load at the start. Choose a number between
+                1-15. Monster locations are not persistent.
+EXECUTION
+    To compile and execute, run make in the project's root directory.
 
-The three screens displayed are the dungeon, a distance map for monsters that cannnot tunnel, and a distance map for monsters than can tunnel. A modified Dijkstra's algorithm is used to generate the distance maps.
+KNOWN ISSUES
+    1. I had noticed that the PC location is not correctly loading from binary storage files
+        following v1.04.
+    2. Monster characteristics are not fully implemented. Sixteen character combinations will 
+        be available for the v1.05 release. All monsters are Telepathic and Intelligent, but half
+        are have the ability to Tunnel and the other other half do not.
 
-TO RUN:
-Run the make command and execute the dungeon-crawler binary with the optional switches.
