@@ -21,6 +21,7 @@ typedef struct npc {
 } npc_t;
 
 typedef struct character {
+    char symbol;
     bool is_alive;
     int8_t speed;
     int8_t sequence_num;

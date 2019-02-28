@@ -71,5 +71,6 @@ int generate_hardness(dungeon_t *);
 int generate_terrain(dungeon_t *);
 bool intersects(room_t *, room_t *);
 bool out_of_bounds(room_t *, int, int);
+point_t get_valid_point(dungeon_t *);
 
 #endif

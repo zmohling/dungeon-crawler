@@ -5,7 +5,9 @@
 #include "path_finder.h"
 #include "util.h"
 #include "character.h"
+#include "event_simulator.h"
 
+/*
 int test() {
     static int sequencer = 0;
 
@@ -26,6 +28,7 @@ int test() {
 
     return 0;
 }
+*/
 
 int main(int argc, char *argv[]) {
     /* Check arguments */
@@ -55,11 +58,12 @@ int main(int argc, char *argv[]) {
     }
 
     /* Render */
-    render_dungeon(&dungeon);
     non_tunnel_distance_map(&dungeon);
     tunnel_distance_map(&dungeon);
 
-
+    dungeon.num_monsters = 10;
+    event_simulator_start(&dungeon);
+    render_dungeon(&dungeon);
     //test();
 
     /* Save switch */
