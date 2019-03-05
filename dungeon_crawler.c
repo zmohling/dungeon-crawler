@@ -66,19 +66,19 @@ int main(int argc, char *argv[]) {
         generate_dungeon(&dungeon);
     }
 
+    /* Start Game */
+    event_simulator_start(&dungeon);
+
+    //render_hardness_map(&dungeon);
+    //render_movement_cost_map(&dungeon);
+    //render_distance_map(&dungeon);
+    //render_tunnel_distance_map(&dungeon);
+
     /* Save switch */
     char *save_str = "--save";
     if (contains(argc, argv, save_str, &n)) {
         write_dungeon_to_disk(&dungeon, path);
     }
-
-    /* Start Game */
-    event_simulator_start(&dungeon);
-
-    //render_hardness_map(&dungeon);
-    render_movement_cost_map(&dungeon);
-    //render_distance_map(&dungeon);
-    //render_tunnel_distance_map(&dungeon);
 
     free(path);
     deep_free_dungeon(&dungeon);
