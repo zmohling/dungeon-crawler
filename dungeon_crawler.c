@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
     event_simulator_start(&dungeon);
 
     //render_hardness_map(&dungeon);
-    //render_movement_cost_map(&dungeon);
+    render_movement_cost_map(&dungeon);
     //render_distance_map(&dungeon);
     //render_tunnel_distance_map(&dungeon);
 

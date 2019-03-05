@@ -32,6 +32,7 @@ static int game_loop(dungeon_t *d) {
         }
         if (e->c->is_pc) {
             non_tunnel_distance_map(d);
+            tunnel_distance_map(d);
             render_dungeon(d);
             usleep(250000);
 

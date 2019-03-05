@@ -57,7 +57,7 @@ int move_npc_tunnel(dungeon_t *d, character_t *c) {
     point_t next_pos;
     next_pos.x = c->position.x;
     next_pos.y = c->position.y;
-    uint8_t distance = UINT8_MAX;
+    uint8_t min_cost = UINT8_MAX;
 
     int x, y;
     for (y = (c->position.y - 1); y <= (c->position.y + 1); y++) {
@@ -68,10 +68,13 @@ int move_npc_tunnel(dungeon_t *d, character_t *c) {
                 continue;
             }
 
-            if (d->tunnel_distance_map[y][x] < distance ||
-                (d->tunnel_distance_map[y][x] <= distance &&
+            uint8_t cost =
+                d->tunnel_distance_map[y][x] + (d->hardness_map[y][x] / 85);
+
+            if (cost < min_cost ||
+                (cost <= min_cost &&
                  ((abs(x - c->position.x) + abs(y - c->position.y)) == 1))) {
-                distance = d->tunnel_distance_map[y][x];
+                min_cost = cost;
                 next_pos.x = x;
                 next_pos.y = y;
             }
