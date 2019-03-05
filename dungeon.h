@@ -21,7 +21,6 @@
 #define MONSTERS_MAX 15
 
 typedef enum __attribute__((__packed__)) terrain_type {
-    ter_player,
     ter_debug,
     ter_wall,
     ter_wall_immutable,

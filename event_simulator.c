@@ -67,6 +67,9 @@ int event_simulator_start(dungeon_t *d) {
 
     d->pc = &(d->characters[0]);
 
+    non_tunnel_distance_map(d);
+    tunnel_distance_map(d);
+    
     game_loop(d);
 
     return 0;

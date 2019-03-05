@@ -55,6 +55,8 @@ int move_npc_non_tunnel(dungeon_t *d, character_t *c) {
 
 int move_npc_tunnel(dungeon_t *d, character_t *c) {
     point_t next_pos;
+    next_pos.x = c->position.x;
+    next_pos.y = c->position.y;
     uint8_t distance = UINT8_MAX;
 
     int x, y;
