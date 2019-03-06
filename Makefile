@@ -1,10 +1,40 @@
-SOURCE=dungeon_crawler.c dungeon.c path_finder.c heap.c character.c move.c util.c event_simulator.c
-EXE=dungeon_crawler
-FLAGS=-O -Werror -lm
-DEV_FLAGS=-Wall -ggdb3 -lm
+CC=gcc
+CXX=g++
+ECHO=echo
+RM=rm -rvf
 
-all: $(SOURCE) clean
-	gcc $(SOURCE) -o $(EXE) $(DEV_FLAGS)
+CFLAGS=-Wall -ggdb3 -funroll-loops -lm 
+CXXFLAGS=-Wall -ggdb3 -funroll-loops -lm 
+BUILD_DIR=build
+SRC_DIR=src
+
+BIN=dungeon_crawler
+SRC=$(wildcard $(SRC_DIR)/*.c)
+OBJ=$(SRC:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
+DEP=$(OBJ:%.o=%.d)
+
+$(BIN): $(BUILD_DIR)/$(BIN)
+
+$(BUILD_DIR)/$(BIN): $(OBJ)
+	@$(ECHO) Linking compiled files... 
+	@$(CC) $(CFLAGS) $^ -o $(@F)
+	@$(ECHO) Done. 
+
+-include $(DEP)
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+	@$(ECHO) Compiling $<...
+	@mkdir -p $(@D)
+	@$(CC) $(CFLAGS) -MMD -c $< -o $@
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@$(ECHO) Compiling $<...
+	@mkdir -p $(@D)
+	@$(CXX) $(CXXFLAGS) -MMD -c $< -o $@
+
+.PHONY : clean
 
 clean:
-	rm -f $(EXE) *~ vgcore.* 
+	@$(ECHO) Removing all generated files and executables...
+	@$(RM) $(BUILD_DIR) $(BIN) core vgcore.*
+	@$(ECHO) Done.
