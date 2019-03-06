@@ -11,10 +11,11 @@ DUNGEON CRAWLER
     --nummon : Tell the game how many monsters to load at the start. Choose a number between
                 1-15. Monster locations are not persistent.
 EXECUTION
-    To compile and execute, run make in the project's root directory to generate and executable.
+    To compile and execute, run make in the project's root directory to generate the dungeon_crawler
+    executable.
 
 KNOWN ISSUES
     1. Monster characteristics are not fully implemented. Sixteen character combinations will 
         be available for the v1.05 release. All monsters are Telepathic and Intelligent, but half
-        are have the ability to Tunnel and the other other half do not.
+        have the ability to Tunnel and the other half do not.
 
