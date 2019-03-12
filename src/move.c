@@ -3,11 +3,12 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "dungeon.h"
 #include "geometry.h"
 #include "path_finder.h"
-
 #include "move.h"
+
 int move_npc(dungeon_t *d, character_t *c) {
     if (c->npc->characteristics & 0x04) {
         move_npc_tunnel(d, c);

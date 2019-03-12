@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ncurses.h>
 
 #include "dungeon.h"
 #include "heap.h"
@@ -15,6 +16,8 @@ int render_dungeon(dungeon_t *d) {
     int i, j;
     for (i = 0; i < DUNGEON_Y; i++) {
         for (j = 0; j < DUNGEON_X; j++) {
+            int y = (i + 1);
+            int x = (j + 1);
             char c;
 
             /* Border */
@@ -28,9 +31,9 @@ int render_dungeon(dungeon_t *d) {
             character_t *character = d->character_map[i][j];
             if (character != NULL) {
                 if (character->is_pc == true) {
-                    printf("%c", character->symbol);
+                    mvprintw(y, x, "%c", character->symbol);
                 } else {
-                    printf("%x", d->character_map[i][j]->symbol & 0xff);
+                    mvprintw(y, x, "%x", d->character_map[i][j]->symbol & 0xff);
                 }
 
                 continue;
@@ -60,11 +63,11 @@ int render_dungeon(dungeon_t *d) {
                     c = '+';
             }
 
-            printf("%c", c);
+            mvprintw(y, x, "%c", c);
         }
-
-        printf("\n");
     }
+
+    refresh();
 
     return 0;
 }

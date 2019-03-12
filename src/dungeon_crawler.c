@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <limits.h>
+#include <ncurses.h>
 
 #include "character.h"
 #include "dungeon.h"
@@ -67,8 +68,18 @@ int main(int argc, char *argv[]) {
     }
 
     /* Start Game */
+    initscr();
+    cbreak();
+    raw();
+    noecho();
+    curs_set(0);
+    nonl();
+    intrflush(stdscr, FALSE);
+    keypad(stdscr, TRUE);
+    clear();
     event_simulator_start(&dungeon);
 
+    endwin();
     //render_hardness_map(&dungeon);
     //render_movement_cost_map(&dungeon);
     //render_distance_map(&dungeon);

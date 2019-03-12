@@ -1,8 +1,10 @@
-#include "event_simulator.h"
+#include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+
 #include "dungeon.h"
+#include "event_simulator.h"
 #include "move.h"
 #include "path_finder.h"
 
@@ -34,7 +36,8 @@ static int game_loop(dungeon_t *d) {
             non_tunnel_distance_map(d);
             tunnel_distance_map(d);
             render_dungeon(d);
-            usleep(250000);
+
+            getch();
 
         } else {
             move_npc(d, e->c);
@@ -60,7 +63,8 @@ int event_simulator_start(dungeon_t *d) {
     int i;
     for (i = 0; i < (d->num_monsters + 1); i++) {
         d->characters[i] = character_add(d);
-        d->character_map[d->characters[i].position.y][d->characters[i].position.x] = &(d->characters[i]);
+        d->character_map[d->characters[i].position.y]
+                        [d->characters[i].position.x] = &(d->characters[i]);
 
         d->events[i] = new_event(&(d->characters[i]));
         heap_insert(&(d->event_queue), &(d->events[i]));
@@ -70,7 +74,7 @@ int event_simulator_start(dungeon_t *d) {
 
     non_tunnel_distance_map(d);
     tunnel_distance_map(d);
-    
+
     game_loop(d);
 
     return 0;
