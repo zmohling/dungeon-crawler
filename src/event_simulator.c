@@ -1,12 +1,12 @@
 #include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 
 #include "dungeon.h"
 #include "event_simulator.h"
 #include "move.h"
 #include "path_finder.h"
+#include "input.h"
 
 static int32_t event_compare(const void *key, const void *with) {
     if ((((event_t *)key)->turn) == (((event_t *)with)->turn)) {
@@ -37,7 +37,7 @@ static int game_loop(dungeon_t *d) {
             tunnel_distance_map(d);
             render_dungeon(d);
 
-            getch();
+            handle_key(d, getch());
 
         } else {
             move_npc(d, e->c);

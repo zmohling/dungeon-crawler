@@ -1,13 +1,91 @@
 #include <limits.h>
 #include <math.h>
+#include <ncurses.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "dungeon.h"
 #include "geometry.h"
-#include "path_finder.h"
+#include "input.h"
 #include "move.h"
+#include "path_finder.h"
+
+int move_pc(dungeon_t *d, int c) {
+    character_t *pc = d->pc;
+    point_t next_pos;
+
+    next_pos.x = pc->position.x;
+    next_pos.y = pc->position.y;
+
+    switch (c) {
+        case '7':
+        case 'y':
+            next_pos.x = next_pos.x - 1;
+            next_pos.y = next_pos.y - 1;
+            break;
+        case '8':
+        case 'k':
+            next_pos.x = next_pos.x;
+            next_pos.y = next_pos.y - 1;
+            break;
+        case '9':
+        case 'u':
+            next_pos.x = next_pos.x + 1;
+            next_pos.y = next_pos.y - 1;
+            break;
+        case '6':
+        case 'l':
+            next_pos.x = next_pos.x + 1;
+            next_pos.y = next_pos.y;
+            break;
+        case '3':
+        case 'n':
+            next_pos.x = next_pos.x + 1;
+            next_pos.y = next_pos.y + 1;
+            break;
+        case '2':
+        case 'j':
+            next_pos.x = next_pos.x;
+            next_pos.y = next_pos.y + 1;
+            break;
+        case '1':
+        case 'b':
+            next_pos.x = next_pos.x - 1;
+            next_pos.y = next_pos.y + 1;
+            break;
+        case '4':
+        case 'h':
+            next_pos.x = next_pos.x - 1;
+            next_pos.y = next_pos.y;
+            break;
+        case '5':
+        case '.':
+        case ' ':
+            break;
+        default:
+            next_pos.x = 0;
+            next_pos.y = 0;
+            break;
+    }
+
+    if (d->map[next_pos.y][next_pos.x] == ter_floor_room ||
+        d->map[next_pos.y][next_pos.x] == ter_floor_hall) {
+
+        if(!(check_for_trample(d, next_pos.x, next_pos.y))) {
+            mvprintw(0, 0, "Character Was Killed");
+            usleep(250000);
+        }
+        d->character_map[pc->position.y][pc->position.x] = NULL;
+        pc->position = next_pos;
+        d->character_map[pc->position.y][pc->position.x] = pc;
+
+        return 0;
+    } else {
+        return -1;
+    }
+}
 
 int move_npc(dungeon_t *d, character_t *c) {
     if (c->npc->characteristics & 0x04) {
@@ -46,8 +124,8 @@ int move_npc_non_tunnel(dungeon_t *d, character_t *c) {
         }
     }
 
-    d->character_map[c->position.y][c->position.x] = NULL;
     check_for_trample(d, next_pos.x, next_pos.y);
+    d->character_map[c->position.y][c->position.x] = NULL;
     c->position = next_pos;
     d->character_map[c->position.y][c->position.x] = c;
 
@@ -95,8 +173,8 @@ int move_npc_tunnel(dungeon_t *d, character_t *c) {
         tunnel_distance_map(d);
     }
     if (d->hardness_map[next_pos.y][next_pos.x] == 0) {
-        d->character_map[c->position.y][c->position.x] = NULL;
         check_for_trample(d, next_pos.x, next_pos.y);
+        d->character_map[c->position.y][c->position.x] = NULL;
         c->position.x = next_pos.x;
         c->position.y = next_pos.y;
         d->character_map[c->position.y][c->position.x] = c;
@@ -105,7 +183,7 @@ int move_npc_tunnel(dungeon_t *d, character_t *c) {
 }
 
 int check_for_trample(dungeon_t *d, int x, int y) {
-    if (d->character_map[y][x] != NULL) {
+    if (d->character_map[y][x] != NULL && d->character_map[y][x]->is_alive) {
         d->character_map[y][x]->is_alive = false;
         d->character_map[y][x] = NULL;
 

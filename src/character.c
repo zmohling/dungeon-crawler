@@ -34,7 +34,7 @@ character_t character_add(dungeon_t *d) {
         c.speed = rand() % 16 + 5;
         c.npc = calloc(1, sizeof(npc_t));
         c.npc->characteristics = assign_characteristics();
-        c.symbol = (char)c.npc->characteristics;
+        c.symbol = (char) c.npc->characteristics;
 
         c.position.x = position.x;
         c.position.y = position.y;
