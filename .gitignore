@@ -1,2 +1,3 @@
 dungeon_crawler
 build/
+valgrind*

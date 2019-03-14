@@ -63,19 +63,18 @@ int move_pc(dungeon_t *d, int c) {
         case '5':
         case '.':
         case ' ':
-            break;
+            return 0;
         default:
             next_pos.x = 0;
             next_pos.y = 0;
             break;
     }
 
-    if (d->map[next_pos.y][next_pos.x] == ter_floor_room ||
-        d->map[next_pos.y][next_pos.x] == ter_floor_hall) {
+    if (d->map[next_pos.y][next_pos.x] != ter_wall &&
+        d->map[next_pos.y][next_pos.x] != ter_wall_immutable) {
 
         if(!(check_for_trample(d, next_pos.x, next_pos.y))) {
-            mvprintw(0, 0, "Character Was Killed");
-            usleep(250000);
+            mvprintw(0, 0, "You slayed a monster!");
         }
         d->character_map[pc->position.y][pc->position.x] = NULL;
         pc->position = next_pos;
@@ -85,6 +84,14 @@ int move_pc(dungeon_t *d, int c) {
     } else {
         return -1;
     }
+}
+
+int use_stairs(dungeon_t *d, pc_movement_t p) {
+    deep_free_dungeon(d);
+    generate_dungeon(d);
+    event_simulator_start(d);
+
+    return 0;
 }
 
 int move_npc(dungeon_t *d, character_t *c) {

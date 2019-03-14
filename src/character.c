@@ -7,11 +7,13 @@
 static uint8_t assign_characteristics();
 
 character_t character_add(dungeon_t *d) {
-    static uint8_t sequencer = 0;
+    int i;
+    for (i = 0; d->characters[i].is_alive; i++)
+        ;
 
     character_t c;
     c.is_alive = true;
-    c.sequence_num = sequencer++;
+    c.sequence_num = i;
 
     point_t position = get_valid_point(d);
 

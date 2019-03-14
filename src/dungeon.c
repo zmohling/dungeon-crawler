@@ -199,8 +199,9 @@ int deep_free_dungeon(dungeon_t *d) {
     free(d->rooms);
     free(d->stairs_up);
     free(d->stairs_down);
+    free(d->events);
 
-    int i;
+    int i, j;
     for (i = 0; i < (d->num_monsters + 1); i++) {
         character_t *c = &(d->characters[i]);
         if (c->npc != NULL) {
@@ -208,7 +209,16 @@ int deep_free_dungeon(dungeon_t *d) {
         }
     }
 
-    free(d->events);
+
+    d->pc = NULL;
+
+    for (i = 0; i < DUNGEON_Y; i++) {
+        for (j = 0; j < DUNGEON_X; j++) {
+            d->character_map[i][j] = NULL;
+        }
+    }
+
+    free(d->characters);
 
     return 0;
 }

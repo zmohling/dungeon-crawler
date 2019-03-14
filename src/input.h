@@ -3,6 +3,8 @@
 
 typedef enum __attribute__((__packed__)) pc_movement_type {
     pc_rest,
+    pc_up_stairs,
+    pc_down_stairs,
     pc_up,
     pc_up_left,
     pc_up_right,
