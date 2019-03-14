@@ -1,21 +1,23 @@
 DUNGEON CRAWLER - ASSIGNMENT_NUM
 
 SUMMARY:
-This roguelike dungeon game is now implemented with path-finding monsters. The (eventually)
-playable character does not currently move, but the monsters chase him.
+This roguelike dungeon game in now implemented with a playable character. Navigate with vim-like
+keybindings. Players are now able to utilize features like the Monster Menu, and the use of stairs
+to evaid enemies.
 
 DUNGEON CRAWLER
     --save   : Save a randomly generated dungeon to binary file in ~/.rlg327/dungeon. This file
                 will be created if does not already exist.
-    --load   : Load a saved dungeon from disk. (See Known Issues)
+    --load   : Load a saved dungeon from disk.
     --nummon : Tell the game how many monsters to load at the start. Choose a number between
                 1-15. Monster locations are not persistent.
-EXECUTION
-    To compile and execute, run make in the project's root directory to generate the dungeon_crawler
-    executable.
+BUILD & EXECUTION
+    To build this project, simpily run make in the project's root directory. This when create
+    a executable binary named dungeon_crawler. All build files are kept in /build, and other
+    binaries are kept in /bin.
 
 KNOWN ISSUES
     1. Monster characteristics are not fully implemented. Sixteen character combinations will 
-        be available for the v1.05 release. All monsters are Telepathic and Intelligent, but half
+        be available for the v1.06 release. All monsters are Telepathic and Intelligent, but half
         have the ability to Tunnel and the other half do not.
 

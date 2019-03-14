@@ -1,4 +1,13 @@
 CHANGELOG (GIT LOG)
+2019-03-14: Fully Functioning Monster Menu
+2019-03-14: Buffer overflow. Was sad, now not sad.
+2019-03-12: Basic Playable Character Movement
+2019-03-12: Convert output function calls to ncurses
+2019-03-05: Documentation, Include saved dungeons
+2019-03-05: Project Restructuring, Updated Makefile
+2019-03-05: Found sneaky dungeon saving seg fault
+2019-03-05: Fixed tunneling monster logic
+2019-03-05: Fixed distance map bug
 2019-02-28: Fixed sneaky segmentaion fault
 2019-02-28: Polishing for v1.04
 2019-02-28: Nummon command option added

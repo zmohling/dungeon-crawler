@@ -49,12 +49,9 @@ static int print_monsters(dungeon_t *d, int index, int height, int width,
     int inner_bound_y = starty + 2, inner_bound_x = startx + 1, i;
     int lines = (inner_bound_y + (height - 4));
 
-    int adjusted_index = (d->num_monsters - lines - index > 0) ? index : 0;
+    int adjusted_index = (index < d->num_monsters - lines) ? index : d->num_monsters - lines;
     if (adjusted_index < 0) {
         adjusted_index = 0;
-    } else if (adjusted_index <= lines) {
-    } else if (adjusted_index > d->num_monsters - lines - index) {
-        adjusted_index = d->num_monsters - lines - index;
     }
 
     int longitudinal_magnitude, lateral_magnitude;
@@ -62,20 +59,21 @@ static int print_monsters(dungeon_t *d, int index, int height, int width,
 
     int c = 0;
     for (i = inner_bound_y;
-         i < (inner_bound_y + (height - 4)) && c < d->num_monsters; i++, c++) {
+         i < (inner_bound_y + (height - 4)) && c < d->num_monsters; i++,  c++) {
         if (d->characters[adjusted_index + c + 1].is_alive) {
             get_mag_and_direction(d, &d->characters[adjusted_index + c + 1],
                                   &longitudinal_magnitude,
                                   &longitudinal_card_dir, &lateral_magnitude,
                                   &lateral_card_dir);
 
-            mvprintw(i, inner_bound_x, "  %x\t%d %s and %d %s",
+            mvprintw(i, inner_bound_x, "  %x\t%2d %s and %2d %s",
                      d->characters[adjusted_index + c + 1].symbol & 0xff,
                      longitudinal_magnitude, longitudinal_card_dir,
                      lateral_magnitude, lateral_card_dir);
 
             free(longitudinal_card_dir);
             free(lateral_card_dir);
+
         }
     }
 

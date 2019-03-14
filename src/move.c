@@ -87,9 +87,34 @@ int move_pc(dungeon_t *d, int c) {
 
 int use_stairs(dungeon_t *d, pc_movement_t p) {
     deep_free_dungeon(d);
-    generate_dungeon(d);
-    event_simulator_start(d);
 
+    generate_dungeon(d);
+    d->pc = malloc(sizeof(character_t));
+
+
+    point_t pt;
+    terrain_t t = ter_stairs;
+
+    if (p == pc_up_stairs) {
+        t = ter_stairs_down;
+    } else if (p == pc_down_stairs) {
+        t = ter_stairs_up;
+    }
+
+    int i, j;
+    for (i = 0; i < DUNGEON_Y; i++) {
+        for (j = 0; j < DUNGEON_X; j++) {
+            if (d->map[i][j] == t) {
+                pt.y = i;
+                pt.x = j;
+            }
+        }
+    }
+
+    d->pc->position.y = pt.y;
+    d->pc->position.x = pt.x;
+
+    event_simulator_start(d);
     return 0;
 }
 
@@ -97,7 +122,9 @@ int move_npc(dungeon_t *d, character_t *c) {
     if (c->npc->characteristics & 0x04) {
         move_npc_tunnel(d, c);
     } else {
-        move_npc_non_tunnel(d, c);
+        if (d->non_tunnel_distance_map[c->position.y][c->position.x] < 10) {
+            move_npc_non_tunnel(d, c);
+        }
     }
 
     return 0;
@@ -116,9 +143,7 @@ int move_npc_non_tunnel(dungeon_t *d, character_t *c) {
             if (y > (DUNGEON_Y - 1) || y < 0 || x > (DUNGEON_X - 1) || x < 0) {
                 continue;
             } else if (d->map[y][x] == ter_wall ||
-                       d->map[y][x] == ter_wall_immutable ||
-                       d->non_tunnel_distance_map[y][x] > 10) {
-                /* TEMPORARY 10 VALUE. TODO: MAKE SMARTER */
+                       d->map[y][x] == ter_wall_immutable) {
                 continue;
             }
 

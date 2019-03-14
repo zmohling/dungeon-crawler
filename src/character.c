@@ -59,19 +59,19 @@ bool npc_exists(dungeon_t *d) {
 static uint8_t assign_characteristics() {
     uint8_t characteristics = 0x00;
 
-    if (rand() % 2) {
+    if (!(rand() % 2)) {
         characteristics += NPC_INTELLIGENT;
     }
 
-    if (rand() % 2) {
+    if (!(rand() % 2)) {
         characteristics += NPC_TELEPATHIC;
     }
 
-    if (rand() % 2) {
+    if (!(rand() % 5)) {
         characteristics += NPC_TUNNELING;
     }
 
-    if (rand() % 2) {
+    if (!(rand() % 2)) {
         characteristics += NPC_ERRATIC;
     }
 

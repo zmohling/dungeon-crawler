@@ -1,15 +1,16 @@
-#include <ncurses.h>
 #include <menu.h>
+#include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
+#include "accessory_screens.h"
 #include "dungeon.h"
 #include "event_simulator.h"
 #include "input.h"
 #include "move.h"
 #include "path_finder.h"
-#include "accessory_screens.h"
 
 static void endscreen(int);
 static int32_t event_compare(const void *key, const void *with) {
@@ -51,24 +52,26 @@ static int game_loop(dungeon_t *d) {
         heap_insert(&(d->event_queue), e);
     }
 
+    render_dungeon(d);
+    usleep(250000);
+
     /* End Game */
     if (d->pc->is_alive) {
         endscreen(1);
     } else {
         endscreen(0);
     }
-    render_dungeon(d);
-    printf("GAME OVER\n");
 
     return 0;
 }
 
 int event_simulator_start(dungeon_t *d) {
-    if(!(d->events = calloc(1, sizeof(event_t) * (d->num_monsters + 1)))) {
+    if (!(d->events = calloc(1, sizeof(event_t) * (d->num_monsters + 1)))) {
         fprintf(stderr, "Did not allocate events array in dungeon struct.");
         exit(-122);
     }
-    if(!(d->characters = calloc(1, sizeof(character_t) * (d->num_monsters + 1)))) {
+    if (!(d->characters =
+              calloc(1, sizeof(character_t) * (d->num_monsters + 1)))) {
         fprintf(stderr, "Did not allocate events array in dungeon struct.");
         exit(-122);
     }
@@ -124,5 +127,4 @@ static void endscreen(int didWin) {
 
     endwin();
     exit(0);
-    
 }

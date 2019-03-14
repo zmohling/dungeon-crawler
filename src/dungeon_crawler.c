@@ -42,13 +42,13 @@ int main(int argc, char *argv[]) {
 
     /* Number of monsters switch */
     char *num_monsters_str = "--nummon";
-    int n = 5;
+    int n = 10;
     if (contains(argc, argv, num_monsters_str, &n)) {
         n = atoi(argv[n + 1]);
 
         if (n > MONSTERS_MAX) {
             dungeon.num_monsters = MONSTERS_MAX;
-            fprintf(stderr, "Exceded maxium monster count of 10.\n");
+            fprintf(stderr, "Exceded maxium monster count of 30.\n");
 
             fprintf(stderr, "Ussage: %s [--save][--load][--nummon]\n", argv[0]);
             exit(1);
