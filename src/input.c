@@ -3,6 +3,7 @@
 
 #include "input.h"
 #include "move.h"
+#include "accessory_screens.h"
 
 static void get_new_input(int *key_is_valid, int *input) {
     *key_is_valid = 0;
@@ -48,21 +49,36 @@ void handle_key(dungeon_t *d, int c) {
                 }
                 break;
             case '>':
+                if (d->map[d->pc->position.y][d->pc->position.x] == ter_stairs_down) {
+                    /* Valid */
+                    use_stairs(d, pc_down_stairs);
+                } else {
+                    /* Invalid */
+                    mvprintw(0, 0, "%s", "You cannot go down the stairs here!");
+                    get_new_input(&key_is_valid, &input);
+                }
                 break;
             case '<':
-                use_stairs(d, pc_up_stairs);
+                if (d->map[d->pc->position.y][d->pc->position.x] == ter_stairs_up) {
+                    /* Valid */
+                    use_stairs(d, pc_up_stairs);
+                } else {
+                    /* Invalid */
+                    mvprintw(0, 0, "%s", "You cannot go up the stairs here!");
+                    get_new_input(&key_is_valid, &input);
+                }
                 break;
             case 'm':
+                monster_list(d);
+                render_dungeon(d);
+                get_new_input(&key_is_valid, &input);
                 break;
             case KEY_UP:
                 break;
             case KEY_DOWN:
                 break;
-            case 27:
-                break;
             case 'q':
                 quit();
-                //d->pc->is_alive = false;
                 break;
             default:
                 mvprintw(0, 0, "%s", "Invalid Input");

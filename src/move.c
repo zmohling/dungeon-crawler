@@ -72,8 +72,7 @@ int move_pc(dungeon_t *d, int c) {
 
     if (d->map[next_pos.y][next_pos.x] != ter_wall &&
         d->map[next_pos.y][next_pos.x] != ter_wall_immutable) {
-
-        if(!(check_for_trample(d, next_pos.x, next_pos.y))) {
+        if (!(check_for_trample(d, next_pos.x, next_pos.y))) {
             mvprintw(0, 0, "You slayed a monster!");
         }
         d->character_map[pc->position.y][pc->position.x] = NULL;
@@ -117,7 +116,9 @@ int move_npc_non_tunnel(dungeon_t *d, character_t *c) {
             if (y > (DUNGEON_Y - 1) || y < 0 || x > (DUNGEON_X - 1) || x < 0) {
                 continue;
             } else if (d->map[y][x] == ter_wall ||
-                       d->map[y][x] == ter_wall_immutable) {
+                       d->map[y][x] == ter_wall_immutable ||
+                       d->non_tunnel_distance_map[y][x] > 10) {
+                /* TEMPORARY 10 VALUE. TODO: MAKE SMARTER */
                 continue;
             }
 
