@@ -18,10 +18,9 @@
 #define ROOM_MAX_Y 10
 #define STAIRS_MAX 3
 #define PC_SPEED 10
-#define MONSTERS_MAX 15
+#define MONSTERS_MAX 30
 
 typedef enum __attribute__((__packed__)) terrain_type {
-    ter_player,
     ter_debug,
     ter_wall,
     ter_wall_immutable,
@@ -40,6 +39,7 @@ typedef struct room {
 
 typedef struct dungeon {
     character_t *pc;
+    uint8_t num_monsters;
 
     heap_t event_queue;
     event_t *events;
@@ -51,8 +51,6 @@ typedef struct dungeon {
     terrain_t map[DUNGEON_Y][DUNGEON_X];
     uint8_t hardness_map[DUNGEON_Y][DUNGEON_X];
 
-    uint8_t num_monsters;
-
     uint16_t num_rooms;
     room_t *rooms;
     uint16_t num_stairs_up;
@@ -61,7 +59,12 @@ typedef struct dungeon {
     point_t *stairs_down;
 } dungeon_t;
 
-int render_dungeon(dungeon_t *);
+void render_dungeon(dungeon_t *);
+void render_hardness_map(dungeon_t *);
+void render_movement_cost_map(dungeon_t *);
+void render_distance_map(dungeon_t *);
+void render_tunnel_distance_map(dungeon_t *);
+
 int deep_free_dungeon(dungeon_t *);
 
 int read_dungeon_from_disk(dungeon_t *, char *);

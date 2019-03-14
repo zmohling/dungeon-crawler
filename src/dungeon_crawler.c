@@ -1,12 +1,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <ncurses.h>
 
 #include "character.h"
 #include "dungeon.h"
 #include "event_simulator.h"
 #include "path_finder.h"
 #include "util.h"
+
+static void init_curses() {
+    initscr();
+    cbreak();
+    raw();
+    noecho();
+    curs_set(0);
+    nonl();
+    intrflush(stdscr, FALSE);
+    keypad(stdscr, TRUE);
+    set_escdelay(0);
+    clear();
+}
 
 int main(int argc, char *argv[]) {
     /* Check arguments */
@@ -25,17 +39,16 @@ int main(int argc, char *argv[]) {
 
     /* Dungeon*/
     dungeon_t dungeon;
-    dungeon.pc = malloc(sizeof(character_t));
 
     /* Number of monsters switch */
     char *num_monsters_str = "--nummon";
-    int n = 5;
+    int n = 10;
     if (contains(argc, argv, num_monsters_str, &n)) {
         n = atoi(argv[n + 1]);
 
         if (n > MONSTERS_MAX) {
             dungeon.num_monsters = MONSTERS_MAX;
-            fprintf(stderr, "Exceded maxium monster count of 10.\n");
+            fprintf(stderr, "Exceded maxium monster count of 30.\n");
 
             fprintf(stderr, "Ussage: %s [--save][--load][--nummon]\n", argv[0]);
             exit(1);
@@ -54,11 +67,22 @@ int main(int argc, char *argv[]) {
     /* Load switch */
     char *load_switch_str = "--load";
     if (contains(argc, argv, load_switch_str, &n)) {
+        dungeon.pc = malloc(sizeof(character_t));
         read_dungeon_from_disk(&dungeon, path);
         generate_terrain(&dungeon);
     } else {
         generate_dungeon(&dungeon);
     }
+
+    /* Start Game */
+    init_curses();
+    event_simulator_start(&dungeon);
+    endwin();
+
+    //render_hardness_map(&dungeon);
+    //render_movement_cost_map(&dungeon);
+    //render_distance_map(&dungeon);
+    //render_tunnel_distance_map(&dungeon);
 
     /* Save switch */
     char *save_str = "--save";
@@ -66,11 +90,9 @@ int main(int argc, char *argv[]) {
         write_dungeon_to_disk(&dungeon, path);
     }
 
-    /* Start Game */
-    event_simulator_start(&dungeon);
-
     free(path);
     deep_free_dungeon(&dungeon);
 
     return 0;
 }
+

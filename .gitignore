@@ -1,2 +1,3 @@
-saved_dungeons
 dungeon_crawler
+build/
+valgrind*

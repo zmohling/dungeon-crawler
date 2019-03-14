@@ -4,36 +4,40 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ncurses.h>
 
 #include "dungeon.h"
 #include "heap.h"
 #include "path_finder.h"
 
-int render_dungeon(dungeon_t *d) {
+void render_dungeon(dungeon_t *d) {
     int i, j;
     for (i = 0; i < DUNGEON_Y; i++) {
         for (j = 0; j < DUNGEON_X; j++) {
+            int y = (i + 1);
+            int x = (j + 1);
             char c;
+
+            /* Characters */
+            character_t *character = d->character_map[i][j];
+            if (character != NULL) {
+                if (character->is_pc == true) {
+                    mvprintw(y, x, "%c", character->symbol);
+                } else {
+                    mvprintw(y, x, "%x", d->character_map[i][j]->symbol & 0xff);
+                }
+
+                continue;
+            }
 
             /* Border */
             if (i == 0 || i == (DUNGEON_Y - 1)) {
                 c = '-';
             } else if (j == 0 || j == (DUNGEON_X - 1)) {
                 c = '|';
-            }
-
-            /* Characters */
-            character_t *character = d->character_map[i][j];
-            if (character != NULL) {
-                if (character->is_pc == true) {
-                    printf("%c", character->symbol);
-                } else {
-                    printf("%x", d->character_map[i][j]->symbol & 0xff);
-                }
-
-                continue;
             }
 
             /* Terrain */
@@ -60,13 +64,131 @@ int render_dungeon(dungeon_t *d) {
                     c = '+';
             }
 
-            printf("%c", c);
+            mvprintw(y, x, "%c", c);
         }
-
-        printf("\n");
     }
 
-    return 0;
+    refresh();
+}
+
+void render_hardness_map(dungeon_t *d)
+{
+  point_t p;
+  int i;
+  
+  putchar('\n');
+  printf("   ");
+  for (i = 0; i < DUNGEON_X; i++) {
+    printf("%2d", i);
+  }
+  putchar('\n');
+  for (p.y = 0; p.y < DUNGEON_Y; p.y++) {
+    printf("%2d ", p.y);
+    for (p.x = 0; p.x < DUNGEON_X; p.x++) {
+      printf("%02x", d->hardness_map[p.y][p.x]);
+    }
+    putchar('\n');
+  }
+}
+
+void render_movement_cost_map(dungeon_t *d)
+{
+  point_t p;
+
+  putchar('\n');
+  for (p.y = 0; p.y < DUNGEON_Y; p.y++) {
+    for (p.x = 0; p.x < DUNGEON_X; p.x++) {
+      if (p.x ==  d->pc->position.x &&
+          p.y ==  d->pc->position.y) {
+        putchar('@');
+      } else {
+        if (d->hardness_map[p.y][p.x] == 255) {
+          printf("X");
+        } else {
+          printf("%d", (d->hardness_map[p.y][p.x] / 85) + 1);
+        }
+      }
+    }
+    putchar('\n');
+  }
+}
+
+void render_distance_map(dungeon_t *d)
+{
+  point_t p;
+
+  for (p.y = 0; p.y < DUNGEON_Y; p.y++) {
+    for (p.x = 0; p.x < DUNGEON_X; p.x++) {
+      if (p.x ==  d->pc->position.x &&
+          p.y ==  d->pc->position.y) {
+        putchar('@');
+      } else {
+        switch (d->map[p.y][p.x]) {
+        case ter_wall:
+        case ter_wall_immutable:
+          putchar(' ');
+          break;
+        case ter_floor:
+        case ter_floor_room:
+        case ter_floor_hall:
+        case ter_stairs:
+        case ter_stairs_up:
+        case ter_stairs_down:
+          /* Placing X for infinity */
+          if (d->non_tunnel_distance_map[p.y][p.x] == UCHAR_MAX) {
+            putchar('X');
+          } else {
+            putchar('0' + d->non_tunnel_distance_map[p.y][p.x] % 10);
+          }
+          break;
+        case ter_debug:
+          fprintf(stderr, "Debug character at %d, %d\n", p.y, p.x);
+          putchar('*');
+          break;
+        }
+      }
+    }
+    putchar('\n');
+  }
+}
+
+void render_tunnel_distance_map(dungeon_t *d)
+{
+  point_t p;
+
+  for (p.y = 0; p.y < DUNGEON_Y; p.y++) {
+    for (p.x = 0; p.x < DUNGEON_X; p.x++) {
+      if (p.x ==  d->pc->position.x &&
+          p.y ==  d->pc->position.y) {
+        putchar('@');
+      } else {
+        switch (d->map[p.y][p.x]) {
+        case ter_wall_immutable:
+          putchar(' ');
+          break;
+        case ter_wall:
+        case ter_floor:
+        case ter_floor_room:
+        case ter_floor_hall:
+        case ter_stairs:
+        case ter_stairs_up:
+        case ter_stairs_down:
+          /* Placing X for infinity */
+          if (d->tunnel_distance_map[p.y][p.x] == UCHAR_MAX) {
+            putchar('X');
+          } else {
+            putchar('0' + d->tunnel_distance_map[p.y][p.x] % 10);
+          }
+          break;
+        case ter_debug:
+          fprintf(stderr, "Debug character at %d, %d\n", p.y, p.x);
+          putchar('*');
+          break;
+        }
+      }
+    }
+    putchar('\n');
+  }
 }
 
 /*
@@ -77,16 +199,26 @@ int deep_free_dungeon(dungeon_t *d) {
     free(d->rooms);
     free(d->stairs_up);
     free(d->stairs_down);
-    // free(d->characters);
-    // free(d->events);
+    free(d->events);
 
-    int i;
+    int i, j;
     for (i = 0; i < (d->num_monsters + 1); i++) {
         character_t *c = &(d->characters[i]);
         if (c->npc != NULL) {
             free(c->npc);
         }
     }
+
+
+    d->pc = NULL;
+
+    for (i = 0; i < DUNGEON_Y; i++) {
+        for (j = 0; j < DUNGEON_X; j++) {
+            d->character_map[i][j] = NULL;
+        }
+    }
+
+    free(d->characters);
 
     return 0;
 }
