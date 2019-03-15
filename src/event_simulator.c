@@ -100,7 +100,7 @@ int event_simulator_start(dungeon_t *d) {
     }
 
     /* Dungeon's PC pointer. PC is always first in characters array. */
-    d->pc = &(d->characters[0]);
+    //d->pc = &(d->characters[0]);
 
 
     game_loop(d);

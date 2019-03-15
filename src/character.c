@@ -19,13 +19,13 @@ character_t new_character(dungeon_t *d) {
         ;
     c.sequence_num = i;
 
-    point_t character_position = get_valid_point(d);
+    /* Assigns character's data fields based on
+     * characer type */
+    if (c.sequence_num == 0) {
+        point_t character_position = get_valid_point(d, true);
         c.position.x = character_position.x;
         c.position.y = character_position.y;
 
-    /* Assigns character's data fields based on 
-     * characer type */
-    if (c.sequence_num == 0) {
         c.is_pc = true;
         c.is_alive = true;
         c.speed = PC_SPEED;
@@ -35,9 +35,15 @@ character_t new_character(dungeon_t *d) {
         if (d->pc != NULL) {
             c.position.x = d->pc->position.x;
             c.position.y = d->pc->position.y;
-            free(d->pc); // frees temp pointer for loading purposes only
+            free(d->pc);  // frees temp pointer for loading purposes only
         }
+
+        d->pc = &(d->characters[0]);
     } else {
+        point_t character_position = get_valid_point(d, false);
+        c.position.x = character_position.x;
+        c.position.y = character_position.y;
+
         c.is_pc = false;
         c.is_alive = true;
         c.speed = rand() % (NPC_MAX_SPEED - 4) + 5;
@@ -51,7 +57,7 @@ character_t new_character(dungeon_t *d) {
 }
 
 /* Returns true if there are NPCs still alive in
- * the dungeon 
+ * the dungeon
  */
 bool npc_exists(dungeon_t *d) {
     int i;
@@ -65,8 +71,8 @@ bool npc_exists(dungeon_t *d) {
 }
 
 /* Assign characteristic classification. Characteristic classes are stored by a
- * 4 bit number: each bit representing a characteristic. All NPCs have a 50% change
- * of having each of the characteristics. (eventually)
+ * 4 bit number: each bit representing a characteristic. All NPCs have a 50%
+ * change of having each of the characteristics. (eventually)
  * TODO: Implement move functions for specific characteristics
  */
 static uint8_t assign_characteristics() {

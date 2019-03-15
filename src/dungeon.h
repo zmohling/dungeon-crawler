@@ -78,8 +78,10 @@ int generate_corridors(dungeon_t *);
 int generate_staircases(dungeon_t *);
 int generate_hardness(dungeon_t *);
 int generate_terrain(dungeon_t *);
+
 bool intersects(room_t *, room_t *);
 bool out_of_bounds(room_t *, int, int);
-point_t get_valid_point(dungeon_t *);
+room_t * get_room(dungeon_t *, point_t *);
+point_t get_valid_point(dungeon_t *, bool);
 
 #endif
