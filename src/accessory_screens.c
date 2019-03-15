@@ -117,8 +117,7 @@ static int print_monsters(dungeon_t *d, character_t *sorted_character_arr[],
 
         if (sorted_character_arr[adjusted_index + i + 1]->is_alive) {
             mvprintw(
-                inner_bound_y + i, inner_bound_x, " %2d  %x: %2d %s and %2d %s",
-                adjusted_index + i + 1,
+                inner_bound_y + i, inner_bound_x, "  %x: %2d %s and %2d %s",
                 sorted_character_arr[adjusted_index + i + 1]->symbol & 0xff,
                 longitudinal_magnitude, longitudinal_card_dir,
                 lateral_magnitude, lateral_card_dir);
@@ -139,7 +138,7 @@ void quit() {
 
 void monster_list(dungeon_t *d) {
     d_static = d;
-    int ch, height = 17, width = 31;
+    int ch, height = 12, width = 29;
     int starty = ((DUNGEON_Y - height) / 2) + 1,
         startx = (DUNGEON_X - width) / 2;
     WINDOW *w = create_newwin(height, width, starty, startx);
@@ -147,8 +146,8 @@ void monster_list(dungeon_t *d) {
 
     char *title = "MONSTER LIST";
     char *footer = "PRESS ESC TO EXIT";
-    mvprintw(starty + 1, startx + (width / 2) - (strlen(title) / 2), title);
-    mvprintw(starty + height - 2, startx + (width / 2) - (strlen(footer) / 2),
+    mvprintw(starty, startx + (width / 2) - (strlen(title) / 2), title);
+    mvprintw(starty + height - 1, startx + (width / 2) - (strlen(footer) / 2),
              footer);
 
     /* Copy of Dungeon's characters array. Characters and Character map

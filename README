@@ -1,23 +1,46 @@
-DUNGEON CRAWLER - ASSIGNMENT_NUM
+NAME
+    Dungeon Crawler (ASSIGNMENT_NUM) - A roguelike adventure game 
 
-SUMMARY:
-This roguelike dungeon game in now implemented with a playable character. Navigate with vim-like
-keybindings. Players are now able to utilize features like the Monster Menu, and the use of stairs
-to evaid enemies.
+DESCRIPTION
+    This roguelike dungeon game is now implemented with a playable character. Navigate with
+    vi-like keybindings. Players are now able to utilize features like the Monster List menu,
+    and the use of stairs to evade enemies.
 
 DUNGEON CRAWLER
-    --save   : Save a randomly generated dungeon to binary file in ~/.rlg327/dungeon. This file
+    --save   : Save a randomly generated dungeon to a binary file in ~/.rlg327/dungeon. This file
                 will be created if does not already exist.
     --load   : Load a saved dungeon from disk.
     --nummon : Tell the game how many monsters to load at the start. Choose a number between
-                1-15. Monster locations are not persistent.
+                1-30. Monster locations are not persistent.
+
 BUILD & EXECUTION
-    To build this project, simpily run make in the project's root directory. This when create
-    a executable binary named dungeon_crawler. All build files are kept in /build, and other
-    binaries are kept in /bin.
+    To build this project, simply run GNU make in the project's root directory. This will
+    generate an executable binary named dungeon_crawler. All build files are generated to
+    ./build, and supplemental binaries are kept in ./bin.
+
+KEYBINDINGS
+    IN-GAME
+        y or 7: Move to an upper left cell      >    : Go down a staircase
+        k or 8: Move up one cell                <    : Go up a staircase
+        u or 9: Move to an upper right cell     . or
+        l or 6: Move right one cell             5 or
+        n or 3: Move to a lower right cell      space: Rest for a turn
+        j or 2: Move down one cell              m    : Open the Monster List 
+        b or 1: Move to a lower left cell       q    : Quit the game
+        h or 4: Move left one cell 
+    MONSTER LIST
+        UP or k  : Scroll the list items up
+        DOWN or j: Scroll the list items down
+        ESC      : Exit the Monster List menu
 
 KNOWN ISSUES
     1. Monster characteristics are not fully implemented. Sixteen character combinations will 
         be available for the v1.06 release. All monsters are Telepathic and Intelligent, but half
         have the ability to Tunnel and the other half do not.
+
+AUTHOR
+    Zachary Mohling (zmohling @ gmail . com), with suggestions from Jeremy Sheaffer
+    (sheaffer @ iastate . edu).
+
+                                            2019
 

@@ -86,7 +86,7 @@ static uint8_t assign_characteristics() {
         characteristics += NPC_TELEPATHIC;
     }
 
-    if (!(rand() % 5)) {
+    if (!(rand() % 4)) {
         characteristics += NPC_TUNNELING;
     }
 

@@ -19,26 +19,31 @@ void render_dungeon(dungeon_t *d) {
         for (j = 0; j < DUNGEON_X; j++) {
             int y = (i + 1);
             int x = j;
-            char c;
+            char c = ' ';
 
             /* Characters */
             character_t *character = d->character_map[i][j];
             if (character != NULL && character->is_alive) {
                 if (character->is_pc == true) {
+                    attron(COLOR_PAIR(2));
                     mvprintw(y, x, "%c", character->symbol);
+                    attron(COLOR_PAIR(1));
                 } else {
+                    attron(COLOR_PAIR(3));
                     mvprintw(y, x, "%x", d->character_map[i][j]->symbol & 0xff);
+                    attron(COLOR_PAIR(1));
                 }
 
                 continue;
             }
 
-            /* Border */
+            /* Border /
             if (i == 0 || i == (DUNGEON_Y - 1)) {
                 c = '-';
             } else if (j == 0 || j == (DUNGEON_X - 1)) {
                 c = '|';
-            }
+            }*/
+
 
             /* Terrain */
             terrain_t t = d->map[i][j];
@@ -68,7 +73,30 @@ void render_dungeon(dungeon_t *d) {
         }
     }
 
+    render_room_borders(d);
+
     refresh();
+}
+
+void render_room_borders(dungeon_t *d) {
+    int i, x, y;
+    for (i = 0; i < d->num_rooms; i++) {
+        for (y = d->rooms[i].coordinates.y - 1;
+             y <= d->rooms[i].coordinates.y + d->rooms[i].height; y++) {
+            for (x = d->rooms[i].coordinates.x - 1;
+                 x <= d->rooms[i].coordinates.x + d->rooms[i].width; x++) {
+                if (d->map[y][x] != ter_wall) {
+                    ;
+                } else if (y == d->rooms[i].coordinates.y - 1 ||
+                    y == d->rooms[i].coordinates.y + d->rooms[i].height) {
+                    mvprintw(y + 1, x, "-");
+                } else if (x == d->rooms[i].coordinates.x - 1 ||
+                    x == d->rooms[i].coordinates.x + d->rooms[i].width) {
+                    mvprintw(y + 1, x, "|");
+                }
+            }
+        }
+    }
 }
 
 void render_hardness_map(dungeon_t *d) {
@@ -358,7 +386,9 @@ bool intersects(room_t *a, room_t *b) {
     return true;
 }
 
-room_t *get_room(dungeon_t *d, point_t *p) {
+/* Returns the room struct which contains paint_t *p
+ */
+room_t * get_room(dungeon_t *d, point_t *p) {
     room_t not_a_room;
     not_a_room.coordinates.x = p->x;
     not_a_room.coordinates.y = p->y;
@@ -373,6 +403,23 @@ room_t *get_room(dungeon_t *d, point_t *p) {
     }
 
     return NULL;
+}
+
+/* Returns true if the neighboring cells of point_t p contains
+ * at least one terrain_t t.
+ */
+bool has_neighbor(dungeon_t *d, terrain_t t, point_t p) {
+    int x, y;
+    for (y = p.y - 1; y < (p.y + 2) && y >= 0 && y < DUNGEON_Y; y++) {
+        for (x = p.x - 1; x < (p.x + 2) && x >=0 && y < DUNGEON_X; x++) {
+            if (x == p.x || y == p.y){
+                continue;
+            } else if (d->map[y][x] == t) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 /*

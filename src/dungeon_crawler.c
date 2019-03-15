@@ -20,8 +20,14 @@ static void init_curses() {
     intrflush(stdscr, FALSE);
     keypad(stdscr, TRUE);
     set_escdelay(0);
+
     start_color();
-    reset_color_pairs();
+    init_pair(1, COLOR_WHITE, COLOR_BLACK);
+    init_pair(2, COLOR_CYAN, COLOR_BLACK);
+    init_pair(3, COLOR_RED, COLOR_BLACK);
+
+    attron(COLOR_PAIR(1));
+
     clear();
 }
 
