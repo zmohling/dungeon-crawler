@@ -7,6 +7,7 @@
 #include "accessory_screens.h"
 #include "character.h"
 #include "dungeon.h"
+#include "dungeon_crawler.h"
 
 static dungeon_t *d_static;
 
@@ -130,12 +131,6 @@ static int print_monsters(dungeon_t *d, character_t *sorted_character_arr[],
     return adjusted_index;
 }
 
-/* TODO: Nice confirmation menu*/
-void quit() {
-    endwin();
-    exit(0);
-}
-
 void monster_list(dungeon_t *d) {
     d_static = d;
     int ch, height = 12, width = 29;
@@ -212,6 +207,5 @@ void endscreen(int didWin) {
     while (getch() != 'q')
         ;
 
-    endwin();
-    exit(0);
+    quit();
 }

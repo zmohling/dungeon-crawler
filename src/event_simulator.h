@@ -10,6 +10,6 @@ typedef struct event {
 } event_t;
 
 int event_simulator_start(dungeon_t *);
-void quit();
+int event_simulator_stop(dungeon_t *);
 
 #endif

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "accessory_screens.h"
+#include "dungeon_crawler.h"
 #include "input.h"
 #include "move.h"
 

@@ -108,3 +108,7 @@ int event_simulator_start(dungeon_t *d) {
     return 0;
 }
 
+int event_simulator_stop(dungeon_t *d) {
+
+    return 0;
+}

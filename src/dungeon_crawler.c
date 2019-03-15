@@ -4,11 +4,16 @@
 #include <time.h>
 #include <ncurses.h>
 
+#include "dungeon_crawler.h"
 #include "character.h"
 #include "dungeon.h"
 #include "event_simulator.h"
 #include "path_finder.h"
 #include "util.h"
+
+static dungeon_t dungeon;
+static bool save_on_quit;
+static char *path;
 
 static void init_curses() {
     initscr();
@@ -43,11 +48,9 @@ int main(int argc, char *argv[]) {
     srand(seed);
 
     /* Initialize path to ~/.rlg327/ */
-    char *path;
     path_init(&path);
 
     /* Dungeon*/
-    dungeon_t dungeon;
     memset(dungeon.character_map, 0, sizeof(character_t *) * DUNGEON_Y * DUNGEON_X);
 
     /* Number of monsters switch */
@@ -84,20 +87,32 @@ int main(int argc, char *argv[]) {
         generate_dungeon(&dungeon);
     }
 
-    /* Start Game */
-    init_curses();
-    event_simulator_start(&dungeon);
-    endwin();
-
     /* Save switch */
     char *save_str = "--save";
     if (contains(argc, argv, save_str, &n)) {
+        save_on_quit = true;
+    }
+
+    /* Start Game */
+    init_curses();
+    event_simulator_start(&dungeon);
+
+    return 0;
+}
+
+/* Function for ending the game. Frees memory, saves to disk, 
+ * and allows ncurses to restore terminal to stashed state.
+ */
+void quit() {
+    endwin();
+
+    if (save_on_quit) {
         write_dungeon_to_disk(&dungeon, path);
     }
 
     free(path);
     deep_free_dungeon(&dungeon);
 
-    return 0;
+    exit(0);
 }
 

@@ -49,8 +49,10 @@ int path_init(char **path) {
 
     /* Dot file directory's path */
     *path = malloc(strlen(home) + strlen("/.rlg327/dungeon") + 1);
+    //*path = malloc(strlen("bin/saved_dungeons/03.rlg327") + 1);
     strcpy(*path, home);
     strcat(*path, "/.rlg327/dungeon");
+    //strcat(*path, "bin/saved_dungeons/03.rlg327");
 
     free(dir);
 

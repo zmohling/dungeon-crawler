@@ -44,7 +44,6 @@ void render_dungeon(dungeon_t *d) {
                 c = '|';
             }*/
 
-
             /* Terrain */
             terrain_t t = d->map[i][j];
             switch (t) {
@@ -85,13 +84,15 @@ void render_room_borders(dungeon_t *d) {
              y <= d->rooms[i].coordinates.y + d->rooms[i].height; y++) {
             for (x = d->rooms[i].coordinates.x - 1;
                  x <= d->rooms[i].coordinates.x + d->rooms[i].width; x++) {
-                if (d->map[y][x] != ter_wall) {
+                if (d->map[y][x] != ter_wall &&
+                    d->map[y][x] != ter_wall_immutable) {
                     ;
                 } else if (y == d->rooms[i].coordinates.y - 1 ||
-                    y == d->rooms[i].coordinates.y + d->rooms[i].height) {
+                           y ==
+                               d->rooms[i].coordinates.y + d->rooms[i].height) {
                     mvprintw(y + 1, x, "-");
                 } else if (x == d->rooms[i].coordinates.x - 1 ||
-                    x == d->rooms[i].coordinates.x + d->rooms[i].width) {
+                           x == d->rooms[i].coordinates.x + d->rooms[i].width) {
                     mvprintw(y + 1, x, "|");
                 }
             }
@@ -388,7 +389,7 @@ bool intersects(room_t *a, room_t *b) {
 
 /* Returns the room struct which contains paint_t *p
  */
-room_t * get_room(dungeon_t *d, point_t *p) {
+room_t *get_room(dungeon_t *d, point_t *p) {
     room_t not_a_room;
     not_a_room.coordinates.x = p->x;
     not_a_room.coordinates.y = p->y;
@@ -411,8 +412,8 @@ room_t * get_room(dungeon_t *d, point_t *p) {
 bool has_neighbor(dungeon_t *d, terrain_t t, point_t p) {
     int x, y;
     for (y = p.y - 1; y < (p.y + 2) && y >= 0 && y < DUNGEON_Y; y++) {
-        for (x = p.x - 1; x < (p.x + 2) && x >=0 && y < DUNGEON_X; x++) {
-            if (x == p.x || y == p.y){
+        for (x = p.x - 1; x < (p.x + 2) && x >= 0 && y < DUNGEON_X; x++) {
+            if (x == p.x || y == p.y) {
                 continue;
             } else if (d->map[y][x] == t) {
                 return true;
