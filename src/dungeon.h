@@ -18,6 +18,7 @@
 #define ROOM_MAX_Y 10
 #define STAIRS_MAX 3
 #define PC_SPEED 10
+#define NPC_MAX_SPEED 15
 #define MONSTERS_MAX 30
 
 typedef enum __attribute__((__packed__)) terrain_type {

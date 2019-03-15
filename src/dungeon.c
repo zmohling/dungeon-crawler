@@ -23,10 +23,10 @@ void render_dungeon(dungeon_t *d) {
 
             /* Characters */
             character_t *character = d->character_map[i][j];
-            if (character != NULL) {
+            if (character != NULL && character->is_alive) {
                 if (character->is_pc == true) {
                     mvprintw(y, x, "%c", character->symbol);
-                } else if (character->is_alive) {
+                } else {
                     mvprintw(y, x, "%x", d->character_map[i][j]->symbol & 0xff);
                 }
 

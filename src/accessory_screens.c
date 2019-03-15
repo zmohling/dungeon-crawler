@@ -184,3 +184,35 @@ void monster_list(dungeon_t *d) {
     }
 }
 
+/* Win and Lost endscreen */
+void endscreen(int didWin) {
+    WINDOW *local_win;
+
+    local_win = newwin(24, 80, 0, 0);
+    box(local_win, 0, 0);
+    wrefresh(local_win);
+
+    char variableStr[81];
+    if (didWin) {
+        strncpy(variableStr, "<   You Won!   >", 81);
+    } else {
+        strncpy(variableStr, "< You've Died! >", 81);
+    }
+
+    mvprintw(6, 25, " ______________ ");
+    mvprintw(7, 25, "%s", variableStr);
+    mvprintw(8, 25, " -------------- ");
+    mvprintw(9, 25, "        \\   ^__^");
+    mvprintw(10, 25, "         \\  (oo)\\_______");
+    mvprintw(11, 25, "            (__)\\       )\\/\\");
+    mvprintw(12, 25, "                ||----w |");
+    mvprintw(13, 25, "                ||     ||");
+    mvprintw(16, 30, "PRESS 'q' TO QUIT");
+    refresh();
+
+    while (getch() != 'q')
+        ;
+
+    endwin();
+    exit(0);
+}

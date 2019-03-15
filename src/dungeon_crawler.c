@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
 
     /* Number of monsters switch */
     char *num_monsters_str = "--nummon";
-    int n = 10;
+    int n = (rand() % 5) + 5;
     if (contains(argc, argv, num_monsters_str, &n)) {
         n = atoi(argv[n + 1]);
 
