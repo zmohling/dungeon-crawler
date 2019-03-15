@@ -12,7 +12,7 @@
 #include "move.h"
 #include "path_finder.h"
 
-static void endscreen(int);
+/* Compare function for the discrete event simulator and heap */
 static int32_t event_compare(const void *key, const void *with) {
     if ((((event_t *)key)->turn) == (((event_t *)with)->turn)) {
         return ((int32_t)(((event_t *)key)->c->sequence_num) -
@@ -32,15 +32,18 @@ static event_t new_event(character_t *c) {
 }
 
 static int game_loop(dungeon_t *d) {
-    /* Game Loop */
+    /* Init distance maps */
+    non_tunnel_distance_map(d);
+    tunnel_distance_map(d);
+    render_dungeon(d);
+
+    /* Game Loop with discrete event simulator */
     while (d->pc->is_alive && npc_exists(d)) {
         event_t *e = (event_t *)heap_remove_min(&(d->event_queue));
+
         if (!e->c->is_alive) {
-            continue;
-        }
-        if (e->c->is_pc) {
-            non_tunnel_distance_map(d);
-            tunnel_distance_map(d);
+            ;
+        } else if (e->c->is_pc) {
             render_dungeon(d);
 
             handle_key(d, getch());
@@ -52,6 +55,7 @@ static int game_loop(dungeon_t *d) {
         heap_insert(&(d->event_queue), e);
     }
 
+    /* Show output for 0.25 seconds */
     render_dungeon(d);
     usleep(250000);
 
@@ -65,22 +69,29 @@ static int game_loop(dungeon_t *d) {
     return 0;
 }
 
+/* Starts the game loop and initializes the discrete event
+ * simulator. Populates event heap, characters array, and 
+ * character_map fields of the Dungeon struct. Memory dealloc.
+ * is in dungeon.c:deep_free_dungeon()
+ */
 int event_simulator_start(dungeon_t *d) {
+    /* Allocate memory for events and characters arrays */
     if (!(d->events = calloc(1, sizeof(event_t) * (d->num_monsters + 1)))) {
         fprintf(stderr, "Did not allocate events array in dungeon struct.");
         exit(-122);
     }
     if (!(d->characters =
               calloc(1, sizeof(character_t) * (d->num_monsters + 1)))) {
-        fprintf(stderr, "Did not allocate events array in dungeon struct.");
-        exit(-122);
+        fprintf(stderr, "Did not allocate characters array in dungeon struct.");
+        exit(-123);
     }
 
     heap_init(&(d->event_queue), event_compare, NULL);
 
+    /* Populate arrays, create events, and insert events into heap */
     int i;
     for (i = 0; i < (d->num_monsters + 1); i++) {
-        d->characters[i] = character_add(d);
+        d->characters[i] = new_character(d);
         d->character_map[d->characters[i].position.y]
                         [d->characters[i].position.x] = &(d->characters[i]);
 
@@ -88,43 +99,12 @@ int event_simulator_start(dungeon_t *d) {
         heap_insert(&(d->event_queue), &(d->events[i]));
     }
 
-    d->pc = &(d->characters[0]);
+    /* Dungeon's PC pointer. PC is always first in characters array. */
+    //d->pc = &(d->characters[0]);
 
-    non_tunnel_distance_map(d);
-    tunnel_distance_map(d);
 
     game_loop(d);
 
     return 0;
 }
 
-static void endscreen(int didWin) {
-    WINDOW *local_win;
-
-    local_win = newwin(23, 81, 1, 0);
-    box(local_win, 0, 0);
-    wrefresh(local_win);
-
-    char variableStr[81];
-    if (didWin) {
-        strncpy(variableStr, "<   You Won!   >", 81);
-    } else {
-        strncpy(variableStr, "< You've Died! >", 81);
-    }
-
-    mvprintw(0, 0, "                     ");
-    mvprintw(5, 25, " ______________ ");
-    mvprintw(6, 25, "%s", variableStr);
-    mvprintw(7, 25, " -------------- ");
-    mvprintw(8, 25, "        \\   ^__^");
-    mvprintw(9, 25, "         \\  (oo)\\_______");
-    mvprintw(10, 25, "            (__)\\       )\\/\\");
-    mvprintw(11, 25, "                ||----w |");
-    mvprintw(12, 25, "                ||     ||");
-    mvprintw(18, 25, "PRESS ANY CHARACTER TO EXIT");
-
-    getch();
-
-    endwin();
-    exit(0);
-}

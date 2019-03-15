@@ -1,9 +1,9 @@
 #include <ncurses.h>
 #include <stdlib.h>
 
+#include "accessory_screens.h"
 #include "input.h"
 #include "move.h"
-#include "accessory_screens.h"
 
 static void get_new_input(int *key_is_valid, int *input) {
     *key_is_valid = 0;
@@ -16,12 +16,13 @@ void handle_key(dungeon_t *d, int c) {
     int input = c;
     int key_is_valid;
 
-    /*Clear status line */
-    move(0, 0);
-    clrtoeol();
-
     do {
         key_is_valid = 1;
+
+        /*Clear status line */
+        move(0, 0);
+        clrtoeol();
+
         switch (input) {
             case '7':
             case 'y':
@@ -49,7 +50,8 @@ void handle_key(dungeon_t *d, int c) {
                 }
                 break;
             case '>':
-                if (d->map[d->pc->position.y][d->pc->position.x] == ter_stairs_down) {
+                if (d->map[d->pc->position.y][d->pc->position.x] ==
+                    ter_stairs_down) {
                     /* Valid */
                     use_stairs(d, pc_down_stairs);
                 } else {
@@ -59,7 +61,8 @@ void handle_key(dungeon_t *d, int c) {
                 }
                 break;
             case '<':
-                if (d->map[d->pc->position.y][d->pc->position.x] == ter_stairs_up) {
+                if (d->map[d->pc->position.y][d->pc->position.x] ==
+                    ter_stairs_up) {
                     /* Valid */
                     use_stairs(d, pc_up_stairs);
                 } else {
@@ -88,4 +91,3 @@ void handle_key(dungeon_t *d, int c) {
 
     } while (!key_is_valid);
 }
-

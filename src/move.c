@@ -12,14 +12,21 @@
 #include "move.h"
 #include "path_finder.h"
 
-int move_pc(dungeon_t *d, int c) {
-    character_t *pc = d->pc;
-    point_t next_pos;
+static void move_helper(dungeon_t *, character_t *, point_t *);
 
+/* Handles PC movement. Moves and returns 0 if a valid movement,
+ * or displays a message and returns a nonzero value if that
+ * move connot be done.
+ */
+int move_pc(dungeon_t *d, int ch) {
+    character_t *pc = d->pc;
+
+    point_t next_pos;
     next_pos.x = pc->position.x;
     next_pos.y = pc->position.y;
 
-    switch (c) {
+    /* Stage next_pos per input char */
+    switch (ch) {
         case '7':
         case 'y':
             next_pos.x = next_pos.x - 1;
@@ -70,59 +77,62 @@ int move_pc(dungeon_t *d, int c) {
             break;
     }
 
+    /* Check if next_pos is valid and trample monsters */
     if (d->map[next_pos.y][next_pos.x] != ter_wall &&
         d->map[next_pos.y][next_pos.x] != ter_wall_immutable) {
-        if (!(check_for_trample(d, next_pos.x, next_pos.y))) {
+        if (!(check_for_trample(d, pc, next_pos.x, next_pos.y))) {
             mvprintw(0, 0, "You slayed a monster!");
         }
-        d->character_map[pc->position.y][pc->position.x] = NULL;
-        pc->position = next_pos;
-        d->character_map[pc->position.y][pc->position.x] = pc;
+
+        move_helper(d, pc, &next_pos);
+
+        /* Update Distance Maps */
+        non_tunnel_distance_map(d);
+        tunnel_distance_map(d);
 
         return 0;
     } else {
-        return -1;
+        return 1;
     }
 }
 
+/* This function generates a new dungeon when
+ * the PC goes up or down stairs. Places the PC
+ * on an appropriate staircase.
+ */
 int use_stairs(dungeon_t *d, pc_movement_t p) {
     deep_free_dungeon(d);
-
     generate_dungeon(d);
+
     d->pc = malloc(sizeof(character_t));
-
-
-    point_t pt;
-    terrain_t t = ter_stairs;
-
     if (p == pc_up_stairs) {
-        t = ter_stairs_down;
+        d->pc->position.x = d->stairs_down[0].x;
+        d->pc->position.y = d->stairs_down[0].y;
     } else if (p == pc_down_stairs) {
-        t = ter_stairs_up;
+        d->pc->position.x = d->stairs_up[0].x;
+        d->pc->position.y = d->stairs_up[0].y;
     }
-
-    int i, j;
-    for (i = 0; i < DUNGEON_Y; i++) {
-        for (j = 0; j < DUNGEON_X; j++) {
-            if (d->map[i][j] == t) {
-                pt.y = i;
-                pt.x = j;
-            }
-        }
-    }
-
-    d->pc->position.y = pt.y;
-    d->pc->position.x = pt.x;
+    d->num_monsters = (rand() % 7) + 5;
 
     event_simulator_start(d);
     return 0;
 }
 
+/* Jump table for NPC move functions.
+ * TODO: Implement jtable and more move functions
+ */
 int move_npc(dungeon_t *d, character_t *c) {
+    if (c->npc->characteristics & 0x08) {
+        if (rand() % 2) {
+            move_npc_erratic(d, c);
+            return 0;
+        }
+    }
+
     if (c->npc->characteristics & 0x04) {
         move_npc_tunnel(d, c);
     } else {
-        if (d->non_tunnel_distance_map[c->position.y][c->position.x] < 10) {
+        if (d->non_tunnel_distance_map[c->position.y][c->position.x] < 12) {
             move_npc_non_tunnel(d, c);
         }
     }
@@ -130,12 +140,15 @@ int move_npc(dungeon_t *d, character_t *c) {
     return 0;
 }
 
+/* Move non-tunneling NPCs by a gradient.
+ * TODO: Implement a dijkstra's version for
+ * smarter NPCs
+ */
 int move_npc_non_tunnel(dungeon_t *d, character_t *c) {
+    uint8_t distance = UINT8_MAX;
     point_t next_pos;
     next_pos.x = c->position.x;
     next_pos.y = c->position.y;
-
-    uint8_t distance = UINT8_MAX;
 
     int x, y;
     for (y = (c->position.y - 1); y <= (c->position.y + 1); y++) {
@@ -147,6 +160,7 @@ int move_npc_non_tunnel(dungeon_t *d, character_t *c) {
                 continue;
             }
 
+            /* Prefers cardinal directions */
             if (d->non_tunnel_distance_map[y][x] < distance ||
                 (d->non_tunnel_distance_map[y][x] <= distance &&
                  ((abs(x - c->position.x) + abs(y - c->position.y)) == 1))) {
@@ -157,19 +171,21 @@ int move_npc_non_tunnel(dungeon_t *d, character_t *c) {
         }
     }
 
-    check_for_trample(d, next_pos.x, next_pos.y);
-    d->character_map[c->position.y][c->position.x] = NULL;
-    c->position = next_pos;
-    d->character_map[c->position.y][c->position.x] = c;
+    check_for_trample(d, c, next_pos.x, next_pos.y);
+    move_helper(d, c, &next_pos);
 
     return 0;
 }
 
+/* Move tunneling NPCs by a gradient.
+ * TODO: Implement a dijkstra's version for
+ * smarter NPCs
+ */
 int move_npc_tunnel(dungeon_t *d, character_t *c) {
+    uint8_t min_cost = UINT8_MAX;
     point_t next_pos;
     next_pos.x = c->position.x;
     next_pos.y = c->position.y;
-    uint8_t min_cost = UINT8_MAX;
 
     int x, y;
     for (y = (c->position.y - 1); y <= (c->position.y + 1); y++) {
@@ -183,6 +199,7 @@ int move_npc_tunnel(dungeon_t *d, character_t *c) {
             uint8_t cost =
                 d->tunnel_distance_map[y][x] + (d->hardness_map[y][x] / 85);
 
+            /* Prefers cardinal directions */
             if (cost < min_cost ||
                 (cost <= min_cost &&
                  ((abs(x - c->position.x) + abs(y - c->position.y)) == 1))) {
@@ -192,6 +209,8 @@ int move_npc_tunnel(dungeon_t *d, character_t *c) {
             }
         }
     }
+
+    /* Remove hardness if next_pos is of wall terrain*/
     if (d->hardness_map[next_pos.y][next_pos.x] > 85) {
         d->hardness_map[next_pos.y][next_pos.x] -= 85;
         tunnel_distance_map(d);
@@ -205,18 +224,35 @@ int move_npc_tunnel(dungeon_t *d, character_t *c) {
         non_tunnel_distance_map(d);
         tunnel_distance_map(d);
     }
+
+    /* Move NPC when next_pos is of floor terrain */
     if (d->hardness_map[next_pos.y][next_pos.x] == 0) {
-        check_for_trample(d, next_pos.x, next_pos.y);
-        d->character_map[c->position.y][c->position.x] = NULL;
-        c->position.x = next_pos.x;
-        c->position.y = next_pos.y;
-        d->character_map[c->position.y][c->position.x] = c;
+        check_for_trample(d, c, next_pos.x, next_pos.y);
+        move_helper(d, c, &next_pos);
     }
+
     return 0;
 }
 
-int check_for_trample(dungeon_t *d, int x, int y) {
-    if (d->character_map[y][x] != NULL && d->character_map[y][x]->is_alive) {
+int move_npc_erratic(dungeon_t *d, character_t *c) {
+    point_t next_pos;
+    next_pos.x = c->position.x + (rand() % 3) - 1;
+    next_pos.y = c->position.y + (rand() % 3) - 1;
+
+    if (d->hardness_map[next_pos.y][next_pos.x] == 0) {
+        check_for_trample(d, c, next_pos.x, next_pos.y);
+        move_helper(d, c, &next_pos);
+    }
+
+    return 0;
+}
+
+/* Checks position for intended movement. If a
+ * character exists at (x, y), "kills" it and updates the
+ * relevant data structures.
+ */
+int check_for_trample(dungeon_t *d, character_t *c, int x, int y) {
+    if (d->character_map[y][x] != NULL && d->character_map[y][x] != c) {
         d->character_map[y][x]->is_alive = false;
         d->character_map[y][x] = NULL;
 
@@ -224,4 +260,11 @@ int check_for_trample(dungeon_t *d, int x, int y) {
     }
 
     return 1;  // no kill
+}
+
+static void move_helper(dungeon_t *d, character_t *c, point_t *next_pos) {
+    d->character_map[c->position.y][c->position.x] = NULL;
+    c->position.x = next_pos->x;
+    c->position.y = next_pos->y;
+    d->character_map[c->position.y][c->position.x] = c;
 }

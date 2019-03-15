@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <ncurses.h>
 
@@ -19,6 +20,14 @@ static void init_curses() {
     intrflush(stdscr, FALSE);
     keypad(stdscr, TRUE);
     set_escdelay(0);
+
+    start_color();
+    init_pair(1, COLOR_WHITE, COLOR_BLACK);
+    init_pair(2, COLOR_CYAN, COLOR_BLACK);
+    init_pair(3, COLOR_RED, COLOR_BLACK);
+
+    attron(COLOR_PAIR(1));
+
     clear();
 }
 
@@ -39,10 +48,11 @@ int main(int argc, char *argv[]) {
 
     /* Dungeon*/
     dungeon_t dungeon;
+    memset(dungeon.character_map, 0, sizeof(character_t *) * DUNGEON_Y * DUNGEON_X);
 
     /* Number of monsters switch */
     char *num_monsters_str = "--nummon";
-    int n = 10;
+    int n = (rand() % 7) + 5;
     if (contains(argc, argv, num_monsters_str, &n)) {
         n = atoi(argv[n + 1]);
 
@@ -78,11 +88,6 @@ int main(int argc, char *argv[]) {
     init_curses();
     event_simulator_start(&dungeon);
     endwin();
-
-    //render_hardness_map(&dungeon);
-    //render_movement_cost_map(&dungeon);
-    //render_distance_map(&dungeon);
-    //render_tunnel_distance_map(&dungeon);
 
     /* Save switch */
     char *save_str = "--save";
