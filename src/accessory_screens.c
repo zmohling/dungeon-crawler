@@ -92,18 +92,25 @@ static int print_monsters(dungeon_t *d, character_t *sorted_character_arr[],
                           int startx) {
     int inner_bound_y = starty + 2, inner_bound_x = startx + 1, i;
     int lines = (height - 4);
+    int num_monsters_alive = 0;
+
+    for (i = 1; i < d->num_monsters + 1; i++) {
+        if (sorted_character_arr[i]->is_alive) {
+            num_monsters_alive++;
+        }
+    }
 
     int adjusted_index = index;
-    if (index < 0 || d->num_monsters <= lines) {
+    if (index < 0 || num_monsters_alive <= lines) {
         adjusted_index = 0;
-    } else if (index > (d->num_monsters - (lines))) {
-        adjusted_index = (d->num_monsters - (lines));
+    } else if (index > (num_monsters_alive - (lines))) {
+        adjusted_index = (num_monsters_alive - (lines));
     }
 
     int longitudinal_magnitude, lateral_magnitude;
     char *longitudinal_card_dir, *lateral_card_dir;
 
-    for (i = 0; i < lines && i < d->num_monsters; i++) {
+    for (i = 0; i < lines && i < num_monsters_alive; i++) {
         get_mag_and_direction(d, sorted_character_arr[adjusted_index + i + 1],
                               &longitudinal_magnitude, &longitudinal_card_dir,
                               &lateral_magnitude, &lateral_card_dir);

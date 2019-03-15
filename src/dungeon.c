@@ -18,7 +18,7 @@ void render_dungeon(dungeon_t *d) {
     for (i = 0; i < DUNGEON_Y; i++) {
         for (j = 0; j < DUNGEON_X; j++) {
             int y = (i + 1);
-            int x = (j + 1);
+            int x = j;
             char c;
 
             /* Characters */
@@ -26,7 +26,7 @@ void render_dungeon(dungeon_t *d) {
             if (character != NULL) {
                 if (character->is_pc == true) {
                     mvprintw(y, x, "%c", character->symbol);
-                } else {
+                } else if (character->is_alive) {
                     mvprintw(y, x, "%x", d->character_map[i][j]->symbol & 0xff);
                 }
 

@@ -102,7 +102,7 @@ int event_simulator_start(dungeon_t *d) {
 static void endscreen(int didWin) {
     WINDOW *local_win;
 
-    local_win = newwin(23, 81, 1, 0);
+    local_win = newwin(24, 80, 0, 0);
     box(local_win, 0, 0);
     wrefresh(local_win);
 
@@ -113,18 +113,19 @@ static void endscreen(int didWin) {
         strncpy(variableStr, "< You've Died! >", 81);
     }
 
-    mvprintw(0, 0, "                     ");
-    mvprintw(5, 25, " ______________ ");
-    mvprintw(6, 25, "%s", variableStr);
-    mvprintw(7, 25, " -------------- ");
-    mvprintw(8, 25, "        \\   ^__^");
-    mvprintw(9, 25, "         \\  (oo)\\_______");
-    mvprintw(10, 25, "            (__)\\       )\\/\\");
-    mvprintw(11, 25, "                ||----w |");
-    mvprintw(12, 25, "                ||     ||");
-    mvprintw(18, 25, "PRESS ANY CHARACTER TO EXIT");
+    mvprintw(6, 25, " ______________ ");
+    mvprintw(7, 25, "%s", variableStr);
+    mvprintw(8, 25, " -------------- ");
+    mvprintw(9, 25, "        \\   ^__^");
+    mvprintw(10, 25, "         \\  (oo)\\_______");
+    mvprintw(11, 25, "            (__)\\       )\\/\\");
+    mvprintw(12, 25, "                ||----w |");
+    mvprintw(13, 25, "                ||     ||");
+    mvprintw(16, 30, "PRESS 'q' TO QUIT");
+    refresh();
 
-    getch();
+    while (getch() != 'q')
+        ;
 
     endwin();
     exit(0);
