@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <ncurses.h>
 
@@ -41,6 +42,7 @@ int main(int argc, char *argv[]) {
 
     /* Dungeon*/
     dungeon_t dungeon;
+    memset(dungeon.character_map, 0, sizeof(character_t *) * DUNGEON_Y * DUNGEON_X);
 
     /* Number of monsters switch */
     char *num_monsters_str = "--nummon";
@@ -80,11 +82,6 @@ int main(int argc, char *argv[]) {
     init_curses();
     event_simulator_start(&dungeon);
     endwin();
-
-    //render_hardness_map(&dungeon);
-    //render_movement_cost_map(&dungeon);
-    //render_distance_map(&dungeon);
-    //render_tunnel_distance_map(&dungeon);
 
     /* Save switch */
     char *save_str = "--save";

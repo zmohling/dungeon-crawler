@@ -216,7 +216,7 @@ int move_npc_tunnel(dungeon_t *d, character_t *c) {
 }
 
 int check_for_trample(dungeon_t *d, int x, int y) {
-    if (d->character_map[y][x] != NULL && d->character_map[y][x]->is_alive) {
+    if (d->character_map[y][x] != NULL) {
         d->character_map[y][x]->is_alive = false;
         d->character_map[y][x] = NULL;
 
