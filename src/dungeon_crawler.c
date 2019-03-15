@@ -19,6 +19,8 @@ static void init_curses() {
     intrflush(stdscr, FALSE);
     keypad(stdscr, TRUE);
     set_escdelay(0);
+    start_color();
+    reset_color_pairs();
     clear();
 }
 

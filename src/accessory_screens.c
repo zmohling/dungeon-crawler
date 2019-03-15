@@ -8,6 +8,49 @@
 #include "character.h"
 #include "dungeon.h"
 
+static dungeon_t *d_static;
+
+/* This function is for sorting the characters array
+ * in the dungeon struct by distance from the PC. This
+ * is so the Monster List displays the closest monsters
+ * at the top.
+ */
+static int quick_sort_compare(const void *key, const void *with) {
+    int key_distance, with_distance;
+
+    if ((*((character_t **)key))->is_pc) {
+        return -1;
+    } else if (!(*((character_t **)key))->is_alive) {
+        return 1;
+    } else if ((*((character_t **)key))->npc->characteristics & 0x04) {
+        key_distance =
+            d_static->tunnel_distance_map[(*((character_t **)key))->position.y]
+                                         [(*((character_t **)key))->position.x];
+    } else {
+        key_distance =
+            d_static
+                ->non_tunnel_distance_map[(*((character_t **)key))->position.y]
+                                         [(*((character_t **)key))->position.x];
+    }
+
+    if ((*((character_t **)with))->is_pc) {
+        return 1;
+    } else if (!(*((character_t **)with))->is_alive) {
+        return -1;
+    } else if ((*((character_t **)with))->npc->characteristics & 0x04) {
+        with_distance =
+            d_static
+                ->tunnel_distance_map[(*((character_t **)with))->position.y]
+                                     [(*((character_t **)with))->position.x];
+    } else {
+        with_distance = d_static->non_tunnel_distance_map
+                            [(*((character_t **)with))->position.y]
+                            [(*((character_t **)with))->position.x];
+    }
+
+    return key_distance - with_distance;
+}
+
 static WINDOW *create_newwin(int height, int width, int starty, int startx) {
     WINDOW *local_win;
 
@@ -44,8 +87,9 @@ static void get_mag_and_direction(dungeon_t *d, character_t *c, int *m1,
     }
 }
 
-static int print_monsters(dungeon_t *d, int index, int height, int width,
-                          int starty, int startx) {
+static int print_monsters(dungeon_t *d, character_t *sorted_character_arr[],
+                          int index, int height, int width, int starty,
+                          int startx) {
     int inner_bound_y = starty + 2, inner_bound_x = startx + 1, i;
     int lines = (height - 4);
 
@@ -60,15 +104,18 @@ static int print_monsters(dungeon_t *d, int index, int height, int width,
     char *longitudinal_card_dir, *lateral_card_dir;
 
     for (i = 0; i < lines && i < d->num_monsters; i++) {
-        get_mag_and_direction(d, &d->characters[adjusted_index + i + 1],
+        get_mag_and_direction(d, sorted_character_arr[adjusted_index + i + 1],
                               &longitudinal_magnitude, &longitudinal_card_dir,
                               &lateral_magnitude, &lateral_card_dir);
 
-        mvprintw(inner_bound_y + i, inner_bound_x,
-                 " %2d  %x: %2d %s and %2d %s", adjusted_index + i + 1,
-                 d->characters[adjusted_index + i + 1].symbol & 0xff,
-                 longitudinal_magnitude, longitudinal_card_dir,
-                 lateral_magnitude, lateral_card_dir);
+        if (sorted_character_arr[adjusted_index + i + 1]->is_alive) {
+            mvprintw(
+                inner_bound_y + i, inner_bound_x, " %2d  %x: %2d %s and %2d %s",
+                adjusted_index + i + 1,
+                sorted_character_arr[adjusted_index + i + 1]->symbol & 0xff,
+                longitudinal_magnitude, longitudinal_card_dir,
+                lateral_magnitude, lateral_card_dir);
+        }
 
         free(longitudinal_card_dir);
         free(lateral_card_dir);
@@ -84,6 +131,7 @@ void quit() {
 }
 
 void monster_list(dungeon_t *d) {
+    d_static = d;
     int ch, height = 17, width = 31;
     int starty = ((DUNGEON_Y - height) / 2) + 1,
         startx = (DUNGEON_X - width) / 2;
@@ -96,19 +144,32 @@ void monster_list(dungeon_t *d) {
     mvprintw(starty + height - 2, startx + (width / 2) - (strlen(footer) / 2),
              footer);
 
+    /* Copy of Dungeon's characters array. Characters and Character map
+     * became out of sync when sorting the array itself. */
+    character_t *sorted_character_arr[d->num_monsters + 1];
+
+    int i;
+    for (i = 0; i < d->num_monsters + 1; i++) {
+        sorted_character_arr[i] = &(d->characters[i]);
+    }
+
+    qsort(sorted_character_arr, d->num_monsters + 1, sizeof(character_t *),
+          &quick_sort_compare);
+
     int index = 0;
-    print_monsters(d, index, height, width, starty, startx);
+    print_monsters(d, sorted_character_arr, index, height, width, starty,
+                   startx);
     while ((ch = getch()) != 27) {
         switch (ch) {
             case 'k':
             case KEY_UP:
-                index =
-                    print_monsters(d, --index, height, width, starty, startx);
+                index = print_monsters(d, sorted_character_arr, --index, height,
+                                       width, starty, startx);
                 break;
             case 'j':
             case KEY_DOWN:
-                index =
-                    print_monsters(d, ++index, height, width, starty, startx);
+                index = print_monsters(d, sorted_character_arr, ++index, height,
+                                       width, starty, startx);
                 break;
         }
 

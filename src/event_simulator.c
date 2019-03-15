@@ -13,6 +13,7 @@
 #include "path_finder.h"
 
 static void endscreen(int);
+
 static int32_t event_compare(const void *key, const void *with) {
     if ((((event_t *)key)->turn) == (((event_t *)with)->turn)) {
         return ((int32_t)(((event_t *)key)->c->sequence_num) -
@@ -72,8 +73,8 @@ int event_simulator_start(dungeon_t *d) {
     }
     if (!(d->characters =
               calloc(1, sizeof(character_t) * (d->num_monsters + 1)))) {
-        fprintf(stderr, "Did not allocate events array in dungeon struct.");
-        exit(-122);
+        fprintf(stderr, "Did not allocate characters array in dungeon struct.");
+        exit(-123);
     }
 
     heap_init(&(d->event_queue), event_compare, NULL);
