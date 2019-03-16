@@ -1,3 +1,5 @@
+#include "dungeon.h"
+
 #include <endian.h>
 #include <errno.h>
 #include <limits.h>
@@ -9,7 +11,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "dungeon.h"
 #include "heap.h"
 #include "path_finder.h"
 

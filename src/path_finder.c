@@ -1,7 +1,8 @@
+#include "path_finder.h"
+
 #include <stdlib.h>
 
 #include "dungeon.h"
-#include "path_finder.h"
 
 /* Static dungeon var for comparators */
 static dungeon_t *d_static;

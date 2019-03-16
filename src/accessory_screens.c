@@ -1,10 +1,11 @@
+#include "accessory_screens.h"
+
 #include <math.h>
 #include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "accessory_screens.h"
 #include "character.h"
 #include "dungeon.h"
 #include "dungeon_crawler.h"

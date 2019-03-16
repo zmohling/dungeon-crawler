@@ -1,10 +1,11 @@
+#include "dungeon_crawler.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <ncurses.h>
 
-#include "dungeon_crawler.h"
 #include "character.h"
 #include "dungeon.h"
 #include "event_simulator.h"

@@ -1,9 +1,10 @@
+#include "input.h"
+
 #include <ncurses.h>
 #include <stdlib.h>
 
 #include "accessory_screens.h"
 #include "dungeon_crawler.h"
-#include "input.h"
 #include "move.h"
 
 static void get_new_input(int *key_is_valid, int *input) {

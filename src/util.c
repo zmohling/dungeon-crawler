@@ -1,3 +1,5 @@
+#include "util.h"
+
 #include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -5,8 +7,6 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
-#include "util.h"
 
 /*
  * Iterates through *argv for specified

@@ -1,4 +1,5 @@
-#include <menu.h>
+#include "event_simulator.h"
+
 #include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,7 +8,6 @@
 
 #include "accessory_screens.h"
 #include "dungeon.h"
-#include "event_simulator.h"
 #include "input.h"
 #include "move.h"
 #include "path_finder.h"

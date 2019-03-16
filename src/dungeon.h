@@ -11,7 +11,7 @@
 #define DUNGEON_X 80
 #define DUNGEON_Y 21
 #define MIN_ROOMS 6
-#define MAX_ROOMS 9
+#define MAX_ROOMS 8
 #define ROOM_MIN_X 4
 #define ROOM_MIN_Y 3
 #define ROOM_MAX_X 12

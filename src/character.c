@@ -1,7 +1,9 @@
 #include "character.h"
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "dungeon.h"
 
 static uint8_t assign_characteristics();

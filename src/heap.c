@@ -1,9 +1,9 @@
+#include "heap.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "heap.h"
 
 struct heap_node {
     heap_node_t *next;

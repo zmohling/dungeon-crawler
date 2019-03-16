@@ -1,3 +1,5 @@
+#include "move.h"
+
 #include <limits.h>
 #include <math.h>
 #include <ncurses.h>
@@ -9,7 +11,6 @@
 #include "dungeon.h"
 #include "geometry.h"
 #include "input.h"
-#include "move.h"
 #include "path_finder.h"
 
 static void move_helper(dungeon_t *, character_t *, point_t *);
