@@ -3,7 +3,6 @@ CXX=g++
 ECHO=echo
 RM=rm -rvf
 MKDIR=mkdir -p
-LINT = lint
 
 CFLAGS=-Wall -ggdb3 -funroll-loops -fstack-protector-strong
 CXXFLAGS=-Wall -ggdb3 -funroll-loops -fstack-protector-strong
@@ -18,7 +17,6 @@ CXX_SRC=$(wildcard $(SRC_DIR)/*.cc)
 OBJ=$(C_SRC:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o) \
 	$(CXX_SRC:$(SRC_DIR)/%.cc=$(BUILD_DIR)/%.o)
 DEP=$(OBJ:%.o=%.d)
-LINTFILES= $(C_SRC:.c=.ln)
 
 $(BIN): $(OBJ)
 	@$(ECHO) Linking compiled files... 
@@ -37,14 +35,8 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cc
 	@$(MKDIR) $(@D)
 	@$(CXX) $(CXXFLAGS) -MMD -c $< -o $@
 
-$(LINTFILES):
-	$(LINT.c) $@ -i
-
-.PHONY: clean lint
+.PHONY: clean
 clean:
 	@$(ECHO) Removing all generated files and executables...
 	@$(RM) $(BUILD_DIR) $(BIN) core vgcore.* valgrind*
 	@$(ECHO) Done.
-
-lint: $(LINTFILES) 
-	$(LINT.c) $(LINTFILES) 
