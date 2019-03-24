@@ -69,7 +69,9 @@ void render_dungeon(dungeon_t *d) {
                     c = '+';
             }
 
-            mvprintw(y, x, "%c", c);
+            if (d->map_observed[i][j]) {
+                mvprintw(y, x, "%c", c);
+            }
         }
     }
 

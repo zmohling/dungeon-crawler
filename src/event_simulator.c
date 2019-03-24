@@ -11,6 +11,7 @@
 #include "input.h"
 #include "move.h"
 #include "path_finder.h"
+#include "fov.h"
 
 /* Compare function for the discrete event simulator and heap */
 static int32_t event_compare(const void *key, const void *with) {
@@ -45,6 +46,7 @@ static int game_loop(dungeon_t *d) {
             ;
         } else if (e->c->is_pc) {
             render_dungeon(d);
+            FOV_recursive_shadowcast(d, 1.0, 0, d->pc->position.y, d->pc->position.x, 1, 5);
 
             handle_key(d, getch());
         } else {
