@@ -48,7 +48,7 @@ static int game_loop(dungeon_t *d) {
             slope_pair_t s;
             s.start_slope = 1.0;
             s.end_slope = 0.0;
-            FOV_recursive_shadowcast(d, &d->pc->position, s, 1, 4, 1);
+            FOV_recursive_shadowcast(d, &d->pc->position, s, 1, 3, 1);
             render_dungeon(d);
             FOV_clear(d);
 

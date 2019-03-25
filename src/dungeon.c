@@ -70,7 +70,7 @@ void render_dungeon(dungeon_t *d) {
             }
 
             if (d->map_observed[i][j]) {
-                attron(COLOR_PAIR(2));
+                attron(COLOR_PAIR(3));
                 mvprintw(y, x, "%c", c);
                 attron(COLOR_PAIR(1));
             } else {
