@@ -8,34 +8,66 @@
 #include "dungeon.h"
 #include "geometry.h"
 
-static double FOV_slope(double x1, double y1, double x2, double y2,
-                        int octant) {
-    double result = 0;
-
+static void FOV_slopes_from_src(point_t src, point_t dest,
+                                slope_pair_t *cell_slopes, int octant) {
     switch (octant) {
         case 1:
+            cell_slopes->start_slope =
+                -1.0 * (((dest.y - 1.0) - (src.y - 0.5)) /
+                        ((dest.x - 1.0) - (src.x - 0.5)));
+            cell_slopes->end_slope = -1.0 * (((dest.y) - (src.y - 0.5)) /
+                                             ((dest.x) - (src.x - 0.5)));
+            break;
         case 5:
-            result = -1 * ((y2 - y1) / (x2 - x1));
+            cell_slopes->start_slope = -1.0 * (((dest.y) - (src.y - 0.5)) /
+                                               ((dest.x) - (src.x - 0.5)));
+            cell_slopes->end_slope = -1.0 * (((dest.y - 1.0) - (src.y - 0.5)) /
+                                             ((dest.x - 1.0) - (src.x - 0.5)));
             break;
         case 4:
+            cell_slopes->start_slope = 1.0 * (((dest.y - 1.0) - (src.y - 0.5)) /
+                                              ((dest.x) - (src.x - 0.5)));
+            cell_slopes->end_slope = 1.0 * (((dest.y) - (src.y - 0.5)) /
+                                            ((dest.x - 1.0) - (src.x - 0.5)));
+            break;
         case 8:
-            result = 1 * ((y2 - y1) / (x2 - x1));
+            cell_slopes->start_slope = 1.0 * (((dest.y) - (src.y - 0.5)) /
+                                              ((dest.x - 1.0) - (src.x - 0.5)));
+            cell_slopes->end_slope = 1.0 * (((dest.y - 1.0) - (src.y - 0.5)) /
+                                            ((dest.x) - (src.x - 0.5)));
             break;
         case 3:
+            cell_slopes->start_slope = 1.0 / (((dest.y) - (src.y - 0.5)) /
+                                              ((dest.x - 1.0) - (src.x - 0.5)));
+            cell_slopes->end_slope = 1.0 / (((dest.y - 1.0) - (src.y - 0.5)) /
+                                            ((dest.x) - (src.x - 0.5)));
+            break;
         case 7:
-            result = 1 / ((y2 - y1) / (x2 - x1));
+            cell_slopes->start_slope = 1.0 / (((dest.y - 1.0) - (src.y - 0.5)) /
+                                              ((dest.x) - (src.x - 0.5)));
+            cell_slopes->end_slope = 1.0 / (((dest.y) - (src.y - 0.5)) /
+                                            ((dest.x - 1.0) - (src.x - 0.5)));
             break;
         case 2:
+            cell_slopes->start_slope = -1.0 / (((dest.y) - (src.y - 0.5)) /
+                                               ((dest.x) - (src.x - 0.5)));
+            cell_slopes->end_slope = -1.0 / (((dest.y - 1.0) - (src.y - 0.5)) /
+                                             ((dest.x - 1.0) - (src.x - 0.5)));
+            break;
         case 6:
-            result = -1 / ((y2 - y1) / (x2 - x1));
+            cell_slopes->start_slope =
+                -1.0 / (((dest.y - 1.0) - (src.y - 0.5)) /
+                        ((dest.x - 1.0) - (src.x - 0.5)));
+            cell_slopes->end_slope = -1.0 / (((dest.y) - (src.y - 0.5)) /
+                                             ((dest.x) - (src.x - 0.5)));
             break;
     }
 
-    if (isnan(result) || isinf(result)) {
-        return 0.0;
-    } else {
-        return ((double)roundf(result * 100) / 100);
-    }
+    cell_slopes->start_slope =
+        ((double)roundf(cell_slopes->start_slope * 100) / 100);
+
+    cell_slopes->end_slope =
+        ((double)roundf(cell_slopes->end_slope * 100) / 100);
 }
 
 static void FOV_get_next_cell(point_t *p, int octant) {
@@ -57,16 +89,6 @@ static void FOV_get_next_cell(point_t *p, int octant) {
             p->y--;
             break;
     }
-}
-
-static point_t FOV_get_prev_cell(point_t p, int octant) {
-    point_t prev_cell = p;
-    FOV_get_next_cell(&p, octant);
-
-    prev_cell.x += (-1) * (p.x - prev_cell.x);
-    prev_cell.y += (-1) * (p.y - prev_cell.y);
-
-    return prev_cell;
 }
 
 /* src is pc position */
@@ -100,8 +122,9 @@ static point_t FOV_get_starting_cell(point_t *src, int units_from_src,
     return p;
 }
 
-static int FOV_in_arch(slope_pair_t cell, slope_pair_t arch, int octant) {
-    return (cell.end_slope <= arch.start_slope && cell.start_slope >= arch.end_slope);
+static void FOV_normalize_slopes(slope_pair_t *slopes) {
+    if (slopes->start_slope > 1.0) slopes->start_slope = 1.0;
+    if (slopes->end_slope < 0.0) slopes->end_slope = 0.0;
 }
 
 void FOV_recursive_shadowcast(dungeon_t *d, point_t *origin,
@@ -113,83 +136,73 @@ void FOV_recursive_shadowcast(dungeon_t *d, point_t *origin,
     int i;
     for (i = offset; i <= radius; i++) {
         point_t cur_cell = FOV_get_starting_cell(origin, i, octant);
-        slope_pair_t next_slopes, cell_slopes;
-
-        FOV_slope(origin->x, origin->y, cur_cell.x, cur_cell.y, octant);
+        slope_pair_t cell_slopes;
         bool blocked = true;
 
-        for (; FOV_in_arch(cell_slopes, slopes, octant);
-             FOV_get_next_cell(&cur_cell, octant)) {
-
-            terrain_t t = d->map[cur_cell.y][cur_cell.x];
-            cell_slopes.start_slope =
-                FOV_slope(origin->x, origin->y, cur_cell.x - 0.5,
-                          cur_cell.y - 0.5, octant);
-            cell_slopes.end_slope =
-                FOV_slope(origin->x, origin->y, cur_cell.x + 0.5,
-                          cur_cell.y + 0.5, octant);
+        for (int j = 0; j <= i; j++) {
+            FOV_slopes_from_src(*origin, cur_cell, &cell_slopes, octant);
 
             if (cell_slopes.end_slope > slopes.start_slope) {
+                FOV_get_next_cell(&cur_cell, octant);
                 continue;
+            } else if (cell_slopes.start_slope <= slopes.end_slope) {
+                break;
             }
 
             d->map_observed[cur_cell.y][cur_cell.x] = 1;
+            terrain_t t = d->map[cur_cell.y][cur_cell.x];
 
             if (blocked) {
                 if (!IS_OPAQUE(t)) {
                     blocked = false;
-                    //point_t temp = FOV_get_prev_cell(cur_cell, octant);
-                    next_slopes.start_slope = cell_slopes.start_slope;
-                    next_slopes.end_slope = cell_slopes.end_slope;
+                } else {
+                    slopes.start_slope = cell_slopes.end_slope;
+                    FOV_normalize_slopes(&slopes);
                 }
             }
 
             if (!blocked) {
                 if (IS_OPAQUE(t)) {
-                    FOV_recursive_shadowcast(d, origin, next_slopes, offset + 1,
+                    slope_pair_t temp = slopes;
+                    temp.end_slope = cell_slopes.start_slope;
+                    FOV_normalize_slopes(&temp);
+
+                    FOV_recursive_shadowcast(d, origin, temp, offset + 1,
                                              radius - 1, octant);
                     blocked = true;
-                } else if (cell_slopes.start_slope <= slopes.end_slope) {
-                    next_slopes.end_slope = cell_slopes.end_slope;
-                    FOV_recursive_shadowcast(d, origin, next_slopes, offset + 1,
-                                             radius - 1, octant);
-                    blocked = true;
+
+                    continue;
+                } else if (cell_slopes.start_slope >= slopes.end_slope &&
+                           cell_slopes.end_slope <= slopes.end_slope) {
+                    if (IS_OPAQUE(t)) {
+                        return;
+                    } else {
+                        //slopes.end_slope = cell_slopes.end_slope;
+                        //FOV_normalize_slopes(&slopes);
+                        break;
+                    }
                 } else {
-                    next_slopes.end_slope = cell_slopes.end_slope;
+                    //slopes.end_slope = cell_slopes.end_slope;
+                    //FOV_normalize_slopes(&slopes);
                 }
             }
-/*
-            if (cell_slopes.start_slope <= slopes.end_slope && IS_OPAQUE(t)) {
-                break;
-            } else if (cell_slopes.start_slope  && IS_OPAQUE(t)) {
-                return;
-            }
-            */
-            /*
-                        if (blocked) {
-                            if (!IS_OPAQUE(t)) {
-                                blocked = false;
-                                start = cur_cell;
-                                end = cur_cell;
-                            } else {
-                                continue;
-                            }
-                        } else {
-                            if (IS_OPAQUE(t)) {
-                                blocked = true;
-                                end = cur_cell;
 
-                                FOV_recursive_shadowcast(d, origin,
-                                                         FOV_slope(origin,
-               &start, octant), FOV_slope(origin, &end, octant), offset + 1,
-               radius - 1, octant);
-
-                            } else {
-                                continue;
-                            }
-                        }
-                        */
+            FOV_get_next_cell(&cur_cell, octant);
         }
+    }
+}
+
+void FOV_shadowcast(dungeon_t *d, point_t *origin, int radius) {
+    FOV_clear(d);
+    d->map_observed[origin->y][origin->x] = 1;
+
+    slope_pair_t init_slopes;
+    init_slopes.start_slope = 1.0;
+    init_slopes.end_slope = 0.0;
+
+    int i;
+    for (i = 1; i <= 8; i++) {
+        FOV_recursive_shadowcast(d, origin, init_slopes, 1, radius, i);
     }
 }
 
@@ -197,7 +210,9 @@ void FOV_clear(dungeon_t *d) {
     int i, j;
     for (i = 0; i < DUNGEON_Y; i++) {
         for (j = 0; j < DUNGEON_X; j++) {
-            d->map_observed[i][j] = 0;
+            if (d->map_observed[i][j] == 1) {
+                d->map_observed[i][j] = 2;
+            }
         }
     }
 }

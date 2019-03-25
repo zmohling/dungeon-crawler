@@ -45,12 +45,8 @@ static int game_loop(dungeon_t *d) {
         if (!e->c->is_alive) {
             ;
         } else if (e->c->is_pc) {
-            slope_pair_t s;
-            s.start_slope = 1.0;
-            s.end_slope = 0.0;
-            FOV_recursive_shadowcast(d, &d->pc->position, s, 1, 3, 1);
+            FOV_shadowcast(d, &d->pc->position, 15);
             render_dungeon(d);
-            FOV_clear(d);
 
             handle_key(d, getch());
         } else {

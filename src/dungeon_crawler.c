@@ -31,6 +31,7 @@ static void init_curses() {
     init_pair(1, COLOR_WHITE, COLOR_BLACK);
     init_pair(2, COLOR_CYAN, COLOR_BLACK);
     init_pair(3, COLOR_RED, COLOR_BLACK);
+    init_pair(4, COLOR_BLACK, COLOR_BLACK);
 
     attron(COLOR_PAIR(1));
 

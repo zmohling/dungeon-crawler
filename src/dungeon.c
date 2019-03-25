@@ -22,6 +22,11 @@ void render_dungeon(dungeon_t *d) {
             int x = j;
             char c = ' ';
 
+            if (!d->map_observed[i][j]) {
+                mvprintw(y, x, "%c", ' ');
+                continue;
+            }
+
             /* Characters */
             character_t *character = d->character_map[i][j];
             if (character != NULL && character->is_alive) {
@@ -69,12 +74,18 @@ void render_dungeon(dungeon_t *d) {
                     c = '+';
             }
 
-            if (d->map_observed[i][j]) {
-                attron(COLOR_PAIR(3));
+            if (d->map_observed[i][j] == 1) {
+                attron(COLOR_PAIR(1));
                 mvprintw(y, x, "%c", c);
                 attron(COLOR_PAIR(1));
-            } else {
+            } else if (d->map_observed[i][j] == 2) {
+                attron(COLOR_PAIR(4));
                 mvprintw(y, x, "%c", c);
+                attron(COLOR_PAIR(0));
+            } else if (d->map_observed[i][j] == 0) {
+                attron(COLOR_PAIR(0));
+                mvprintw(y, x, "%c", ' ');
+                attron(COLOR_PAIR(0));
             }
         }
     }
@@ -97,10 +108,26 @@ void render_room_borders(dungeon_t *d) {
                 } else if (y == d->rooms[i].coordinates.y - 1 ||
                            y ==
                                d->rooms[i].coordinates.y + d->rooms[i].height) {
-                    mvprintw(y + 1, x, "-");
+                    if (d->map_observed[y][x] == 1) {
+                        attron(COLOR_PAIR(1));
+                        mvprintw(y + 1, x, "%c", '-');
+                        attron(COLOR_PAIR(1));
+                    } else if (d->map_observed[y][x] == 2) {
+                        attron(COLOR_PAIR(0));
+                        mvprintw(y + 1, x, "%c", '-');
+                        attron(COLOR_PAIR(0));
+                    }
                 } else if (x == d->rooms[i].coordinates.x - 1 ||
                            x == d->rooms[i].coordinates.x + d->rooms[i].width) {
-                    mvprintw(y + 1, x, "|");
+                    if (d->map_observed[y][x] == 1) {
+                        attron(COLOR_PAIR(1));
+                        mvprintw(y + 1, x, "%c", '|');
+                        attron(COLOR_PAIR(1));
+                    } else if (d->map_observed[y][x] == 2) {
+                        attron(COLOR_PAIR(0));
+                        mvprintw(y + 1, x, "%c", '|');
+                        attron(COLOR_PAIR(0));
+                    }
                 }
             }
         }
@@ -247,6 +274,7 @@ int deep_free_dungeon(dungeon_t *d) {
     for (i = 0; i < DUNGEON_Y; i++) {
         for (j = 0; j < DUNGEON_X; j++) {
             d->character_map[i][j] = NULL;
+            d->map_observed[i][j] = 0;
         }
     }
 

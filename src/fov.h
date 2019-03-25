@@ -16,6 +16,7 @@ typedef struct {
 
 void FOV_recursive_shadowcast(dungeon_t *, point_t *, slope_pair_t, int, int,
                               int);
+void FOV_shadowcast(dungeon_t *, point_t *, int);
 void FOV_clear(dungeon_t *);
 
 #endif
