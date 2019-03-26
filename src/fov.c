@@ -95,31 +95,52 @@ static void FOV_get_next_cell(point_t *p, int octant) {
 static point_t FOV_get_starting_cell(point_t *src, int units_from_src,
                                      int octant) {
     point_t p = *src;
+    int x = src->x;
+    int y = src->y;
 
     switch (octant) {
         case 1:
         case 2:
-            p.x += units_from_src;
-            p.y -= units_from_src;
+            x += units_from_src;
+            y -= units_from_src;
             break;
         case 3:
         case 4:
-            p.x -= units_from_src;
-            p.y -= units_from_src;
+            x -= units_from_src;
+            y -= units_from_src;
             break;
         case 5:
         case 6:
-            p.x -= units_from_src;
-            p.y += units_from_src;
+            x -= units_from_src;
+            y += units_from_src;
             break;
         case 7:
         case 8:
-            p.x += units_from_src;
-            p.y += units_from_src;
+            x += units_from_src;
+            y += units_from_src;
             break;
     }
 
+    if (x < 0) x = 0;
+    if (x > (DUNGEON_X - 1)) x = (DUNGEON_X - 1);
+    if (y < 0) y = 0;
+    if (y > (DUNGEON_Y - 1)) y = (DUNGEON_Y - 1);
+
+    p.x = x;
+    p.y = y;
+
     return p;
+}
+
+static int FOV_slope_compare(double s1, double s2) {
+    int s1_int = (int)(s1 * 100);
+    int s2_int = (int)(s2 * 100);
+
+    return s1_int - s2_int;
+}
+
+static int FOV_euclidean_distance(point_t p1, point_t p2) {
+    return sqrt(pow(p2.x - p1.x, 2) + pow(p2.y - p1.y, 2));
 }
 
 static void FOV_normalize_slopes(slope_pair_t *slopes) {
@@ -130,9 +151,6 @@ static void FOV_normalize_slopes(slope_pair_t *slopes) {
 void FOV_recursive_shadowcast(dungeon_t *d, point_t *origin,
                               slope_pair_t slopes, int offset, int radius,
                               int octant) {
-    if (slopes.start_slope < slopes.end_slope) {
-        return;
-    }
     int i;
     for (i = offset; i <= radius; i++) {
         point_t cur_cell = FOV_get_starting_cell(origin, i, octant);
@@ -140,12 +158,15 @@ void FOV_recursive_shadowcast(dungeon_t *d, point_t *origin,
         bool blocked = true;
 
         for (int j = 0; j <= i; j++) {
-            FOV_slopes_from_src(*origin, cur_cell, &cell_slopes, octant);
+            if (slopes.start_slope < slopes.end_slope) {
+                return;
+            }
 
-            if (cell_slopes.end_slope > slopes.start_slope) {
+            FOV_slopes_from_src(*origin, cur_cell, &cell_slopes, octant);
+            if (isgreater(cell_slopes.end_slope, slopes.start_slope)) {
                 FOV_get_next_cell(&cur_cell, octant);
                 continue;
-            } else if (cell_slopes.start_slope <= slopes.end_slope) {
+            } else if (isless(cell_slopes.start_slope, slopes.end_slope)) {
                 break;
             }
 
@@ -153,7 +174,7 @@ void FOV_recursive_shadowcast(dungeon_t *d, point_t *origin,
             terrain_t t = d->map[cur_cell.y][cur_cell.x];
 
             if (blocked) {
-                if (!IS_OPAQUE(t)) {
+                if (!IS_SOLID(t)) {
                     blocked = false;
                 } else {
                     slopes.start_slope = cell_slopes.end_slope;
@@ -162,7 +183,7 @@ void FOV_recursive_shadowcast(dungeon_t *d, point_t *origin,
             }
 
             if (!blocked) {
-                if (IS_OPAQUE(t)) {
+                if (IS_SOLID(t)) {
                     slope_pair_t temp = slopes;
                     temp.end_slope = cell_slopes.start_slope;
                     FOV_normalize_slopes(&temp);
@@ -170,23 +191,20 @@ void FOV_recursive_shadowcast(dungeon_t *d, point_t *origin,
                     FOV_recursive_shadowcast(d, origin, temp, offset + 1,
                                              radius - 1, octant);
                     blocked = true;
+                    slopes.start_slope = cell_slopes.end_slope;
+                    FOV_normalize_slopes(&slopes);
 
-                    continue;
-                } else if (cell_slopes.start_slope >= slopes.end_slope &&
-                           cell_slopes.end_slope <= slopes.end_slope) {
-                    if (IS_OPAQUE(t)) {
+                } else if (isgreaterequal(cell_slopes.start_slope,
+                                          slopes.end_slope) &&
+                           islessequal(cell_slopes.end_slope,
+                                       slopes.end_slope)) {
+                    if (IS_SOLID(t)) {
                         return;
                     } else {
-                        //slopes.end_slope = cell_slopes.end_slope;
-                        //FOV_normalize_slopes(&slopes);
                         break;
-                    }
-                } else {
-                    //slopes.end_slope = cell_slopes.end_slope;
-                    //FOV_normalize_slopes(&slopes);
+                   }
                 }
             }
-
             FOV_get_next_cell(&cur_cell, octant);
         }
     }

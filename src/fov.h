@@ -3,9 +3,6 @@
 
 #define FOV_SIGHT_RADIUS 5
 
-#define IS_OPAQUE(terrain) \
-    ((terrain == ter_wall || terrain == ter_wall_immutable || terrain == ter_stairs_up || terrain == ter_stairs_down) ? 1 : 0)
-
 typedef struct dungeon dungeon_t;
 typedef struct point point_t;
 typedef struct {

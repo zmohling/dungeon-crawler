@@ -79,8 +79,7 @@ int move_pc(dungeon_t *d, int ch) {
     }
 
     /* Check if next_pos is valid and trample monsters */
-    if (d->map[next_pos.y][next_pos.x] != ter_wall &&
-        d->map[next_pos.y][next_pos.x] != ter_wall_immutable) {
+    if (!IS_SOLID(d->map[next_pos.y][next_pos.x])) {
         if (!(check_for_trample(d, pc, next_pos.x, next_pos.y))) {
             mvprintw(0, 0, "You slayed a monster!");
         }
@@ -156,8 +155,7 @@ int move_npc_non_tunnel(dungeon_t *d, character_t *c) {
         for (x = (c->position.x - 1); x <= (c->position.x + 1); x++) {
             if (y > (DUNGEON_Y - 1) || y < 0 || x > (DUNGEON_X - 1) || x < 0) {
                 continue;
-            } else if (d->map[y][x] == ter_wall ||
-                       d->map[y][x] == ter_wall_immutable) {
+            } else if (IS_SOLID(d->map[y][x])) {
                 continue;
             }
 
@@ -193,7 +191,7 @@ int move_npc_tunnel(dungeon_t *d, character_t *c) {
         for (x = (c->position.x - 1); x <= (c->position.x + 1); x++) {
             if (y > (DUNGEON_Y - 1) || y < 0 || x > (DUNGEON_X - 1) || x < 0) {
                 continue;
-            } else if (d->map[y][x] == ter_wall_immutable) {
+            } else if (d->map[y][x] == ter_rock_immutable) {
                 continue;
             }
 

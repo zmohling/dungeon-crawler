@@ -61,7 +61,7 @@ void non_tunnel_distance_map(dungeon_t *d) {
     /* Insert all graph_node_ts into heap */
     for (y = 0; y < DUNGEON_Y; y++) {
         for (x = 0; x < DUNGEON_X; x++) {
-            if (mapxy(x, y) != ter_wall && mapxy(x, y) != ter_wall_immutable) {
+            if (!IS_SOLID(mapxy(x, y))) {
                 graph[y][x].hn = heap_insert(&h, &graph[y][x]);
             }
         }
@@ -199,7 +199,7 @@ void tunnel_distance_map(dungeon_t *d) {
     /* Insert all graph_node_ts into heap */
     for (y = 0; y < DUNGEON_Y; y++) {
         for (x = 0; x < DUNGEON_X; x++) {
-            if (mapxy(x, y) != ter_wall_immutable) {
+            if (mapxy(x, y) != ter_rock_immutable) {
                 graph[y][x].hn = heap_insert(&h, &graph[y][x]);
             }
         }

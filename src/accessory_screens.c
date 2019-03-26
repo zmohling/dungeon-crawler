@@ -80,7 +80,7 @@ static void get_mag_and_direction(dungeon_t *d, character_t *c, int *m1,
 
     int x = d->pc->position.x - c->position.x;
     *m2 = abs(x);
-    if (x < 0) {
+    if (x > 0) {
         *dir2 = malloc(strlen("West") + 1);
         strcpy(*dir2, "West");
     } else {

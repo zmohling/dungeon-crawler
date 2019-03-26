@@ -31,13 +31,17 @@ void render_dungeon(dungeon_t *d) {
             character_t *character = d->character_map[i][j];
             if (character != NULL && character->is_alive) {
                 if (character->is_pc == true) {
+                    attron(A_BOLD);
                     attron(COLOR_PAIR(2));
                     mvprintw(y, x, "%c", character->symbol);
                     attron(COLOR_PAIR(1));
+                    attroff(A_BOLD);
                 } else {
+                    attron(A_BOLD);
                     attron(COLOR_PAIR(3));
                     mvprintw(y, x, "%x", d->character_map[i][j]->symbol & 0xff);
                     attron(COLOR_PAIR(1));
+                    attroff(A_BOLD);
                 }
 
                 continue;
@@ -53,10 +57,16 @@ void render_dungeon(dungeon_t *d) {
             /* Terrain */
             terrain_t t = d->map[i][j];
             switch (t) {
-                case ter_wall_immutable:
+                case ter_rock_immutable:
                     break;
-                case ter_wall:
+                case ter_rock:
                     c = ' ';
+                    break;
+                case ter_wall_horizontal:
+                    c = '-';
+                    break;
+                case ter_wall_vertical:
+                    c = '|';
                     break;
                 case ter_floor_room:
                     c = '.';
@@ -75,11 +85,13 @@ void render_dungeon(dungeon_t *d) {
             }
 
             if (d->map_observed[i][j] == 1) {
+                attron(A_BOLD);
                 attron(COLOR_PAIR(1));
                 mvprintw(y, x, "%c", c);
                 attron(COLOR_PAIR(1));
+                attroff(A_BOLD);
             } else if (d->map_observed[i][j] == 2) {
-                attron(COLOR_PAIR(4));
+                attron(COLOR_PAIR(1));
                 mvprintw(y, x, "%c", c);
                 attron(COLOR_PAIR(0));
             } else if (d->map_observed[i][j] == 0) {
@@ -90,44 +102,25 @@ void render_dungeon(dungeon_t *d) {
         }
     }
 
-    render_room_borders(d);
-
     refresh();
 }
 
-void render_room_borders(dungeon_t *d) {
+void generate_room_borders(dungeon_t *d) {
     int i, x, y;
     for (i = 0; i < d->num_rooms; i++) {
         for (y = d->rooms[i].coordinates.y - 1;
              y <= d->rooms[i].coordinates.y + d->rooms[i].height; y++) {
             for (x = d->rooms[i].coordinates.x - 1;
                  x <= d->rooms[i].coordinates.x + d->rooms[i].width; x++) {
-                if (d->map[y][x] != ter_wall &&
-                    d->map[y][x] != ter_wall_immutable) {
+                if (!IS_SOLID(d->map[y][x])) {
                     ;
                 } else if (y == d->rooms[i].coordinates.y - 1 ||
                            y ==
                                d->rooms[i].coordinates.y + d->rooms[i].height) {
-                    if (d->map_observed[y][x] == 1) {
-                        attron(COLOR_PAIR(1));
-                        mvprintw(y + 1, x, "%c", '-');
-                        attron(COLOR_PAIR(1));
-                    } else if (d->map_observed[y][x] == 2) {
-                        attron(COLOR_PAIR(0));
-                        mvprintw(y + 1, x, "%c", '-');
-                        attron(COLOR_PAIR(0));
-                    }
+                    d->map[y][x] = ter_wall_horizontal;
                 } else if (x == d->rooms[i].coordinates.x - 1 ||
                            x == d->rooms[i].coordinates.x + d->rooms[i].width) {
-                    if (d->map_observed[y][x] == 1) {
-                        attron(COLOR_PAIR(1));
-                        mvprintw(y + 1, x, "%c", '|');
-                        attron(COLOR_PAIR(1));
-                    } else if (d->map_observed[y][x] == 2) {
-                        attron(COLOR_PAIR(0));
-                        mvprintw(y + 1, x, "%c", '|');
-                        attron(COLOR_PAIR(0));
-                    }
+                    d->map[y][x] = ter_wall_vertical;
                 }
             }
         }
@@ -182,8 +175,10 @@ void render_distance_map(dungeon_t *d) {
                 putchar('@');
             } else {
                 switch (d->map[p.y][p.x]) {
-                    case ter_wall:
-                    case ter_wall_immutable:
+                    case ter_rock:
+                    case ter_rock_immutable:
+                    case ter_wall_horizontal:
+                    case ter_wall_vertical:
                         putchar(' ');
                         break;
                     case ter_floor:
@@ -221,10 +216,12 @@ void render_tunnel_distance_map(dungeon_t *d) {
                 putchar('@');
             } else {
                 switch (d->map[p.y][p.x]) {
-                    case ter_wall_immutable:
+                    case ter_rock_immutable:
                         putchar(' ');
                         break;
-                    case ter_wall:
+                    case ter_rock:
+                    case ter_wall_horizontal:
+                    case ter_wall_vertical:
                     case ter_floor:
                     case ter_floor_room:
                     case ter_floor_hall:
@@ -293,6 +290,8 @@ int generate_dungeon(dungeon_t *d) {
     generate_staircases(d);
     generate_hardness(d);
 
+    generate_room_borders(d);
+
     return 0;
 }
 
@@ -305,14 +304,14 @@ int generate_border(dungeon_t *d) {
     int i, j;
     for (i = 0; i < DUNGEON_Y; i++) {
         for (j = 0; j < DUNGEON_X; j++) {
-            d->map[i][j] = ter_wall;
+            d->map[i][j] = ter_rock;
 
             if (j == 0 || j == (DUNGEON_X - 1)) {
-                d->map[i][j] = ter_wall_immutable;
+                d->map[i][j] = ter_rock_immutable;
             }
 
             if (i == 0 || i == (DUNGEON_Y - 1)) {
-                d->map[i][j] = ter_wall_immutable;
+                d->map[i][j] = ter_rock_immutable;
             }
         }
     }
@@ -595,9 +594,10 @@ int generate_hardness(dungeon_t *d) {
     for (i = 0; i < DUNGEON_Y; i++) {
         for (j = 0; j < DUNGEON_X; j++) {
             terrain_t t = d->map[i][j];
-            if (t == ter_wall) {
+            if (t == ter_rock || t == ter_wall_vertical ||
+                t == ter_wall_horizontal) {
                 d->hardness_map[i][j] = rand() % 254 + 1;
-            } else if (t == ter_wall_immutable) {
+            } else if (t == ter_rock_immutable) {
                 d->hardness_map[i][j] = 255;
             } else {
                 d->hardness_map[i][j] = 0;
@@ -644,21 +644,22 @@ int generate_terrain(dungeon_t *d) {
             terrain_t *t = &(d->map[i][j]);
 
             if (j == 0 || j == (DUNGEON_X - 1)) {
-                *t = ter_wall_immutable;
+                *t = ter_rock_immutable;
             }
 
             if (i == 0 || i == (DUNGEON_Y - 1)) {
-                *t = ter_wall_immutable;
+                *t = ter_rock_immutable;
             }
 
             uint8_t h = d->hardness_map[i][j];
 
-            if (h == 0 && *t == ter_wall) {
+            if (h == 0 && *t == ter_rock) {
                 *t = ter_floor_hall;
             }
         }
     }
 
+    generate_room_borders(d);
     /* pc.position */
     // d->map[d->pc.position.y][d->pc->position.x] = ter_player;
 
@@ -679,8 +680,7 @@ point_t get_valid_point(dungeon_t *d, bool isPC) {
         if (isPC) {
             if (d->hardness_map[random.y][random.x] == 0 &&
                 d->character_map[random.y][random.x] == NULL &&
-                d->map[random.y][random.x] != ter_wall &&
-                d->map[random.y][random.x] != ter_wall_immutable) {
+                !IS_SOLID(d->map[random.y][random.x])) {
                 p.x = random.x;
                 p.y = random.y;
 
@@ -689,8 +689,7 @@ point_t get_valid_point(dungeon_t *d, bool isPC) {
         } else {
             if (get_room(d, &d->pc->position) != get_room(d, &random) &&
                 d->character_map[random.y][random.x] == NULL &&
-                d->map[random.y][random.x] != ter_wall &&
-                d->map[random.y][random.x] != ter_wall_immutable) {
+                !IS_SOLID(d->map[random.y][random.x])) {
                 p.x = random.x;
                 p.y = random.y;
 

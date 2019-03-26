@@ -23,8 +23,10 @@
 
 typedef enum __attribute__((__packed__)) terrain_type {
     ter_debug,
-    ter_wall,
-    ter_wall_immutable,
+    ter_rock,
+    ter_rock_immutable,
+    ter_wall_vertical,
+    ter_wall_horizontal,
     ter_floor,
     ter_floor_room,
     ter_floor_hall,
@@ -32,6 +34,12 @@ typedef enum __attribute__((__packed__)) terrain_type {
     ter_stairs_up,
     ter_stairs_down
 } terrain_t;
+
+#define IS_SOLID(terrain)                                             \
+    ((terrain == ter_rock || terrain == ter_rock_immutable ||         \
+      terrain == ter_wall_vertical || terrain == ter_wall_horizontal) \
+         ? 1                                                          \
+         : 0)
 
 typedef struct room {
     point_t coordinates;
@@ -83,7 +91,7 @@ int generate_terrain(dungeon_t *);
 
 bool intersects(room_t *, room_t *);
 bool out_of_bounds(room_t *, int, int);
-room_t * get_room(dungeon_t *, point_t *);
+room_t *get_room(dungeon_t *, point_t *);
 point_t get_valid_point(dungeon_t *, bool);
 
 #endif
