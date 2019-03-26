@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
 
             fprintf(stderr, "Ussage: %s [--save][--load][--nummon]\n", argv[0]);
             exit(1);
-        } else if (n <= 0) {
+        } else if (n < 0) {
             dungeon.num_monsters = 1;
             fprintf(stderr, "At least one monster is requred.\n");
             fprintf(stderr, "Ussage: %s [--save][--load][--nummon]\n", argv[0]);

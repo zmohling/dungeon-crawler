@@ -22,31 +22,28 @@ void render_dungeon(dungeon_t *d) {
             int x = j;
             char c = ' ';
 
-            if (!d->map_observed[i][j]) {
-                mvprintw(y, x, "%c", ' ');
-                continue;
-            }
-
             /* Characters */
-            character_t *character = d->character_map[i][j];
-            if (character != NULL && character->is_alive) {
-                if (character->is_pc == true) {
-                    attron(A_BOLD);
-                    attron(COLOR_PAIR(2));
-                    mvprintw(y, x, "%c", character->symbol);
-                    attron(COLOR_PAIR(1));
-                    attroff(A_BOLD);
-                } else {
-                    attron(A_BOLD);
-                    attron(COLOR_PAIR(3));
-                    mvprintw(y, x, "%x", d->character_map[i][j]->symbol & 0xff);
-                    attron(COLOR_PAIR(1));
-                    attroff(A_BOLD);
+            if (d->map_observed[i][j] == 1) {
+                character_t *character = d->character_map[i][j];
+                if (character != NULL && character->is_alive) {
+                    if (character->is_pc == true) {
+                        attron(A_BOLD);
+                        attron(COLOR_PAIR(2));
+                        mvprintw(y, x, "%c", character->symbol);
+                        attron(COLOR_PAIR(1));
+                        attroff(A_BOLD);
+                    } else {
+                        attron(A_BOLD);
+                        attron(COLOR_PAIR(3));
+                        mvprintw(y, x, "%x",
+                                 d->character_map[i][j]->symbol & 0xff);
+                        attron(COLOR_PAIR(1));
+                        attroff(A_BOLD);
+                    }
+
+                    continue;
                 }
-
-                continue;
             }
-
             /* Border /
             if (i == 0 || i == (DUNGEON_Y - 1)) {
                 c = '-';
@@ -92,6 +89,7 @@ void render_dungeon(dungeon_t *d) {
                 attroff(A_BOLD);
             } else if (d->map_observed[i][j] == 2) {
                 attron(COLOR_PAIR(1));
+                // char temp = mvinch(y, x) & A_CHARTEXT;
                 mvprintw(y, x, "%c", c);
                 attron(COLOR_PAIR(0));
             } else if (d->map_observed[i][j] == 0) {
@@ -440,21 +438,21 @@ room_t *get_room(dungeon_t *d, point_t *p) {
     return NULL;
 }
 
-/* Returns true if the neighboring cells of point_t p contains
- * at least one terrain_t t.
+/* Returns number of neighboring cells of point_t p that are of terrain_t t.
  */
-bool has_neighbor(dungeon_t *d, terrain_t t, point_t p) {
+int has_neighbor(dungeon_t *d, terrain_t t, point_t p) {
+    int total = 0;
     int x, y;
     for (y = p.y - 1; y < (p.y + 2) && y >= 0 && y < DUNGEON_Y; y++) {
-        for (x = p.x - 1; x < (p.x + 2) && x >= 0 && y < DUNGEON_X; x++) {
-            if (x == p.x || y == p.y) {
+        for (x = p.x - 1; x < (p.x + 2) && x >= 0 && x < DUNGEON_X; x++) {
+            if (x == p.x && y == p.y) {
                 continue;
             } else if (d->map[y][x] == t) {
-                return true;
+                total++;
             }
         }
     }
-    return false;
+    return total;
 }
 
 /*

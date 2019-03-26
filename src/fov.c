@@ -132,15 +132,48 @@ static point_t FOV_get_starting_cell(point_t *src, int units_from_src,
     return p;
 }
 
-static int FOV_slope_compare(double s1, double s2) {
-    int s1_int = (int)(s1 * 100);
-    int s2_int = (int)(s2 * 100);
-
-    return s1_int - s2_int;
+static double FOV_euclidean_distance(point_t p1, point_t p2) {
+    return sqrt(pow(p2.x - p1.x, 2) + pow(p2.y - p1.y, 2));
 }
 
-static int FOV_euclidean_distance(point_t p1, point_t p2) {
-    return sqrt(pow(p2.x - p1.x, 2) + pow(p2.y - p1.y, 2));
+static int FOV_has_neighbors(dungeon_t *d, point_t p) {
+    int total = 0;
+    int x, y;
+    for (y = p.y - 1; y < (p.y + 2) && y >= 0 && y < DUNGEON_Y; y++) {
+        for (x = p.x - 1; x < (p.x + 2) && x >= 0 && x < DUNGEON_X; x++) {
+            if (x == p.x && y == p.y) {
+                continue;
+            } else if (!IS_SOLID(d->map[y][x]) &&
+                       (d->map[y][x] != ter_floor_hall)) {
+                total++;
+            }
+        }
+    }
+    return total;
+}
+
+static int FOV_does_pass_light(dungeon_t *d, point_t *origin,
+                               point_t *cur_cell) {
+    double distance = FOV_euclidean_distance(*origin, *cur_cell);
+    terrain_t orig_t = d->map[origin->y][origin->x];
+    terrain_t cur_t = d->map[cur_cell->y][cur_cell->x];
+/*
+    if (!IS_SOLID(orig_t) && orig_t != ter_floor_hall) {
+        return (!IS_SOLID(cur_t) && cur_t != ter_floor_hall);
+    }
+*/
+
+    //PLEASE FIX 
+
+    if (isless(distance, 1.0)) {
+        return (!IS_SOLID(cur_t));
+    } else if (isgreater(distance, 1.0) && (!IS_SOLID(orig_t) && orig_t != ter_floor_hall && has_neighbor(d,ter_floor_hall, *origin) < 2)) {
+
+            return (!IS_SOLID(cur_t) && cur_t != ter_floor_hall);
+    } else {
+        return ((!IS_SOLID(cur_t)) && (FOV_has_neighbors(d, *cur_cell) ||
+                                       cur_t == ter_floor_room));
+    }
 }
 
 static void FOV_normalize_slopes(slope_pair_t *slopes) {
@@ -161,7 +194,13 @@ void FOV_recursive_shadowcast(dungeon_t *d, point_t *origin,
             if (slopes.start_slope < slopes.end_slope) {
                 return;
             }
-
+            /*
+                        if (d->map[cur_cell.y][cur_cell.x] == ter_floor_hall) {
+                            radius = 3 - i;
+                        } else if (d->map[cur_cell.y][cur_cell.x] ==
+               ter_floor_room) { radius = DUNGEON_X;
+                        }
+            */
             FOV_slopes_from_src(*origin, cur_cell, &cell_slopes, octant);
             if (isgreater(cell_slopes.end_slope, slopes.start_slope)) {
                 FOV_get_next_cell(&cur_cell, octant);
@@ -171,10 +210,10 @@ void FOV_recursive_shadowcast(dungeon_t *d, point_t *origin,
             }
 
             d->map_observed[cur_cell.y][cur_cell.x] = 1;
-            terrain_t t = d->map[cur_cell.y][cur_cell.x];
+            int transparent = FOV_does_pass_light(d, origin, &cur_cell);
 
             if (blocked) {
-                if (!IS_SOLID(t)) {
+                if (transparent) {
                     blocked = false;
                 } else {
                     slopes.start_slope = cell_slopes.end_slope;
@@ -183,7 +222,7 @@ void FOV_recursive_shadowcast(dungeon_t *d, point_t *origin,
             }
 
             if (!blocked) {
-                if (IS_SOLID(t)) {
+                if (!transparent) {
                     slope_pair_t temp = slopes;
                     temp.end_slope = cell_slopes.start_slope;
                     FOV_normalize_slopes(&temp);
@@ -198,11 +237,11 @@ void FOV_recursive_shadowcast(dungeon_t *d, point_t *origin,
                                           slopes.end_slope) &&
                            islessequal(cell_slopes.end_slope,
                                        slopes.end_slope)) {
-                    if (IS_SOLID(t)) {
+                    if (!transparent) {
                         return;
                     } else {
                         break;
-                   }
+                    }
                 }
             }
             FOV_get_next_cell(&cur_cell, octant);
