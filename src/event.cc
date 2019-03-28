@@ -78,12 +78,12 @@ static int game_loop(dungeon_t *d) {
  */
 int event_simulator_start(dungeon_t *d) {
     /* Allocate memory for events and characters arrays */
-    if (!(d->events = calloc(1, sizeof(event_t) * (d->num_monsters + 1)))) {
+    if (!(d->events = (event_t *) calloc(1, sizeof(event_t) * (d->num_monsters + 1)))) {
         fprintf(stderr, "Did not allocate events array in dungeon struct.");
         exit(-122);
     }
     if (!(d->characters =
-              calloc(1, sizeof(character_t) * (d->num_monsters + 1)))) {
+              (character_t *) calloc(1, sizeof(character_t) * (d->num_monsters + 1)))) {
         fprintf(stderr, "Did not allocate characters array in dungeon struct.");
         exit(-123);
     }

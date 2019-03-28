@@ -5,13 +5,13 @@
 
 #include "stdbool.h"
 
-typedef struct dungeon dungeon_t;
-typedef struct point point_t;
-typedef struct {
+class dungeon_t;
+class point_t;
+class slope_pair_t {
+    public:
     double start_slope;
     double end_slope;
-} slope_pair_t;
-
+};
 
 void FOV_recursive_shadowcast(dungeon_t *, point_t *, slope_pair_t, int, int,
                               int);

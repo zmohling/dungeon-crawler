@@ -3,8 +3,9 @@
 
 #include <stdint.h>
 
-typedef struct point {
+class point_t {
+    public:
     uint8_t x, y;
-} point_t;
+};
 
 #endif

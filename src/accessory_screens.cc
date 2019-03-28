@@ -72,20 +72,20 @@ static void get_mag_and_direction(dungeon_t *d, character_t *c, int *m1,
     int y = d->pc->position.y - c->position.y;
     *m1 = abs(y);
     if (y > 0) {
-        *dir1 = malloc(strlen("North") + 1);
+        *dir1 = (char *) malloc(strlen("North") + 1);
         strcpy(*dir1, "North");
     } else {
-        *dir1 = malloc(strlen("South") + 1);
+        *dir1 = (char *) malloc(strlen("South") + 1);
         strcpy(*dir1, "South");
     }
 
     int x = d->pc->position.x - c->position.x;
     *m2 = abs(x);
     if (x > 0) {
-        *dir2 = malloc(strlen("West") + 1);
+        *dir2 = (char *) malloc(strlen("West") + 1);
         strcpy(*dir2, "West");
     } else {
-        *dir2 = malloc(strlen("East") + 1);
+        *dir2 = (char *) malloc(strlen("East") + 1);
         strcpy(*dir2, "East");
     }
 }
@@ -150,8 +150,8 @@ void monster_list(dungeon_t *d) {
     WINDOW *w = create_newwin(height, width, starty, startx);
     overwrite(w, stdscr);
 
-    char *title = "MONSTER LIST";
-    char *footer = "PRESS ESC TO EXIT";
+    char *title = (char *) "MONSTER LIST";
+    char *footer = (char *) "PRESS ESC TO EXIT";
     mvprintw(starty, startx + (width / 2) - (strlen(title) / 2), title);
     mvprintw(starty + height - 1, startx + (width / 2) - (strlen(footer) / 2),
              footer);

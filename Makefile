@@ -20,7 +20,7 @@ DEP=$(OBJ:%.o=%.d)
 
 $(BIN): $(OBJ)
 	@$(ECHO) Linking compiled files... 
-	@$(CC) $(LDFLAGS) $^ -o $(@F)
+	@$(CXX) $(LDFLAGS) $^ -o $(@F)
 	@$(ECHO) Done. 
 
 -include $(DEP)

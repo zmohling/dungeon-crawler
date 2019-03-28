@@ -41,13 +41,17 @@ typedef enum __attribute__((__packed__)) terrain_type {
       terrain == ter_wall_vertical || terrain == ter_wall_horizontal) \
          ? 1                                                          \
          : 0)
+class character_t;
+class event_t;
 
-typedef struct room {
+class room_t {
+   public:
     point_t coordinates;
     uint8_t width, height;
-} room_t;
+};
 
-typedef struct dungeon {
+class dungeon_t {
+   public:
     character_t *pc;
     uint8_t num_monsters;
 
@@ -68,7 +72,7 @@ typedef struct dungeon {
     point_t *stairs_up;
     uint16_t num_stairs_down;
     point_t *stairs_down;
-} dungeon_t;
+};
 
 void render_dungeon(dungeon_t *);
 void render_room_borders(dungeon_t *);
@@ -92,7 +96,7 @@ int generate_terrain(dungeon_t *);
 
 bool intersects(room_t *, room_t *, int);
 bool out_of_bounds(room_t *, int, int);
-int has_neighbor(dungeon_t *, terrain_t, point_t); 
+int has_neighbor(dungeon_t *, terrain_t, point_t);
 room_t *get_room(dungeon_t *, point_t *, int);
 point_t get_valid_point(dungeon_t *, bool);
 

@@ -33,7 +33,7 @@ bool contains(int argc, char *argv[], char *s, int *n) {
 int path_init(char **path) {
     /* FS setup */
     char *home = getenv("HOME");
-    char *dir = malloc(strlen(home) + strlen("/.rlg327/") + 1);
+    char *dir = (char *) malloc(strlen(home) + strlen("/.rlg327/") + 1);
     strcpy(dir, home);
     strcat(dir, "/.rlg327/");
 
@@ -48,7 +48,7 @@ int path_init(char **path) {
     }
 
     /* Dot file directory's path */
-    *path = malloc(strlen(home) + strlen("/.rlg327/dungeon") + 1);
+    *path = (char *) malloc(strlen(home) + strlen("/.rlg327/dungeon") + 1);
     //*path = malloc(strlen("bin/saved_dungeons/03.rlg327") + 1);
     strcpy(*path, home);
     strcat(*path, "/.rlg327/dungeon");

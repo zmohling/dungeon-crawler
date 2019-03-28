@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
     memset(dungeon.character_map, 0, sizeof(character_t *) * DUNGEON_Y * DUNGEON_X);
 
     /* Number of monsters switch */
-    char *num_monsters_str = "--nummon";
+    char *num_monsters_str = (char *) "--nummon";
     int n = (rand() % 7) + 5;
     if (contains(argc, argv, num_monsters_str, &n)) {
         n = atoi(argv[n + 1]);
@@ -80,9 +80,9 @@ int main(int argc, char *argv[]) {
     }
 
     /* Load switch */
-    char *load_switch_str = "--load";
+    char *load_switch_str = (char *) "--load";
     if (contains(argc, argv, load_switch_str, &n)) {
-        dungeon.pc = malloc(sizeof(character_t));
+        dungeon.pc = (character_t *) malloc(sizeof(character_t));
         read_dungeon_from_disk(&dungeon, path);
         generate_terrain(&dungeon);
     } else {
@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
     }
 
     /* Save switch */
-    char *save_str = "--save";
+    char *save_str = (char *) "--save";
     if (contains(argc, argv, save_str, &n)) {
         save_on_quit = true;
     }

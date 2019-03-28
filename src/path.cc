@@ -67,7 +67,7 @@ void non_tunnel_distance_map(dungeon_t *d) {
         }
     }
 
-    while ((min = heap_remove_min(&h))) {
+    while ((min = (graph_node_t *) heap_remove_min(&h))) {
         min->hn = NULL;
         if ((graph[min->position.y - 1][min->position.x - 1].hn) &&
             (d->non_tunnel_distance_map[min->position.y - 1]
@@ -205,7 +205,7 @@ void tunnel_distance_map(dungeon_t *d) {
         }
     }
 
-    while ((min = heap_remove_min(&h))) {
+    while ((min = (graph_node_t *) heap_remove_min(&h))) {
         min->hn = NULL;
 
         if ((graph[min->position.y - 1][min->position.x - 1].hn) &&

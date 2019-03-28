@@ -1,4 +1,24 @@
 CHANGELOG (GIT LOG)
+2019-03-28: Renaming, Refactoring, and Debugging keybindings
+2019-03-27: More FOV Tweaks
+2019-03-26: FOV Tweaks
+2019-03-25: Refined room and corridor shadowing behaviors
+2019-03-25: Completed basic shadowcasting
+2019-03-24: Progress on cell slopes/angles
+2019-03-24: Implementing single octant functionality
+2019-03-23: Started implementing shadowcasting FOV
+2019-03-17: Updated Makefile
+2019-03-16: Update headers and declarations to be Google CXX styleguide compliant
+2019-03-15: Added quit function for ending curses and saving dungeon to disk
+2019-03-15: Added erratic NPC behavior
+2019-03-15: Added room borders, PC and NPC colors
+2019-03-15: Monsters no longer spawn in the same room as the PC
+2019-03-15: Game balancing, documentation, and refactoring
+2019-03-14: Fixed bug that left previous positions of characters to not be redrawn
+2019-03-14: Monster List excludes dead monsters, general optimizations
+2019-03-14: Monster List sorted by distance
+2019-03-14: Fixed severely problematic scrolling behavior for the Monster List
+2019-03-14: Polishing for v1.05
 2019-03-14: Implemented functional staircases
 2019-03-14: Fully Functioning Monster Menu
 2019-03-14: Buffer overflow. Was sad, now not sad.

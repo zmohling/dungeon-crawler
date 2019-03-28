@@ -255,7 +255,7 @@ int deep_free_dungeon(dungeon_t *d) {
     for (i = 0; i < (d->num_monsters + 1); i++) {
         character_t *c = &(d->characters[i]);
         if (c->npc != NULL) {
-            free(c->npc);
+            //free(c->npc);
         }
     }
 
@@ -324,7 +324,7 @@ int generate_rooms(dungeon_t *d) {
     int attempts_to_generate = 0;
 
     d->num_rooms = rand() % (MAX_ROOMS - MIN_ROOMS + 1) + MIN_ROOMS;
-    d->rooms = malloc(d->num_rooms * sizeof(room_t));
+    d->rooms = (room_t *)malloc(d->num_rooms * sizeof(room_t));
 
     uint8_t i;
     for (i = 0; i < d->num_rooms; i++) {
@@ -538,7 +538,7 @@ int generate_corridors(dungeon_t *d) {
  */
 int generate_staircases(dungeon_t *d) {
     d->num_stairs_up = rand() % STAIRS_MAX + 1;
-    d->stairs_up = malloc(d->num_stairs_up * sizeof(point_t));
+    d->stairs_up = (point_t *) malloc(d->num_stairs_up * sizeof(point_t));
 
     int i;
     for (i = 0; i < d->num_stairs_up;) {
@@ -549,7 +549,7 @@ int generate_staircases(dungeon_t *d) {
         p = &(d->map[_y][_x]);
 
         if (*p == ter_floor_hall || *p == ter_floor_room) {
-            point_t coord = {_x, _y};
+            point_t coord = {(uint8_t) _x,(uint8_t) _y};
             d->stairs_up[i] = coord;
 
             *p = ter_stairs_up;
@@ -558,7 +558,7 @@ int generate_staircases(dungeon_t *d) {
     }
 
     d->num_stairs_down = rand() % STAIRS_MAX + 1;
-    d->stairs_down = malloc(d->num_stairs_down * sizeof(point_t));
+    d->stairs_down = (point_t *) malloc(d->num_stairs_down * sizeof(point_t));
 
     int j;
     for (j = 0; j < d->num_stairs_down;) {
@@ -569,7 +569,7 @@ int generate_staircases(dungeon_t *d) {
         p = &(d->map[_y][_x]);
 
         if (*p == ter_floor_hall || *p == ter_floor_room) {
-            point_t coord = {_x, _y};
+            point_t coord = {(uint8_t) _x,(uint8_t) _y};
             d->stairs_down[j] = coord;
 
             *p = ter_stairs_down;
@@ -755,7 +755,7 @@ int read_dungeon_from_disk(dungeon_t *d, char *path) {
     d->num_rooms = be16toh(be_num_rooms);
 
     /* rooms array*/
-    if (!(d->rooms = malloc(d->num_rooms * sizeof(room_t)))) {
+    if (!(d->rooms = (room_t *) malloc(d->num_rooms * sizeof(room_t)))) {
         fprintf(stderr, "Error: could not allocate memory for <*rooms>. (%d)\n",
                 errno);
         exit(-13);
@@ -799,7 +799,7 @@ int read_dungeon_from_disk(dungeon_t *d, char *path) {
     d->num_stairs_up = be16toh(be_num_stairs_up);
 
     /* stairs_up */
-    if (!(d->stairs_up = malloc(d->num_stairs_up * sizeof(point_t)))) {
+    if (!(d->stairs_up = (point_t *) malloc(d->num_stairs_up * sizeof(point_t)))) {
         fprintf(stderr,
                 "Error: could not allocate memory for <*stairs_up>. (%d)\n",
                 errno);
@@ -830,7 +830,7 @@ int read_dungeon_from_disk(dungeon_t *d, char *path) {
     d->num_stairs_down = be16toh(be_num_stairs_down);
 
     /* stairs_up */
-    if (!(d->stairs_down = malloc(d->num_stairs_down * sizeof(point_t)))) {
+    if (!(d->stairs_down = (point_t *) malloc(d->num_stairs_down * sizeof(point_t)))) {
         fprintf(stderr,
                 "Error: could not allocate memory for <*stairs_down>. (%d)\n",
                 errno);

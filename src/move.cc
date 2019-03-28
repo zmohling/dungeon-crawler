@@ -108,7 +108,7 @@ int use_stairs(dungeon_t *d, pc_movement_t p) {
     deep_free_dungeon(d);
     generate_dungeon(d);
 
-    d->pc = malloc(sizeof(character_t));
+    d->pc = (character_t *) malloc(sizeof(character_t));
     if (p == pc_up_stairs) {
         d->pc->position.x = d->stairs_down[0].x;
         d->pc->position.y = d->stairs_down[0].y;
