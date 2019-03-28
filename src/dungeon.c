@@ -346,7 +346,7 @@ int generate_rooms(dungeon_t *d) {
             int j;
             for (j = (i - 1); j >= 0; j--) {
                 if ((_intersects =
-                         intersects(&(d->rooms[i]), &(d->rooms[j])))) {
+                         intersects(&(d->rooms[i]), &(d->rooms[j]), 1))) {
                     break;
                 }
             }
@@ -400,7 +400,7 @@ bool out_of_bounds(room_t *room, int bound_x, int bound_y) {
  * Room a: First room of the pair.
  * Room b: Second room of the pair.
  */
-bool intersects(room_t *a, room_t *b) {
+bool intersects(room_t *a, room_t *b, int margin) {
     int a_x1 = a->coordinates.x;
     int a_y1 = a->coordinates.y;
     int a_x2 = a_x1 + a->width;
@@ -411,8 +411,8 @@ bool intersects(room_t *a, room_t *b) {
     int b_x2 = b_x1 + b->width;
     int b_y2 = b_y1 + b->height;
 
-    if (a_x1 > b_x2 + 1 || a_x2 < b_x1 - 1 || a_y1 > b_y2 + 1 ||
-        a_y2 < b_y1 - 1) {
+    if (a_x1 > b_x2 + margin || a_x2 < b_x1 - margin || a_y1 > b_y2 + margin ||
+        a_y2 < b_y1 - margin) {
         return false;
     }
 
@@ -430,7 +430,7 @@ room_t *get_room(dungeon_t *d, point_t *p) {
 
     int i;
     for (i = 0; i < d->num_rooms; i++) {
-        if (intersects(&not_a_room, &(d->rooms[i]))) {
+        if (intersects(&not_a_room, &(d->rooms[i]), 0)) {
             return &(d->rooms[i]);
         }
     }

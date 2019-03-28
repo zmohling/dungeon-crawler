@@ -164,7 +164,7 @@ static int FOV_does_pass_light(dungeon_t *d, point_t *origin,
 */
 
     //PLEASE FIX 
-
+/*
     if (isless(distance, 1.0)) {
         return (!IS_SOLID(cur_t));
     } else if (isgreater(distance, 1.0) && (!IS_SOLID(orig_t) && orig_t != ter_floor_hall && has_neighbor(d,ter_floor_hall, *origin) < 2)) {
@@ -174,6 +174,22 @@ static int FOV_does_pass_light(dungeon_t *d, point_t *origin,
         return ((!IS_SOLID(cur_t)) && (FOV_has_neighbors(d, *cur_cell) ||
                                        cur_t == ter_floor_room));
     }
+    */
+    // If PC is in a room
+    if (get_room(d, origin) != NULL) {
+        return (!IS_SOLID(cur_t) && cur_t != ter_floor_hall);
+    } else {
+        /* If PC is in a corridor */
+        
+        if (islessequal(distance, 1.0) && !IS_SOLID(cur_t)) {
+            return 1;
+        } else {
+            return (!IS_SOLID(cur_t) && (get_room(d, cur_cell) != NULL));
+        }
+
+    }
+
+
 }
 
 static void FOV_normalize_slopes(slope_pair_t *slopes) {
