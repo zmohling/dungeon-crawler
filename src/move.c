@@ -11,7 +11,7 @@
 #include "dungeon.h"
 #include "geometry.h"
 #include "input.h"
-#include "path_finder.h"
+#include "path.h"
 
 static void move_helper(dungeon_t *, character_t *, point_t *);
 
@@ -19,65 +19,69 @@ static void move_helper(dungeon_t *, character_t *, point_t *);
  * or displays a message and returns a nonzero value if that
  * move connot be done.
  */
-int move_pc(dungeon_t *d, int ch) {
+int move_pc(dungeon_t *d, point_t *p, int ch) {
     character_t *pc = d->pc;
 
     point_t next_pos;
     next_pos.x = pc->position.x;
     next_pos.y = pc->position.y;
 
-    /* Stage next_pos per input char */
-    switch (ch) {
-        case '7':
-        case 'y':
-            next_pos.x = next_pos.x - 1;
-            next_pos.y = next_pos.y - 1;
-            break;
-        case '8':
-        case 'k':
-            next_pos.x = next_pos.x;
-            next_pos.y = next_pos.y - 1;
-            break;
-        case '9':
-        case 'u':
-            next_pos.x = next_pos.x + 1;
-            next_pos.y = next_pos.y - 1;
-            break;
-        case '6':
-        case 'l':
-            next_pos.x = next_pos.x + 1;
-            next_pos.y = next_pos.y;
-            break;
-        case '3':
-        case 'n':
-            next_pos.x = next_pos.x + 1;
-            next_pos.y = next_pos.y + 1;
-            break;
-        case '2':
-        case 'j':
-            next_pos.x = next_pos.x;
-            next_pos.y = next_pos.y + 1;
-            break;
-        case '1':
-        case 'b':
-            next_pos.x = next_pos.x - 1;
-            next_pos.y = next_pos.y + 1;
-            break;
-        case '4':
-        case 'h':
-            next_pos.x = next_pos.x - 1;
-            next_pos.y = next_pos.y;
-            break;
-        case '5':
-        case '.':
-        case ' ':
-            return 0;
-        default:
-            next_pos.x = 0;
-            next_pos.y = 0;
-            break;
+    if (p != NULL) {
+        next_pos.x = p->x;
+        next_pos.y = p->y;
+    } else {
+        /* Stage next_pos per input char */
+        switch (ch) {
+            case '7':
+            case 'y':
+                next_pos.x = next_pos.x - 1;
+                next_pos.y = next_pos.y - 1;
+                break;
+            case '8':
+            case 'k':
+                next_pos.x = next_pos.x;
+                next_pos.y = next_pos.y - 1;
+                break;
+            case '9':
+            case 'u':
+                next_pos.x = next_pos.x + 1;
+                next_pos.y = next_pos.y - 1;
+                break;
+            case '6':
+            case 'l':
+                next_pos.x = next_pos.x + 1;
+                next_pos.y = next_pos.y;
+                break;
+            case '3':
+            case 'n':
+                next_pos.x = next_pos.x + 1;
+                next_pos.y = next_pos.y + 1;
+                break;
+            case '2':
+            case 'j':
+                next_pos.x = next_pos.x;
+                next_pos.y = next_pos.y + 1;
+                break;
+            case '1':
+            case 'b':
+                next_pos.x = next_pos.x - 1;
+                next_pos.y = next_pos.y + 1;
+                break;
+            case '4':
+            case 'h':
+                next_pos.x = next_pos.x - 1;
+                next_pos.y = next_pos.y;
+                break;
+            case '5':
+            case '.':
+            case ' ':
+                return 0;
+            default:
+                next_pos.x = 0;
+                next_pos.y = 0;
+                break;
+        }
     }
-
     /* Check if next_pos is valid and trample monsters */
     if (!IS_SOLID(d->map[next_pos.y][next_pos.x])) {
         if (!(check_for_trample(d, pc, next_pos.x, next_pos.y))) {

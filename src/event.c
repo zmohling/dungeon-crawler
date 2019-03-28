@@ -1,4 +1,4 @@
-#include "event_simulator.h"
+#include "event.h"
 
 #include <ncurses.h>
 #include <stdio.h>
@@ -10,7 +10,7 @@
 #include "dungeon.h"
 #include "input.h"
 #include "move.h"
-#include "path_finder.h"
+#include "path.h"
 #include "fov.h"
 
 /* Compare function for the discrete event simulator and heap */

@@ -8,6 +8,9 @@
 #include "dungeon.h"
 #include "geometry.h"
 
+static dungeon_t *d_static;
+static bool FOV_fog_enabled = true;
+
 static void FOV_slopes_from_src(point_t src, point_t dest,
                                 slope_pair_t *cell_slopes, int octant) {
     switch (octant) {
@@ -136,47 +139,13 @@ static double FOV_euclidean_distance(point_t p1, point_t p2) {
     return sqrt(pow(p2.x - p1.x, 2) + pow(p2.y - p1.y, 2));
 }
 
-static int FOV_has_neighbors(dungeon_t *d, point_t p) {
-    int total = 0;
-    int x, y;
-    for (y = p.y - 1; y < (p.y + 2) && y >= 0 && y < DUNGEON_Y; y++) {
-        for (x = p.x - 1; x < (p.x + 2) && x >= 0 && x < DUNGEON_X; x++) {
-            if (x == p.x && y == p.y) {
-                continue;
-            } else if (!IS_SOLID(d->map[y][x]) &&
-                       (d->map[y][x] != ter_floor_hall)) {
-                total++;
-            }
-        }
-    }
-    return total;
-}
-
 static int FOV_does_pass_light(dungeon_t *d, point_t *origin,
                                point_t *cur_cell) {
     double distance = FOV_euclidean_distance(*origin, *cur_cell);
-    terrain_t orig_t = d->map[origin->y][origin->x];
     terrain_t cur_t = d->map[cur_cell->y][cur_cell->x];
-/*
-    if (!IS_SOLID(orig_t) && orig_t != ter_floor_hall) {
-        return (!IS_SOLID(cur_t) && cur_t != ter_floor_hall);
-    }
-*/
 
-    //PLEASE FIX 
-/*
-    if (isless(distance, 1.0)) {
-        return (!IS_SOLID(cur_t));
-    } else if (isgreater(distance, 1.0) && (!IS_SOLID(orig_t) && orig_t != ter_floor_hall && has_neighbor(d,ter_floor_hall, *origin) < 2)) {
-
-            return (!IS_SOLID(cur_t) && cur_t != ter_floor_hall);
-    } else {
-        return ((!IS_SOLID(cur_t)) && (FOV_has_neighbors(d, *cur_cell) ||
-                                       cur_t == ter_floor_room));
-    }
-    */
     // If PC is in a room
-    if (get_room(d, origin) != NULL) {
+    if (get_room(d, origin, 0.0) != NULL) {
         return (!IS_SOLID(cur_t) && cur_t != ter_floor_hall);
     } else {
         /* If PC is in a corridor */
@@ -184,9 +153,10 @@ static int FOV_does_pass_light(dungeon_t *d, point_t *origin,
         if (islessequal(distance, 1.0) && !IS_SOLID(cur_t)) {
             return 1;
         } else {
-            return (!IS_SOLID(cur_t) && (get_room(d, cur_cell) != NULL));
+            return (!IS_SOLID(cur_t) && (get_room(d, cur_cell, 0.0) != NULL));
         }
 
+        return true;
     }
 
 
@@ -210,13 +180,7 @@ void FOV_recursive_shadowcast(dungeon_t *d, point_t *origin,
             if (slopes.start_slope < slopes.end_slope) {
                 return;
             }
-            /*
-                        if (d->map[cur_cell.y][cur_cell.x] == ter_floor_hall) {
-                            radius = 3 - i;
-                        } else if (d->map[cur_cell.y][cur_cell.x] ==
-               ter_floor_room) { radius = DUNGEON_X;
-                        }
-            */
+
             FOV_slopes_from_src(*origin, cur_cell, &cell_slopes, octant);
             if (isgreater(cell_slopes.end_slope, slopes.start_slope)) {
                 FOV_get_next_cell(&cur_cell, octant);
@@ -266,6 +230,8 @@ void FOV_recursive_shadowcast(dungeon_t *d, point_t *origin,
 }
 
 void FOV_shadowcast(dungeon_t *d, point_t *origin, int radius) {
+    d_static = d;
+
     FOV_clear(d);
     d->map_observed[origin->y][origin->x] = 1;
 
@@ -288,4 +254,13 @@ void FOV_clear(dungeon_t *d) {
             }
         }
     }
+}
+
+bool FOV_get_fog() {
+    return FOV_fog_enabled;
+}
+
+void FOV_toggle_fog() {
+    FOV_fog_enabled = !FOV_fog_enabled;
+    render_dungeon(d_static);
 }

@@ -3,8 +3,9 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+
 #include "character.h"
-#include "event_simulator.h"
+#include "event.h"
 #include "geometry.h"
 #include "heap.h"
 
@@ -92,7 +93,7 @@ int generate_terrain(dungeon_t *);
 bool intersects(room_t *, room_t *, int);
 bool out_of_bounds(room_t *, int, int);
 int has_neighbor(dungeon_t *, terrain_t, point_t); 
-room_t *get_room(dungeon_t *, point_t *);
+room_t *get_room(dungeon_t *, point_t *, int);
 point_t get_valid_point(dungeon_t *, bool);
 
 #endif

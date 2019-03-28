@@ -11,8 +11,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "fov.h"
 #include "heap.h"
-#include "path_finder.h"
+#include "path.h"
 
 void render_dungeon(dungeon_t *d) {
     int i, j;
@@ -23,7 +24,7 @@ void render_dungeon(dungeon_t *d) {
             char c = ' ';
 
             /* Characters */
-            if (d->map_observed[i][j] == 1) {
+            if (d->map_observed[i][j] == 1 || FOV_get_fog() == false) {
                 character_t *character = d->character_map[i][j];
                 if (character != NULL && character->is_alive) {
                     if (character->is_pc == true) {
@@ -44,12 +45,6 @@ void render_dungeon(dungeon_t *d) {
                     continue;
                 }
             }
-            /* Border /
-            if (i == 0 || i == (DUNGEON_Y - 1)) {
-                c = '-';
-            } else if (j == 0 || j == (DUNGEON_X - 1)) {
-                c = '|';
-            }*/
 
             /* Terrain */
             terrain_t t = d->map[i][j];
@@ -81,7 +76,7 @@ void render_dungeon(dungeon_t *d) {
                     c = '+';
             }
 
-            if (d->map_observed[i][j] == 1) {
+            if (d->map_observed[i][j] == 1 || FOV_get_fog() == false) {
                 attron(A_BOLD);
                 attron(COLOR_PAIR(1));
                 mvprintw(y, x, "%c", c);
@@ -419,18 +414,18 @@ bool intersects(room_t *a, room_t *b, int margin) {
     return true;
 }
 
-/* Returns the room struct which contains paint_t *p
+/* Returns the room struct which contains or is within radius of paint_t *p
  */
-room_t *get_room(dungeon_t *d, point_t *p) {
+room_t *get_room(dungeon_t *d, point_t *p, int radius) {
     room_t not_a_room;
-    not_a_room.coordinates.x = p->x;
-    not_a_room.coordinates.y = p->y;
-    not_a_room.height = 0;
-    not_a_room.width = 0;
+    not_a_room.coordinates.x = p->x - (radius / 2);
+    not_a_room.coordinates.y = p->y - (radius / 2);
+    not_a_room.height = (radius / 2) + 1;
+    not_a_room.width = (radius / 2) + 1;
 
     int i;
     for (i = 0; i < d->num_rooms; i++) {
-        if (intersects(&not_a_room, &(d->rooms[i]), 0)) {
+        if (intersects(&not_a_room, &(d->rooms[i]), radius - 1)) {
             return &(d->rooms[i]);
         }
     }
@@ -685,7 +680,7 @@ point_t get_valid_point(dungeon_t *d, bool isPC) {
                 break;
             }
         } else {
-            if (get_room(d, &d->pc->position) != get_room(d, &random) &&
+            if (get_room(d, &d->pc->position, 0) != get_room(d, &random, 0) &&
                 d->character_map[random.y][random.x] == NULL &&
                 !IS_SOLID(d->map[random.y][random.x])) {
                 p.x = random.x;

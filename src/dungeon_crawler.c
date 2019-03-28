@@ -8,8 +8,8 @@
 
 #include "character.h"
 #include "dungeon.h"
-#include "event_simulator.h"
-#include "path_finder.h"
+#include "event.h"
+#include "path.h"
 #include "util.h"
 
 static dungeon_t dungeon;

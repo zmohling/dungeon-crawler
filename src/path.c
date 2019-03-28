@@ -1,4 +1,4 @@
-#include "path_finder.h"
+#include "path.h"
 
 #include <stdlib.h>
 
