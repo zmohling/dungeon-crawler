@@ -289,16 +289,9 @@ int generate_dungeon(dungeon_t *d) {
     generate_corridors(d);
     generate_staircases(d);
     generate_hardness(d);
-
     generate_room_borders(d);
 
-    int i, j;
-    for (i = 0; i < DUNGEON_Y; i++) {
-        for (j = 0; j < DUNGEON_X; j++) {
-            d->map_visible[i][j] = false;
-            d->map_observed[i][j] = ter_empty;
-        }
-    }
+    init_terrain(d);
 
     return 0;
 }
@@ -612,6 +605,19 @@ int generate_hardness(dungeon_t *d) {
             }
         }
     }
+    return 0;
+}
+
+int init_terrain(dungeon_t *d) {
+    int i, j;
+    for (i = 0; i < DUNGEON_Y; i++) {
+        for (j = 0; j < DUNGEON_X; j++) {
+            d->map_visible[i][j] = false;
+            d->map_observed[i][j] = ter_empty;
+            //d->map[i][j] = ter_empty;
+        }
+    }
+
     return 0;
 }
 

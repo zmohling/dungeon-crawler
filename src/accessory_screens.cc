@@ -118,7 +118,7 @@ static int print_monsters(dungeon_t *d, character_t *sorted_character_arr[],
         /* Print if monster is alive and visible to PC */
         character_t *monster = sorted_character_arr[adjusted_index + i + 1];
         bool monster_is_visible =
-            d->map_observed[monster->position.y][monster->position.x] == 1 ||
+            d->map_visible[monster->position.y][monster->position.x] ||
             FOV_get_fog() == false;
         if (monster->is_alive && monster_is_visible) {
             get_mag_and_direction(

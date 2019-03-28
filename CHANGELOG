@@ -1,4 +1,6 @@
 CHANGELOG (GIT LOG)
+2019-03-28: Fixed bug that'd allow unlit terrains to be shown
+2019-03-28: Port to C++, Bug fixes for v1.06
 2019-03-28: Renaming, Refactoring, and Debugging keybindings
 2019-03-27: More FOV Tweaks
 2019-03-26: FOV Tweaks

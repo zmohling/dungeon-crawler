@@ -82,6 +82,7 @@ void render_movement_cost_map(dungeon_t *);
 void render_distance_map(dungeon_t *);
 void render_tunnel_distance_map(dungeon_t *);
 
+int init_terrain(dungeon_t *);
 int deep_free_dungeon(dungeon_t *);
 
 int read_dungeon_from_disk(dungeon_t *, char *);
