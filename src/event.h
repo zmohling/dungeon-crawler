@@ -3,13 +3,18 @@
 
 #include <stdint.h>
 #include "character.h"
+#include "dungeon.h"
 
-typedef struct event {
+class dungeon_t;
+class character_t;
+
+class event_t {
+    public:
     uint32_t turn;
     character_t *c;
-} event_t;
+};
 
 int event_simulator_start(dungeon_t *);
-void quit();
+int event_simulator_stop(dungeon_t *);
 
 #endif

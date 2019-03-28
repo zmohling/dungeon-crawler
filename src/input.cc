@@ -1,8 +1,12 @@
+#include "input.h"
+
 #include <ncurses.h>
 #include <stdlib.h>
 
 #include "accessory_screens.h"
-#include "input.h"
+#include "debug.h"
+#include "dungeon_crawler.h"
+#include "fov.h"
 #include "move.h"
 
 static void get_new_input(int *key_is_valid, int *input) {
@@ -43,7 +47,7 @@ void handle_key(dungeon_t *d, int c) {
             case '5':
             case '.':
             case ' ':
-                if (move_pc(d, input)) {
+                if (move_pc(d, NULL, input)) {
                     /* Invalid */
                     mvprintw(0, 0, "%s", "You cannot move here!");
                     get_new_input(&key_is_valid, &input);
@@ -82,6 +86,15 @@ void handle_key(dungeon_t *d, int c) {
                 break;
             case 'q':
                 quit();
+                break;
+            case 'f':
+                FOV_toggle_fog();
+                mvprintw(0, 0, "%s", "Fog of War was toggled.");
+                get_new_input(&key_is_valid, &input);
+                break;
+            case 't':
+                mvprintw(0, 0, "%s", "Teleport Mode");
+                DEBUG_teleport_mode(d);
                 break;
             default:
                 mvprintw(0, 0, "%s", "Invalid Input");

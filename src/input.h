@@ -15,7 +15,7 @@ typedef enum __attribute__((__packed__)) pc_movement_type {
     pc_down_right,
 } pc_movement_t;
 
-typedef struct dungeon dungeon_t;
+class dungeon_t;
 
 void handle_key(dungeon_t *, int);
 

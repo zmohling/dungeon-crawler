@@ -1,3 +1,5 @@
+#include "move.h"
+
 #include <limits.h>
 #include <math.h>
 #include <ncurses.h>
@@ -9,8 +11,7 @@
 #include "dungeon.h"
 #include "geometry.h"
 #include "input.h"
-#include "move.h"
-#include "path_finder.h"
+#include "path.h"
 
 static void move_helper(dungeon_t *, character_t *, point_t *);
 
@@ -18,68 +19,71 @@ static void move_helper(dungeon_t *, character_t *, point_t *);
  * or displays a message and returns a nonzero value if that
  * move connot be done.
  */
-int move_pc(dungeon_t *d, int ch) {
+int move_pc(dungeon_t *d, point_t *p, int ch) {
     character_t *pc = d->pc;
 
     point_t next_pos;
     next_pos.x = pc->position.x;
     next_pos.y = pc->position.y;
 
-    /* Stage next_pos per input char */
-    switch (ch) {
-        case '7':
-        case 'y':
-            next_pos.x = next_pos.x - 1;
-            next_pos.y = next_pos.y - 1;
-            break;
-        case '8':
-        case 'k':
-            next_pos.x = next_pos.x;
-            next_pos.y = next_pos.y - 1;
-            break;
-        case '9':
-        case 'u':
-            next_pos.x = next_pos.x + 1;
-            next_pos.y = next_pos.y - 1;
-            break;
-        case '6':
-        case 'l':
-            next_pos.x = next_pos.x + 1;
-            next_pos.y = next_pos.y;
-            break;
-        case '3':
-        case 'n':
-            next_pos.x = next_pos.x + 1;
-            next_pos.y = next_pos.y + 1;
-            break;
-        case '2':
-        case 'j':
-            next_pos.x = next_pos.x;
-            next_pos.y = next_pos.y + 1;
-            break;
-        case '1':
-        case 'b':
-            next_pos.x = next_pos.x - 1;
-            next_pos.y = next_pos.y + 1;
-            break;
-        case '4':
-        case 'h':
-            next_pos.x = next_pos.x - 1;
-            next_pos.y = next_pos.y;
-            break;
-        case '5':
-        case '.':
-        case ' ':
-            return 0;
-        default:
-            next_pos.x = 0;
-            next_pos.y = 0;
-            break;
+    if (p != NULL) {
+        next_pos.x = p->x;
+        next_pos.y = p->y;
+    } else {
+        /* Stage next_pos per input char */
+        switch (ch) {
+            case '7':
+            case 'y':
+                next_pos.x = next_pos.x - 1;
+                next_pos.y = next_pos.y - 1;
+                break;
+            case '8':
+            case 'k':
+                next_pos.x = next_pos.x;
+                next_pos.y = next_pos.y - 1;
+                break;
+            case '9':
+            case 'u':
+                next_pos.x = next_pos.x + 1;
+                next_pos.y = next_pos.y - 1;
+                break;
+            case '6':
+            case 'l':
+                next_pos.x = next_pos.x + 1;
+                next_pos.y = next_pos.y;
+                break;
+            case '3':
+            case 'n':
+                next_pos.x = next_pos.x + 1;
+                next_pos.y = next_pos.y + 1;
+                break;
+            case '2':
+            case 'j':
+                next_pos.x = next_pos.x;
+                next_pos.y = next_pos.y + 1;
+                break;
+            case '1':
+            case 'b':
+                next_pos.x = next_pos.x - 1;
+                next_pos.y = next_pos.y + 1;
+                break;
+            case '4':
+            case 'h':
+                next_pos.x = next_pos.x - 1;
+                next_pos.y = next_pos.y;
+                break;
+            case '5':
+            case '.':
+            case ' ':
+                return 0;
+            default:
+                next_pos.x = 0;
+                next_pos.y = 0;
+                break;
+        }
     }
-
     /* Check if next_pos is valid and trample monsters */
-    if (d->map[next_pos.y][next_pos.x] != ter_wall &&
-        d->map[next_pos.y][next_pos.x] != ter_wall_immutable) {
+    if (!IS_SOLID(d->map[next_pos.y][next_pos.x])) {
         if (!(check_for_trample(d, pc, next_pos.x, next_pos.y))) {
             mvprintw(0, 0, "You slayed a monster!");
         }
@@ -104,7 +108,7 @@ int use_stairs(dungeon_t *d, pc_movement_t p) {
     deep_free_dungeon(d);
     generate_dungeon(d);
 
-    d->pc = malloc(sizeof(character_t));
+    d->pc = (character_t *) malloc(sizeof(character_t));
     if (p == pc_up_stairs) {
         d->pc->position.x = d->stairs_down[0].x;
         d->pc->position.y = d->stairs_down[0].y;
@@ -155,8 +159,7 @@ int move_npc_non_tunnel(dungeon_t *d, character_t *c) {
         for (x = (c->position.x - 1); x <= (c->position.x + 1); x++) {
             if (y > (DUNGEON_Y - 1) || y < 0 || x > (DUNGEON_X - 1) || x < 0) {
                 continue;
-            } else if (d->map[y][x] == ter_wall ||
-                       d->map[y][x] == ter_wall_immutable) {
+            } else if (IS_SOLID(d->map[y][x])) {
                 continue;
             }
 
@@ -192,7 +195,7 @@ int move_npc_tunnel(dungeon_t *d, character_t *c) {
         for (x = (c->position.x - 1); x <= (c->position.x + 1); x++) {
             if (y > (DUNGEON_Y - 1) || y < 0 || x > (DUNGEON_X - 1) || x < 0) {
                 continue;
-            } else if (d->map[y][x] == ter_wall_immutable) {
+            } else if (d->map[y][x] == ter_rock_immutable) {
                 continue;
             }
 

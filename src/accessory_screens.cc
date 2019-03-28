@@ -1,12 +1,15 @@
+#include "accessory_screens.h"
+
 #include <math.h>
 #include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "accessory_screens.h"
 #include "character.h"
 #include "dungeon.h"
+#include "dungeon_crawler.h"
+#include "fov.h"
 
 static dungeon_t *d_static;
 
@@ -69,20 +72,20 @@ static void get_mag_and_direction(dungeon_t *d, character_t *c, int *m1,
     int y = d->pc->position.y - c->position.y;
     *m1 = abs(y);
     if (y > 0) {
-        *dir1 = malloc(strlen("North") + 1);
+        *dir1 = (char *) malloc(strlen("North") + 1);
         strcpy(*dir1, "North");
     } else {
-        *dir1 = malloc(strlen("South") + 1);
+        *dir1 = (char *) malloc(strlen("South") + 1);
         strcpy(*dir1, "South");
     }
 
     int x = d->pc->position.x - c->position.x;
     *m2 = abs(x);
-    if (x < 0) {
-        *dir2 = malloc(strlen("West") + 1);
+    if (x > 0) {
+        *dir2 = (char *) malloc(strlen("West") + 1);
         strcpy(*dir2, "West");
     } else {
-        *dir2 = malloc(strlen("East") + 1);
+        *dir2 = (char *) malloc(strlen("East") + 1);
         strcpy(*dir2, "East");
     }
 }
@@ -94,6 +97,7 @@ static int print_monsters(dungeon_t *d, character_t *sorted_character_arr[],
     int lines = (height - 4);
     int num_monsters_alive = 0;
 
+    /* Get number of alive monsters */
     for (i = 1; i < d->num_monsters + 1; i++) {
         if (sorted_character_arr[i]->is_alive) {
             num_monsters_alive++;
@@ -111,29 +115,31 @@ static int print_monsters(dungeon_t *d, character_t *sorted_character_arr[],
     char *longitudinal_card_dir, *lateral_card_dir;
 
     for (i = 0; i < lines && i < num_monsters_alive; i++) {
-        get_mag_and_direction(d, sorted_character_arr[adjusted_index + i + 1],
-                              &longitudinal_magnitude, &longitudinal_card_dir,
-                              &lateral_magnitude, &lateral_card_dir);
+        /* Print if monster is alive and visible to PC */
+        character_t *monster = sorted_character_arr[adjusted_index + i + 1];
+        bool monster_is_visible =
+            d->map_observed[monster->position.y][monster->position.x] == 1 ||
+            FOV_get_fog() == false;
+        if (monster->is_alive && monster_is_visible) {
+            get_mag_and_direction(
+                d, sorted_character_arr[adjusted_index + i + 1],
+                &longitudinal_magnitude, &longitudinal_card_dir,
+                &lateral_magnitude, &lateral_card_dir);
 
-        if (sorted_character_arr[adjusted_index + i + 1]->is_alive) {
             mvprintw(
                 inner_bound_y + i, inner_bound_x, "  %x: %2d %s and %2d %s",
                 sorted_character_arr[adjusted_index + i + 1]->symbol & 0xff,
                 longitudinal_magnitude, longitudinal_card_dir,
                 lateral_magnitude, lateral_card_dir);
+            free(longitudinal_card_dir);
+            free(lateral_card_dir);
+        } else if (monster->is_alive && !monster_is_visible) {
+            mvprintw(inner_bound_y + i, inner_bound_x,
+                     "  *: ** ***** *** ** ****");
         }
-
-        free(longitudinal_card_dir);
-        free(lateral_card_dir);
     }
 
     return adjusted_index;
-}
-
-/* TODO: Nice confirmation menu*/
-void quit() {
-    endwin();
-    exit(0);
 }
 
 void monster_list(dungeon_t *d) {
@@ -144,8 +150,8 @@ void monster_list(dungeon_t *d) {
     WINDOW *w = create_newwin(height, width, starty, startx);
     overwrite(w, stdscr);
 
-    char *title = "MONSTER LIST";
-    char *footer = "PRESS ESC TO EXIT";
+    char *title = (char *) "MONSTER LIST";
+    char *footer = (char *) "PRESS ESC TO EXIT";
     mvprintw(starty, startx + (width / 2) - (strlen(title) / 2), title);
     mvprintw(starty + height - 1, startx + (width / 2) - (strlen(footer) / 2),
              footer);
@@ -212,6 +218,5 @@ void endscreen(int didWin) {
     while (getch() != 'q')
         ;
 
-    endwin();
-    exit(0);
+    quit();
 }

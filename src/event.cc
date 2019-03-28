@@ -1,4 +1,5 @@
-#include <menu.h>
+#include "event.h"
+
 #include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,10 +8,10 @@
 
 #include "accessory_screens.h"
 #include "dungeon.h"
-#include "event_simulator.h"
 #include "input.h"
 #include "move.h"
-#include "path_finder.h"
+#include "path.h"
+#include "fov.h"
 
 /* Compare function for the discrete event simulator and heap */
 static int32_t event_compare(const void *key, const void *with) {
@@ -44,6 +45,7 @@ static int game_loop(dungeon_t *d) {
         if (!e->c->is_alive) {
             ;
         } else if (e->c->is_pc) {
+            FOV_shadowcast(d, &d->pc->position, 15);
             render_dungeon(d);
 
             handle_key(d, getch());
@@ -76,12 +78,12 @@ static int game_loop(dungeon_t *d) {
  */
 int event_simulator_start(dungeon_t *d) {
     /* Allocate memory for events and characters arrays */
-    if (!(d->events = calloc(1, sizeof(event_t) * (d->num_monsters + 1)))) {
+    if (!(d->events = (event_t *) calloc(1, sizeof(event_t) * (d->num_monsters + 1)))) {
         fprintf(stderr, "Did not allocate events array in dungeon struct.");
         exit(-122);
     }
     if (!(d->characters =
-              calloc(1, sizeof(character_t) * (d->num_monsters + 1)))) {
+              (character_t *) calloc(1, sizeof(character_t) * (d->num_monsters + 1)))) {
         fprintf(stderr, "Did not allocate characters array in dungeon struct.");
         exit(-123);
     }
@@ -108,3 +110,7 @@ int event_simulator_start(dungeon_t *d) {
     return 0;
 }
 
+int event_simulator_stop(dungeon_t *d) {
+
+    return 0;
+}

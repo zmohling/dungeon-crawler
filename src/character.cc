@@ -1,7 +1,9 @@
 #include "character.h"
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "dungeon.h"
 
 static uint8_t assign_characteristics();
@@ -48,7 +50,7 @@ character_t new_character(dungeon_t *d) {
         c.is_alive = true;
         c.speed = rand() % (NPC_MAX_SPEED - 4) + 5;
 
-        c.npc = calloc(1, sizeof(npc_t));
+        c.npc = (npc_t *) calloc(1, sizeof(npc_t));
         c.npc->characteristics = assign_characteristics();
         c.symbol = (char)c.npc->characteristics;
     }
