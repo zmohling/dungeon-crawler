@@ -144,6 +144,9 @@ static int FOV_does_pass_light(dungeon_t *d, point_t *origin,
     double distance = FOV_euclidean_distance(*origin, *cur_cell);
     terrain_t cur_t = d->map[cur_cell->y][cur_cell->x];
 
+    d->map_observed[cur_cell->y][cur_cell->x] = cur_t;
+    d->map_visible[cur_cell->y][cur_cell->x] = true;
+
     // If PC is in a room
     if (get_room(d, origin, 0.0) != NULL) {
         return (!IS_SOLID(cur_t) && cur_t != ter_floor_hall);
@@ -177,21 +180,18 @@ void FOV_recursive_shadowcast(dungeon_t *d, point_t *origin,
         bool blocked = true;
 
         for (int j = 0; j <= i; j++) {
+            FOV_slopes_from_src(*origin, cur_cell, &cell_slopes, octant);
+
             if (slopes.start_slope < slopes.end_slope) {
                 return;
-            }
-
-            FOV_slopes_from_src(*origin, cur_cell, &cell_slopes, octant);
-            if (isgreater(cell_slopes.end_slope, slopes.start_slope)) {
+            } else if (isgreater(cell_slopes.end_slope, slopes.start_slope)) {
                 FOV_get_next_cell(&cur_cell, octant);
                 continue;
             } else if (isless(cell_slopes.start_slope, slopes.end_slope)) {
                 break;
             }
 
-            d->map_observed[cur_cell.y][cur_cell.x] = 1;
             int transparent = FOV_does_pass_light(d, origin, &cur_cell);
-
             if (blocked) {
                 if (transparent) {
                     blocked = false;
@@ -233,7 +233,9 @@ void FOV_shadowcast(dungeon_t *d, point_t *origin, int radius) {
     d_static = d;
 
     FOV_clear(d);
-    d->map_observed[origin->y][origin->x] = 1;
+
+    d->map_observed[origin->y][origin->x] = d->map[origin->y][origin->x];
+    d->map_visible[origin->y][origin->x] = true;
 
     slope_pair_t init_slopes;
     init_slopes.start_slope = 1.0;
@@ -249,8 +251,8 @@ void FOV_clear(dungeon_t *d) {
     int i, j;
     for (i = 0; i < DUNGEON_Y; i++) {
         for (j = 0; j < DUNGEON_X; j++) {
-            if (d->map_observed[i][j] == 1) {
-                d->map_observed[i][j] = 2;
+            if (d->map_visible[i][j]) {
+                d->map_visible[i][j] = false;
             }
         }
     }

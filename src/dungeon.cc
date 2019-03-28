@@ -24,7 +24,7 @@ void render_dungeon(dungeon_t *d) {
             char c = ' ';
 
             /* Characters */
-            if (d->map_observed[i][j] == 1 || FOV_get_fog() == false) {
+            if (d->map_visible[i][j] || FOV_get_fog() == false) {
                 character_t *character = d->character_map[i][j];
                 if (character != NULL && character->is_alive) {
                     if (character->is_pc == true) {
@@ -47,7 +47,13 @@ void render_dungeon(dungeon_t *d) {
             }
 
             /* Terrain */
-            terrain_t t = d->map[i][j];
+            terrain_t t;
+            if (FOV_get_fog() == false) {
+                t = d->map[i][j];
+            } else {
+                t = d->map_observed[i][j];
+            }
+
             switch (t) {
                 case ter_rock_immutable:
                     break;
@@ -76,18 +82,18 @@ void render_dungeon(dungeon_t *d) {
                     c = '+';
             }
 
-            if (d->map_observed[i][j] == 1 || FOV_get_fog() == false) {
+            if (d->map_visible[i][j] || FOV_get_fog() == false) {
                 attron(A_BOLD);
                 attron(COLOR_PAIR(1));
                 mvprintw(y, x, "%c", c);
                 attron(COLOR_PAIR(1));
                 attroff(A_BOLD);
-            } else if (d->map_observed[i][j] == 2) {
+            } else if (!d->map_visible[i][j] && d->map_observed[i][j] != ter_empty) {
                 attron(COLOR_PAIR(1));
-                // char temp = mvinch(y, x) & A_CHARTEXT;
+                //char temp = mvinch(y, x) & A_CHARTEXT;
                 mvprintw(y, x, "%c", c);
                 attron(COLOR_PAIR(0));
-            } else if (d->map_observed[i][j] == 0) {
+            } else if (d->map_observed[i][j] == ter_empty) {
                 attron(COLOR_PAIR(0));
                 mvprintw(y, x, "%c", ' ');
                 attron(COLOR_PAIR(0));
@@ -188,7 +194,7 @@ void render_distance_map(dungeon_t *d) {
                                     d->non_tunnel_distance_map[p.y][p.x] % 10);
                         }
                         break;
-                    case ter_debug:
+                    case ter_empty:
                         fprintf(stderr, "Debug character at %d, %d\n", p.y,
                                 p.x);
                         putchar('*');
@@ -229,7 +235,7 @@ void render_tunnel_distance_map(dungeon_t *d) {
                                     d->tunnel_distance_map[p.y][p.x] % 10);
                         }
                         break;
-                    case ter_debug:
+                    case ter_empty:
                         fprintf(stderr, "Debug character at %d, %d\n", p.y,
                                 p.x);
                         putchar('*');
@@ -264,7 +270,8 @@ int deep_free_dungeon(dungeon_t *d) {
     for (i = 0; i < DUNGEON_Y; i++) {
         for (j = 0; j < DUNGEON_X; j++) {
             d->character_map[i][j] = NULL;
-            d->map_observed[i][j] = 0;
+            d->map_visible[i][j] = false;
+            d->map_observed[i][j] = ter_empty;
         }
     }
 
@@ -284,6 +291,14 @@ int generate_dungeon(dungeon_t *d) {
     generate_hardness(d);
 
     generate_room_borders(d);
+
+    int i, j;
+    for (i = 0; i < DUNGEON_Y; i++) {
+        for (j = 0; j < DUNGEON_X; j++) {
+            d->map_visible[i][j] = false;
+            d->map_observed[i][j] = ter_empty;
+        }
+    }
 
     return 0;
 }

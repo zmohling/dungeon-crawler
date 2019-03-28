@@ -116,7 +116,7 @@ int use_stairs(dungeon_t *d, pc_movement_t p) {
         d->pc->position.x = d->stairs_up[0].x;
         d->pc->position.y = d->stairs_up[0].y;
     }
-    d->num_monsters = (rand() % 7) + 5;
+    d->num_monsters = (rand() % 5) + 3;
 
     event_simulator_start(d);
     return 0;

@@ -23,7 +23,7 @@
 #define MONSTERS_MAX 30
 
 typedef enum __attribute__((__packed__)) terrain_type {
-    ter_debug,
+    ter_empty,
     ter_rock,
     ter_rock_immutable,
     ter_wall_vertical,
@@ -63,7 +63,8 @@ class dungeon_t {
     uint8_t non_tunnel_distance_map[DUNGEON_Y][DUNGEON_X];
     uint8_t tunnel_distance_map[DUNGEON_Y][DUNGEON_X];
     terrain_t map[DUNGEON_Y][DUNGEON_X];
-    uint8_t map_observed[DUNGEON_Y][DUNGEON_X];
+    terrain_t map_observed[DUNGEON_Y][DUNGEON_X];
+    bool map_visible[DUNGEON_Y][DUNGEON_X];
     uint8_t hardness_map[DUNGEON_Y][DUNGEON_X];
 
     uint16_t num_rooms;
