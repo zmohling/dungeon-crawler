@@ -1,8 +1,8 @@
 #!/bin/bash
 
-ROOT_DIR=`cd ../../ && pwd`
+ROOT_DIR=`cd ../ && pwd`
 YEAR=`date +%Y`
-LICENSE_HEAD=`sed "s/<year>/$YEAR/g" $ROOT_DIR/bin/LICENSE_HEAD`
+LICENSE_HEAD=`sed "s/<year>/$YEAR/g" $ROOT_DIR/data/LICENSE_HEAD`
 
 for file in $ROOT_DIR/src/*; do
     [ -e "$file" ] || continue
