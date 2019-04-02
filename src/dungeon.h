@@ -61,14 +61,21 @@ typedef enum __attribute__((__packed__)) terrain_type {
 class character_t;
 class event_t;
 
+class corridor_path_t {
+    heap_node_t *hn;
+    uint8_t pos[2];
+    uint8_t from[2];
+    int32_t cost;
+};
+
 class room_t {
-   public:
+public:
     point_t coordinates;
     uint8_t width, height;
 };
 
 class dungeon_t {
-   public:
+public:
     character_t *pc;
     uint8_t num_monsters;
 

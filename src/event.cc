@@ -65,6 +65,7 @@ static int game_loop(dungeon_t *d) {
             FOV_shadowcast(d, &d->pc->position, 15);
             render_dungeon(d);
 
+
             handle_key(d, getch());
         } else {
             move_npc(d, e->c);

@@ -164,22 +164,12 @@ static int FOV_does_pass_light(dungeon_t *d, point_t *origin,
     d->map_observed[cur_cell->y][cur_cell->x] = cur_t;
     d->map_visible[cur_cell->y][cur_cell->x] = true;
 
-    // If PC is in a room
-    if (get_room(d, origin, 0.0) != NULL) {
-        return (!IS_SOLID(cur_t) && cur_t != ter_floor_hall);
-    } else {
-        /* If PC is in a corridor */
-        
-        if (islessequal(distance, 1.0) && !IS_SOLID(cur_t)) {
-            return 1;
-        } else {
-            return (!IS_SOLID(cur_t) && (get_room(d, cur_cell, 0.0) != NULL));
-        }
-
+    if (!IS_SOLID(cur_t) &&
+        (islessequal(distance, 1.0) || get_room(d, cur_cell, 0.0))) {
         return true;
+    } else {
+        return false;
     }
-
-
 }
 
 static void FOV_normalize_slopes(slope_pair_t *slopes) {
@@ -275,9 +265,7 @@ void FOV_clear(dungeon_t *d) {
     }
 }
 
-bool FOV_get_fog() {
-    return FOV_fog_enabled;
-}
+bool FOV_get_fog() { return FOV_fog_enabled; }
 
 void FOV_toggle_fog() {
     FOV_fog_enabled = !FOV_fog_enabled;

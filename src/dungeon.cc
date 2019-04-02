@@ -33,89 +33,88 @@
 #include "path.h"
 
 void render_dungeon(dungeon_t *d) {
-    int i, j;
-    for (i = 0; i < DUNGEON_Y; i++) {
-        for (j = 0; j < DUNGEON_X; j++) {
-            int y = (i + 1);
-            int x = j;
-            char c = ' ';
+  int i, j;
+  for (i = 0; i < DUNGEON_Y; i++) {
+    for (j = 0; j < DUNGEON_X; j++) {
+      int y = (i + 1);
+      int x = j;
+      char c = ' ';
 
-            /* Characters */
-            if (d->map_visible[i][j] || FOV_get_fog() == false) {
-                character_t *character = d->character_map[i][j];
-                if (character != NULL && character->is_alive) {
-                    if (character->is_pc == true) {
-                        attron(A_BOLD);
-                        attron(COLOR_PAIR(2));
-                        mvprintw(y, x, "%c", character->symbol);
-                        attron(COLOR_PAIR(1));
-                        attroff(A_BOLD);
-                    } else {
-                        attron(A_BOLD);
-                        attron(COLOR_PAIR(3));
-                        mvprintw(y, x, "%x",
-                                 d->character_map[i][j]->symbol & 0xff);
-                        attron(COLOR_PAIR(1));
-                        attroff(A_BOLD);
-                    }
+      /* Characters */
+      if (d->map_visible[i][j] || FOV_get_fog() == false) {
+        character_t *character = d->character_map[i][j];
+        if (character != NULL && character->is_alive) {
+          if (character->is_pc == true) {
+            attron(A_BOLD);
+            attron(COLOR_PAIR(2));
+            mvprintw(y, x, "%c", character->symbol);
+            attron(COLOR_PAIR(1));
+            attroff(A_BOLD);
+          } else {
+            attron(A_BOLD);
+            attron(COLOR_PAIR(3));
+            mvprintw(y, x, "%x", d->character_map[i][j]->symbol & 0xff);
+            attron(COLOR_PAIR(1));
+            attroff(A_BOLD);
+          }
 
-                    continue;
-                }
-            }
-
-            /* Terrain */
-            terrain_t t;
-            if (FOV_get_fog() == false) {
-                t = d->map[i][j];
-            } else {
-                t = d->map_observed[i][j];
-            }
-
-            switch (t) {
-                case ter_rock_immutable:
-                    break;
-                case ter_rock:
-                    c = ' ';
-                    break;
-                case ter_wall_horizontal:
-                    c = '-';
-                    break;
-                case ter_wall_vertical:
-                    c = '|';
-                    break;
-                case ter_floor_room:
-                    c = '.';
-                    break;
-                case ter_floor_hall:
-                    c = '#';
-                    break;
-                case ter_stairs_up:
-                    c = '<';
-                    break;
-                case ter_stairs_down:
-                    c = '>';
-                    break;
-                default:
-                    c = '+';
-            }
-
-            if (d->map_visible[i][j] || FOV_get_fog() == false) {
-                attron(A_BOLD);
-                attron(COLOR_PAIR(1));
-                mvprintw(y, x, "%c", c);
-                attron(COLOR_PAIR(1));
-                attroff(A_BOLD);
-            } else if (!d->map_visible[i][j] && d->map_observed[i][j] != ter_empty) {
-                attron(COLOR_PAIR(1));
-                //char temp = mvinch(y, x) & A_CHARTEXT;
-                mvprintw(y, x, "%c", c);
-                attron(COLOR_PAIR(0));
-            } else if (d->map_observed[i][j] == ter_empty) {
-                attron(COLOR_PAIR(0));
-                mvprintw(y, x, "%c", ' ');
-                attron(COLOR_PAIR(0));
-            }
+          continue;
         }
+      }
+
+      /* Terrain */
+      terrain_t t;
+      if (FOV_get_fog() == false) {
+        t = d->map[i][j];
+      } else {
+        t = d->map_observed[i][j];
+      }
+
+      switch (t) {
+      case ter_rock_immutable:
+        break;
+      case ter_rock:
+        c = ' ';
+        break;
+      case ter_wall_horizontal:
+        c = '-';
+        break;
+      case ter_wall_vertical:
+        c = '|';
+        break;
+      case ter_floor_room:
+        c = '.';
+        break;
+      case ter_floor_hall:
+        c = '#';
+        break;
+      case ter_stairs_up:
+        c = '<';
+        break;
+      case ter_stairs_down:
+        c = '>';
+        break;
+      default:
+        c = '+';
+      }
+
+      if (d->map_visible[i][j] || FOV_get_fog() == false) {
+        attron(A_BOLD);
+        attron(COLOR_PAIR(1));
+        mvprintw(y, x, "%c", c);
+        attron(COLOR_PAIR(1));
+        attroff(A_BOLD);
+      } else if (!d->map_visible[i][j] && d->map_observed[i][j] != ter_empty) {
+        attron(COLOR_PAIR(1));
+        // char temp = mvinch(y, x) & A_CHARTEXT;
+        mvprintw(y, x, "%c", c);
+        attron(COLOR_PAIR(0));
+      } else if (d->map_observed[i][j] == ter_empty) {
+        attron(COLOR_PAIR(0));
+        mvprintw(y, x, "%c", ' ');
+        attron(COLOR_PAIR(0));
+      }
+    }
     }
 
     refresh();
@@ -129,7 +128,6 @@ void generate_room_borders(dungeon_t *d) {
             for (x = d->rooms[i].coordinates.x - 1;
                  x <= d->rooms[i].coordinates.x + d->rooms[i].width; x++) {
                 if (!IS_SOLID(d->map[y][x])) {
-                    ;
                 } else if (y == d->rooms[i].coordinates.y - 1 ||
                            y ==
                                d->rooms[i].coordinates.y + d->rooms[i].height) {
@@ -278,7 +276,7 @@ int deep_free_dungeon(dungeon_t *d) {
     for (i = 0; i < (d->num_monsters + 1); i++) {
         character_t *c = &(d->characters[i]);
         if (c->npc != NULL) {
-            //free(c->npc);
+            // free(c->npc);
         }
     }
 
@@ -366,7 +364,7 @@ int generate_rooms(dungeon_t *d) {
             int j;
             for (j = (i - 1); j >= 0; j--) {
                 if ((_intersects =
-                         intersects(&(d->rooms[i]), &(d->rooms[j]), 1))) {
+                         intersects(&(d->rooms[i]), &(d->rooms[j]), 2))) {
                     break;
                 }
             }
@@ -381,7 +379,7 @@ int generate_rooms(dungeon_t *d) {
             attempts_to_generate++;
         } while (_intersects ||
                  _out_of_bounds);  // continue generating until the random room
-                                   // is in bounds not non-intersecting.
+        // is in bounds not non-intersecting.
 
         /* Write generated room to dungeon array */
         int x, y;
@@ -421,20 +419,23 @@ bool out_of_bounds(room_t *room, int bound_x, int bound_y) {
  * Room b: Second room of the pair.
  */
 bool intersects(room_t *a, room_t *b, int margin) {
-    int a_x1 = a->coordinates.x;
-    int a_y1 = a->coordinates.y;
-    int a_x2 = a_x1 + a->width;
-    int a_y2 = a_y1 + a->height;
+    point_t l1;
+    l1.x = a->coordinates.x;
+    l1.y = a->coordinates.y;
+    point_t r1;
+    r1.x = a->coordinates.x + (a->width - 1);
+    r1.y = a->coordinates.y + (a->height - 1);
 
-    int b_x1 = b->coordinates.x;
-    int b_y1 = b->coordinates.y;
-    int b_x2 = b_x1 + b->width;
-    int b_y2 = b_y1 + b->height;
+    point_t l2;
+    l2.x = b->coordinates.x;
+    l2.y = b->coordinates.y;
+    point_t r2;
+    r2.x = b->coordinates.x + (b->width - 1);
+    r2.y = b->coordinates.y + (b->height - 1);
 
-    if (a_x1 > b_x2 + margin || a_x2 < b_x1 - margin || a_y1 > b_y2 + margin ||
-        a_y2 < b_y1 - margin) {
-        return false;
-    }
+    if (l1.x > (r2.x + margin) || l2.x > (r1.x + margin)) return false;
+
+    if (l1.y > (r2.y + margin) || l2.y > (r1.y + margin)) return false;
 
     return true;
 }
@@ -443,14 +444,14 @@ bool intersects(room_t *a, room_t *b, int margin) {
  */
 room_t *get_room(dungeon_t *d, point_t *p, int radius) {
     room_t not_a_room;
-    not_a_room.coordinates.x = p->x - (radius / 2);
-    not_a_room.coordinates.y = p->y - (radius / 2);
-    not_a_room.height = (radius / 2) + 1;
-    not_a_room.width = (radius / 2) + 1;
+    not_a_room.coordinates.x = p->x - radius;
+    not_a_room.coordinates.y = p->y - radius;
+    not_a_room.height = 1 + (radius * 2);
+    not_a_room.width = 1 + (radius * 2);
 
     int i;
     for (i = 0; i < d->num_rooms; i++) {
-        if (intersects(&not_a_room, &(d->rooms[i]), radius - 1)) {
+        if (intersects(&not_a_room, &(d->rooms[i]), 0.0)) {
             return &(d->rooms[i]);
         }
     }
@@ -519,7 +520,7 @@ int generate_corridors(dungeon_t *d) {
         int x = (i % 2 == 0) ? d->rooms[i].coordinates.x
                              : d->rooms[i].coordinates.x + d->rooms[i].width -
                                    1;  // add randomness by writing corridor
-                                       // from second point on even indexes
+        // from second point on even indexes
 
         int y = (i % 2 == 0)
                     ? d->rooms[i].coordinates.y
@@ -563,7 +564,7 @@ int generate_corridors(dungeon_t *d) {
  */
 int generate_staircases(dungeon_t *d) {
     d->num_stairs_up = rand() % STAIRS_MAX + 1;
-    d->stairs_up = (point_t *) malloc(d->num_stairs_up * sizeof(point_t));
+    d->stairs_up = (point_t *)malloc(d->num_stairs_up * sizeof(point_t));
 
     int i;
     for (i = 0; i < d->num_stairs_up;) {
@@ -574,7 +575,7 @@ int generate_staircases(dungeon_t *d) {
         p = &(d->map[_y][_x]);
 
         if (*p == ter_floor_hall || *p == ter_floor_room) {
-            point_t coord = {(uint8_t) _x,(uint8_t) _y};
+            point_t coord = {(uint8_t)_x, (uint8_t)_y};
             d->stairs_up[i] = coord;
 
             *p = ter_stairs_up;
@@ -583,7 +584,7 @@ int generate_staircases(dungeon_t *d) {
     }
 
     d->num_stairs_down = rand() % STAIRS_MAX + 1;
-    d->stairs_down = (point_t *) malloc(d->num_stairs_down * sizeof(point_t));
+    d->stairs_down = (point_t *)malloc(d->num_stairs_down * sizeof(point_t));
 
     int j;
     for (j = 0; j < d->num_stairs_down;) {
@@ -594,7 +595,7 @@ int generate_staircases(dungeon_t *d) {
         p = &(d->map[_y][_x]);
 
         if (*p == ter_floor_hall || *p == ter_floor_room) {
-            point_t coord = {(uint8_t) _x,(uint8_t) _y};
+            point_t coord = {(uint8_t)_x, (uint8_t)_y};
             d->stairs_down[j] = coord;
 
             *p = ter_stairs_down;
@@ -631,7 +632,7 @@ int init_terrain(dungeon_t *d) {
         for (j = 0; j < DUNGEON_X; j++) {
             d->map_visible[i][j] = false;
             d->map_observed[i][j] = ter_empty;
-            //d->map[i][j] = ter_empty;
+            // d->map[i][j] = ter_empty;
         }
     }
 
@@ -793,7 +794,7 @@ int read_dungeon_from_disk(dungeon_t *d, char *path) {
     d->num_rooms = be16toh(be_num_rooms);
 
     /* rooms array*/
-    if (!(d->rooms = (room_t *) malloc(d->num_rooms * sizeof(room_t)))) {
+    if (!(d->rooms = (room_t *)malloc(d->num_rooms * sizeof(room_t)))) {
         fprintf(stderr, "Error: could not allocate memory for <*rooms>. (%d)\n",
                 errno);
         exit(-13);
@@ -837,7 +838,8 @@ int read_dungeon_from_disk(dungeon_t *d, char *path) {
     d->num_stairs_up = be16toh(be_num_stairs_up);
 
     /* stairs_up */
-    if (!(d->stairs_up = (point_t *) malloc(d->num_stairs_up * sizeof(point_t)))) {
+    if (!(d->stairs_up =
+              (point_t *)malloc(d->num_stairs_up * sizeof(point_t)))) {
         fprintf(stderr,
                 "Error: could not allocate memory for <*stairs_up>. (%d)\n",
                 errno);
@@ -868,7 +870,8 @@ int read_dungeon_from_disk(dungeon_t *d, char *path) {
     d->num_stairs_down = be16toh(be_num_stairs_down);
 
     /* stairs_up */
-    if (!(d->stairs_down = (point_t *) malloc(d->num_stairs_down * sizeof(point_t)))) {
+    if (!(d->stairs_down =
+              (point_t *)malloc(d->num_stairs_down * sizeof(point_t)))) {
         fprintf(stderr,
                 "Error: could not allocate memory for <*stairs_down>. (%d)\n",
                 errno);

@@ -1,50 +1,57 @@
 NAME
-    Dungeon Crawler (ASSIGNMENT_NUM) - A roguelike adventure game 
+    Dungeon Crawler (ASSIGNMENT_NUM) - A roguelike adventure game
 
 DESCRIPTION
-    This roguelike dungeon game is now ported to C++. New features include incremental upgrades
-    to the Monster List menu, in-game debugging, and an efficient FOV shadowcasting
-    implementation. Navigate with vi-like keybindings. Kill and avoid being killed by monsters.
-    Kill all the monsters on any given dungeon level to win. 
+    This roguelike dungeon game is now ported to C++. New features include
+    incremental upgrades to the Monster List menu, in-game debugging, and
+    an efficient FOV shadowcasting implementation. Navigate with vi-like
+    keybindings. Kill and avoid being killed by monsters. Kill all the
+    monsters on any given dungeon level to win.
 
 DUNGEON CRAWLER
-    --save   : Save a randomly generated dungeon to a binary file in ~/.rlg327/dungeon. This file
-                will be created if does not already exist.
-    --load   : Load a saved dungeon from disk.
-    --nummon : Tell the game how many monsters to load at the start. Choose a number between
-                1-30. Monster locations are not persistent.
+    --save   : Save a randomly generated dungeon to a binary file in
+               ~/.rlg327/dungeon. This file will be created if does not
+               already exist.
+    --load   : Load a saved dungeon from disk.  
+    --nummon : Tell the game how many monsters to load at the start.
+               Choose a number between 1-30. Monster locations are not
+               persistent.
 
 BUILD & EXECUTION
-    To build this project, simply run GNU make in the project's root directory. This will
-    generate an executable binary named dungeon_crawler. All build files are generated to
-    ./build, and supplemental binaries are kept in ./bin.
+    To build this project, simply run GNU make in the project's
+    root directory. This will generate an executable binary named
+    dungeon_crawler. All build files are generated to ./build, and
+    supplemental binaries are kept in ./bin.
 
 KEYBINDINGS
     IN-GAME
-        y or 7: Move to an upper left cell      >    : Go down a staircase
-        k or 8: Move up one cell                <    : Go up a staircase
-        u or 9: Move to an upper right cell     . or
-        l or 6: Move right one cell             5 or
-        n or 3: Move to a lower right cell      space: Rest for a turn
-        j or 2: Move down one cell              m    : Open the Monster List 
-        b or 1: Move to a lower left cell       q    : Quit the game
-        h or 4: Move left one cell 
+        y or 7 : Move to an upper left cell
+        k or 8 : Move up one cell
+        u or 9 : Move to an upper right cell     
+        l or 6 : Move right one cell             
+        n or 3 : Move to a lower right cell
+        . or
+        5 or
+        space  : Rest for a turn j or 2: Move down one cell              
+        >      : Go down a staircase
+        <      : Go up a staircase
+        m      : Open the Monster List b or 1: Move to a lower left cell
+        q      : Quit the game h or 4: Move left one cell
     MONSTER LIST
-        UP or k  : Scroll the list items up
-        DOWN or j: Scroll the list items down
-        ESC      : Exit the Monster List menu
+        ESC     : Exit the Monster List menu
+        UP or k : Scroll the list items up DOWN or j: Scroll the
+                  list items down 
     DEBUGGING
-        t: Enter teleporting mode
-        f: Toggle Fog of War
+        t : Enter teleporting mode 
+        f : Toggle Fog of War
 
 KNOWN ISSUES
-    1. The only observed issue with my FOV implementation appears when a corridor path exists 
-        next to a room. The issue will limit the player's viewing radius if the PC is standing on
-        a corridor terrain.
+    1. The only observed issue with my FOV implementation appears when
+       a corridor path exists next to a room. The issue will limit the
+       player's viewing radius if the PC is standing on a corridor terrain.
 
 AUTHOR
-    Zachary Mohling (zmohling @ gmail . com), with contributions from Jeremy Sheaffer
-    (sheaffer @ iastate . edu).
+    Zachary Mohling (zmohling @ gmail . com), with contributions from
+    Jeremy Sheaffer (sheaffer @ iastate . edu).
 
-                                            2019
-
+                                  2019

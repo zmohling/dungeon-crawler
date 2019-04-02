@@ -1,6 +1,7 @@
 CC=gcc
 CXX=g++
 ECHO=echo
+LINT=cpplint
 RM=rm -rvf
 MKDIR=mkdir -p
 
@@ -35,8 +36,13 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cc
 	@$(MKDIR) $(@D)
 	@$(CXX) $(CXXFLAGS) -MMD -c $< -o $@
 
-.PHONY: clean
+.PHONY: clean lint
 clean:
 	@$(ECHO) Removing all generated files and executables...
 	@$(RM) $(BUILD_DIR) $(BIN) core vgcore.* valgrind*
+	@$(ECHO) Done.
+
+lint:
+	@$(ECHO) Linting source files per Google\'s CXX Styleguide...
+	@$(LINT) $(SRC_DIR)/*.c $(SRC_DIR)/*.cc $(SRC_DIR)/*.h
 	@$(ECHO) Done.

@@ -24,13 +24,15 @@
 #include "move.h"
 
 static void DEBUG_print_teleport_pointer(dungeon_t *d, point_t pointer) {
-        attron(A_BOLD);
-        attron(COLOR_PAIR(2));
-        mvprintw(pointer.y + 1, pointer.x, "%c", '*');
-        attron(COLOR_PAIR(1));
-        attroff(A_BOLD);
+    attron(A_BOLD);
+    attron(COLOR_PAIR(2));
+    mvprintw(pointer.y + 1, pointer.x, "%c", '*');
+    attron(COLOR_PAIR(1));
+    attroff(A_BOLD);
 
-        mvprintw(0, 0, "%s", "TELEPORT MODE: Press 't' to teleport to pointer, 'r' for random.");
+    mvprintw(
+        0, 0, "%s",
+        "TELEPORT MODE: Press 't' to teleport to pointer, 'r' for random.");
 }
 
 static void DEBUG_teleport_get_new_input(int *key_is_valid, int *input) {
