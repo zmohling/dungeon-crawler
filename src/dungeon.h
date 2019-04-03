@@ -69,13 +69,13 @@ class corridor_path_t {
 };
 
 class room_t {
-public:
+ public:
     point_t coordinates;
     uint8_t width, height;
 };
 
 class dungeon_t {
-public:
+ public:
     character_t *pc;
     uint8_t num_monsters;
 

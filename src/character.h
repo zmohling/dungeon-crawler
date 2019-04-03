@@ -20,8 +20,11 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+
 #include "dungeon.h"
 #include "geometry.h"
+
+#include <string>
 
 #define NPC_INTELLIGENT 0x01
 #define NPC_TELEPATHIC 0x02
@@ -31,19 +34,19 @@
 
 class dungeon_t;
 class npc_t {
-   public:
-    int8_t characteristics;
-
-    bool has_seen_pc;
-    point_t pc_position;
+ public:
+     int8_t characteristics;
+     bool has_seen_pc;
+     point_t pc_position;
 };
 
 class character_t {
    public:
-    char symbol;
-    bool is_alive;
-    int8_t speed;
     int8_t sequence_num;
+    bool is_alive;
+
+    char symbol;
+    int8_t speed;
 
     bool is_pc;
     npc_t *npc;
