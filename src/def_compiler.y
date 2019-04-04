@@ -5,7 +5,8 @@
     // Declare stuff from Flex that Bison needs to know about:
     extern int yylex();
     extern int yyparse();
-    extern int line_num;
+    extern int path_init(char **, char *);
+    extern FILE *yyin;
  
     void yyerror(const char *s);
 %}
@@ -32,15 +33,16 @@
 
 %%
 def_parser
-    : def_parser TOKNAME STRING ENDLS {
+    : TOKNAME STRING {
             printf("NAME %s\n", $2); free($2);
       }
     ;
 %%
+#include "util.h"
 
 void yyerror(const char *str)
 {
-    fprintf(stderr,"error: %s at line %d\n", str, line_num);
+    fprintf(stderr,"error: %s", str);
 }
  
 int yywrap()
@@ -49,7 +51,24 @@ int yywrap()
 } 
   
 int main()
-{
-    yyparse();
+{    
+    char *s = "monster_desc.txt";
+    char *path;
+    path_init(&path, s);
+
+	FILE *myfile = fopen("in.snazzle", "r");
+	// make sure it's valid:
+	if (!myfile) {
+		printf("I can't open a.snazzle.file!\n");
+		return -1;
+	}
+	// set lex to read from it instead of defaulting to STDIN:
+	yyin = myfile;
+
+	// parse through the input until there is no more:
+	
+	do {
+		yyparse();
+	} while (!feof(yyin));
 } 
 

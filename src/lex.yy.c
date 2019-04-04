@@ -1752,23 +1752,22 @@ int yy_flex_debug = 0;
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
-#line 1 "test.l"
-#line 2 "test.l"
+#line 1 "def_parser.l"
+#line 2 "def_parser.l"
     #include <stdio.h>
     #include <string.h>
 
-    #include <sys/stat.h>
-    #include <sys/types.h>
+    #include "def_compiler.tab.h"
 
     extern int yylex();
     extern int yylineno;
     extern char* yytext;
-#line 1766 "lex.yy.c"
+#line 1765 "lex.yy.c"
 /* track line numbers*/
 /* Character classes */
 /* Lexer states */
 
-#line 1771 "lex.yy.c"
+#line 1770 "lex.yy.c"
 
 #define INITIAL 0
 #define long_string 1
@@ -1987,9 +1986,9 @@ YY_DECL
 		}
 
 	{
-#line 29 "test.l"
+#line 28 "def_parser.l"
 
-#line 1992 "lex.yy.c"
+#line 1991 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -2058,78 +2057,78 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 30 "test.l"
-{  ; }
+#line 29 "def_parser.l"
+{ ; }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 31 "test.l"
-{  printf("\n"); }
+#line 30 "def_parser.l"
+{  return BEGIN_MONSTER; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 32 "test.l"
-{  ; }
+#line 31 "def_parser.l"
+{  return END; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 33 "test.l"
+#line 32 "def_parser.l"
 { 
                                                      BEGIN(string);
-                                                     ; 
+                                                     return TOKNAME; 
                                                   }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 37 "test.l"
+#line 36 "def_parser.l"
 { 
                                                      BEGIN(long_string);
-                                                     ; 
+                                                     return TOKDESC; 
                                                   }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 41 "test.l"
+#line 40 "def_parser.l"
 { 
                                                      BEGIN(string);
-                                                     ; 
+                                                     return TOKCOLOR; 
                                                   }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 45 "test.l"
-{  ; }
+#line 44 "def_parser.l"
+{  return TOKSPEED; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 46 "test.l"
+#line 45 "def_parser.l"
 { 
                                                      BEGIN(string);
-                                                     ; 
+                                                     return TOKABIL; 
                                                   }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 50 "test.l"
-{  ; }
+#line 49 "def_parser.l"
+{  return TOKHP; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 51 "test.l"
-{  ; }
+#line 50 "def_parser.l"
+{  return TOKDAM; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 52 "test.l"
+#line 51 "def_parser.l"
 { 
                                                      BEGIN(string);
-                                                     ; 
+                                                     return TOKSYMB; 
                                                   }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 56 "test.l"
-{  ; }
+#line 55 "def_parser.l"
+{  return TOKRRTY; }
 	YY_BREAK
 case 13:
 /* rule 13 can match eol */
@@ -2138,25 +2137,28 @@ YY_LINENO_REWIND_TO(yy_cp - 2);
 (yy_c_buf_p) = yy_cp -= 2;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 60 "test.l"
+#line 59 "def_parser.l"
 { 
                                                      BEGIN(0);
-                                                     printf("%s", yytext);
+                                                     yylval.sval = strdup(yytext); 
+                                                     return STRING;
                                                   }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 64 "test.l"
+#line 64 "def_parser.l"
 { 
                                                      BEGIN(0);
-                                                     printf("%s\n", yytext);
+                                                     yylval.sval = strdup(yytext);
+                                                     return STRING; 
                                                   }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 69 "test.l"
+#line 70 "def_parser.l"
 {  
-                                                     printf("%s\n", yytext);
+                                                     yylval.sval = strdup(yytext);
+                                                     return DICE; 
                                                   }
 	YY_BREAK
 case 16:
@@ -2164,33 +2166,34 @@ case 16:
 (yy_c_buf_p) = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 72 "test.l"
+#line 74 "def_parser.l"
 {  
-                                                     printf("%d\n", atoi(yytext));
+                                                     yylval.ival = atoi(yytext);
+                                                     return DICE; 
                                                   }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 78 "test.l"
+#line 81 "def_parser.l"
 { ; }
 	YY_BREAK
 case 18:
 /* rule 18 can match eol */
 YY_RULE_SETUP
-#line 79 "test.l"
+#line 82 "def_parser.l"
 { ; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 80 "test.l"
+#line 83 "def_parser.l"
 { ; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 81 "test.l"
+#line 84 "def_parser.l"
 ECHO;
 	YY_BREAK
-#line 2193 "lex.yy.c"
+#line 2196 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(long_string):
 case YY_STATE_EOF(string):
@@ -3209,12 +3212,11 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 81 "test.l"
+#line 84 "def_parser.l"
 
 
 int main(int ac, char **av)
 {
-    char *path, *filename = "monster_desc.txt";
     char *home = getenv("HOME");
     char *dir = (char *) malloc(strlen(home) + strlen("/.rlg327/") + 1);
     strcpy(dir, home);
@@ -3230,25 +3232,28 @@ int main(int ac, char **av)
         }
     }
 
-    path = (char *) malloc(strlen(home) + strlen("/.rlg327/") + strlen(filename) + 1);
-    strcpy(path, home);
-    strcat(path, "/.rlg327/");
-    strcat(path, filename);
+    *path = (char *) malloc(strlen(home) + strlen("/.rlg327/") + strlen(filename) + 1);
+    strcpy(*path, home);
+    strcat(*path, "/.rlg327/");
+    strcat(*path, filename);
 
     free(dir);
 
-    FILE *f;
-    if ((f = fopen(path, "r"))) {
-        yyset_in(f);
+    FILE    *fd;
+
+    if (ac == 2)
+    {
+        if (!(fd = fopen(av[1], "r")))
+        {
+            perror("Error: ");
+            return (-1);
+        }
+        yyset_in(fd);
         yylex();
-        fclose(f);
-    } else {
-        perror("Error: ");
-        return (-1);
+        fclose(fd);
     }
-
-    free(path);
-
+    else
+        printf("Usage: a.out filename\n");
     return (0);
 }
 

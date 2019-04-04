@@ -55,6 +55,7 @@ static void init_curses() {
     clear();
 }
 
+#if 0
 int main(int argc, char *argv[]) {
     /* Check arguments */
     if (argc > 5) {
@@ -67,7 +68,8 @@ int main(int argc, char *argv[]) {
     srand(seed);
 
     /* Initialize path to ~/.rlg327/ */
-    path_init(&path);
+    char *s = "dungeon";
+    path_init(&path, s);
 
     /* Dungeon*/
     memset(dungeon.character_map, 0, sizeof(character_t *) * DUNGEON_Y * DUNGEON_X);
@@ -118,8 +120,9 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+#endif
 
-/* Function for ending the game. Frees memory, saves to disk, 
+/* Function for ending the game. Frees memory, saves to disk,
  * and allows ncurses to restore terminal to stashed state.
  */
 void quit() {

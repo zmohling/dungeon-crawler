@@ -2,6 +2,9 @@
     #include <stdio.h>
     #include <string.h>
 
+    #include <sys/stat.h>
+    #include <sys/types.h>
+
     extern int yylex();
     extern int yylineno;
     extern char* yytext;
@@ -24,47 +27,51 @@ ENDL (\n|\n\r)
 %s string
 
 %%
-"RLG327 MONSTER DESCRIPTION"{WS}{DIGIT}           { ; }
-"BEGIN MONSTER"                                   { ; }
-"END"                                             { ; }
+"RLG327 MONSTER DESCRIPTION"{WS}{DIGIT}           {  ; }
+"BEGIN MONSTER"                                   {  printf("\n"); }
+"END"                                             {  ; }
 "NAME"                                            { 
                                                      BEGIN(string);
-                                                     printf("NAME:\n"); 
+                                                     ; 
                                                   }
 "DESC"                                            { 
                                                      BEGIN(long_string);
-                                                     printf("DESC:\n"); 
+                                                     ; 
                                                   }
 "COLOR"                                           { 
                                                      BEGIN(string);
-                                                     printf("COLOR:\n"); 
+                                                     ; 
                                                   }
-"SPEED"                                           {  printf("SPEED:\n"); }
+"SPEED"                                           {  ; }
 "ABIL"                                            { 
                                                      BEGIN(string);
-                                                     printf("ABIL:\n"); 
+                                                     ; 
                                                   }
-"HP"                                              {  printf("HP:\n"); }
-"DAM"                                             {  printf("DAM:\n"); }
+"HP"                                              {  ; }
+"DAM"                                             {  ; }
 "SYMB"                                            { 
                                                      BEGIN(string);
-                                                     printf("SYMB:\n"); 
+                                                     ; 
                                                   }
-"RRTY"                                            {  printf("RRTY:\n"); }
+"RRTY"                                            {  ; }
 
 
 
 <long_string>(.{1,77}\n)+/(\.\n)                  { 
                                                      BEGIN(0);
-                                                     printf("\t --- %s --- \n", yytext); 
+                                                     printf("%s", yytext);
                                                   }
 <string>({ALPHA})({ALPHA}|{DIGIT}|{SYMBOL}|{WS})* { 
                                                      BEGIN(0);
-                                                     printf("\t%s\n", yytext); 
+                                                     printf("%s\n", yytext);
                                                   }
 
-{DIGIT}+"+"{DIGIT}+d{DIGIT}+                      {  printf("\t%s\n", yytext); }
-{DIGIT}+$                                         {  printf("\t%d\n", atoi(yytext)); }
+{DIGIT}+"+"{DIGIT}+d{DIGIT}+                      {  
+                                                     printf("%s\n", yytext);
+                                                  }
+{DIGIT}+$                                         {  
+                                                     printf("%d\n", atoi(yytext));
+                                                  }
 
 
 
@@ -73,15 +80,42 @@ ENDL (\n|\n\r)
 .                                                 { ; }
 %%
 
-int yywrap(void)
+int main(int ac, char **av)
 {
-	return 1;			
-}
+    char *path, *filename = "monster_desc.txt";
+    char *home = getenv("HOME");
+    char *dir = (char *) malloc(strlen(home) + strlen("/.rlg327/") + 1);
+    strcpy(dir, home);
+    strcat(dir, "/.rlg327/");
 
-int main (void) {
-    int s = yylex();
-    while(s) {
-        yylex();
+    if (mkdir(dir, 0755)) {
+        /* errno == 17 is an existing directory */
+        if (errno != 17) {
+            fprintf(stderr,
+                    "Error: ~/.rlg327/ could not be found nor created. (%d)\n",
+                    errno);
+            exit(-1);
+        }
     }
-}
 
+    path = (char *) malloc(strlen(home) + strlen("/.rlg327/") + strlen(filename) + 1);
+    strcpy(path, home);
+    strcat(path, "/.rlg327/");
+    strcat(path, filename);
+
+    free(dir);
+
+    FILE *f;
+    if ((f = fopen(path, "r"))) {
+        yyset_in(f);
+        yylex();
+        fclose(f);
+    } else {
+        perror("Error: ");
+        return (-1);
+    }
+
+    free(path);
+
+    return (0);
+}

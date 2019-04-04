@@ -21,6 +21,6 @@
 #include <stdbool.h>
 
 bool contains(int, char *[], char *, int *);
-int path_init(char **);
+int path_init(char **, char *);
 
 #endif
