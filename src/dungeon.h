@@ -20,7 +20,9 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <vector>
 
+#include "descriptions.h"
 #include "character.h"
 #include "event.h"
 #include "geometry.h"
@@ -60,6 +62,8 @@ typedef enum __attribute__((__packed__)) terrain_type {
          : 0)
 class character_t;
 class event_t;
+class monster_description;
+class object_description;
 
 class corridor_path_t {
     heap_node_t *hn;
@@ -97,6 +101,10 @@ class dungeon_t {
     point_t *stairs_up;
     uint16_t num_stairs_down;
     point_t *stairs_down;
+
+
+    std::vector<monster_description> monster_descriptions;
+    std::vector<object_description> object_descriptions;
 };
 
 void render_dungeon(dungeon_t *);

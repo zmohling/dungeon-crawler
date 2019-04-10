@@ -33,88 +33,90 @@
 #include "path.h"
 
 void render_dungeon(dungeon_t *d) {
-  int i, j;
-  for (i = 0; i < DUNGEON_Y; i++) {
-    for (j = 0; j < DUNGEON_X; j++) {
-      int y = (i + 1);
-      int x = j;
-      char c = ' ';
+    int i, j;
+    for (i = 0; i < DUNGEON_Y; i++) {
+        for (j = 0; j < DUNGEON_X; j++) {
+            int y = (i + 1);
+            int x = j;
+            char c = ' ';
 
-      /* Characters */
-      if (d->map_visible[i][j] || FOV_get_fog() == false) {
-        character_t *character = d->character_map[i][j];
-        if (character != NULL && character->is_alive) {
-          if (character->is_pc == true) {
-            attron(A_BOLD);
-            attron(COLOR_PAIR(2));
-            mvprintw(y, x, "%c", character->symbol);
-            attron(COLOR_PAIR(1));
-            attroff(A_BOLD);
-          } else {
-            attron(A_BOLD);
-            attron(COLOR_PAIR(3));
-            mvprintw(y, x, "%x", d->character_map[i][j]->symbol & 0xff);
-            attron(COLOR_PAIR(1));
-            attroff(A_BOLD);
-          }
+            /* Characters */
+            if (d->map_visible[i][j] || FOV_get_fog() == false) {
+                character_t *character = d->character_map[i][j];
+                if (character != NULL && character->is_alive) {
+                    if (character->is_pc == true) {
+                        attron(A_BOLD);
+                        attron(COLOR_PAIR(2));
+                        mvprintw(y, x, "%c", character->symbol);
+                        attron(COLOR_PAIR(1));
+                        attroff(A_BOLD);
+                    } else {
+                        attron(A_BOLD);
+                        attron(COLOR_PAIR(3));
+                        mvprintw(y, x, "%x",
+                                 d->character_map[i][j]->symbol & 0xff);
+                        attron(COLOR_PAIR(1));
+                        attroff(A_BOLD);
+                    }
 
-          continue;
+                    continue;
+                }
+            }
+
+            /* Terrain */
+            terrain_t t;
+            if (FOV_get_fog() == false) {
+                t = d->map[i][j];
+            } else {
+                t = d->map_observed[i][j];
+            }
+
+            switch (t) {
+                case ter_rock_immutable:
+                    break;
+                case ter_rock:
+                    c = ' ';
+                    break;
+                case ter_wall_horizontal:
+                    c = '-';
+                    break;
+                case ter_wall_vertical:
+                    c = '|';
+                    break;
+                case ter_floor_room:
+                    c = '.';
+                    break;
+                case ter_floor_hall:
+                    c = '#';
+                    break;
+                case ter_stairs_up:
+                    c = '<';
+                    break;
+                case ter_stairs_down:
+                    c = '>';
+                    break;
+                default:
+                    c = '+';
+            }
+
+            if (d->map_visible[i][j] || FOV_get_fog() == false) {
+                attron(A_BOLD);
+                attron(COLOR_PAIR(1));
+                mvprintw(y, x, "%c", c);
+                attron(COLOR_PAIR(1));
+                attroff(A_BOLD);
+            } else if (!d->map_visible[i][j] &&
+                       d->map_observed[i][j] != ter_empty) {
+                attron(COLOR_PAIR(1));
+                // char temp = mvinch(y, x) & A_CHARTEXT;
+                mvprintw(y, x, "%c", c);
+                attron(COLOR_PAIR(0));
+            } else if (d->map_observed[i][j] == ter_empty) {
+                attron(COLOR_PAIR(0));
+                mvprintw(y, x, "%c", ' ');
+                attron(COLOR_PAIR(0));
+            }
         }
-      }
-
-      /* Terrain */
-      terrain_t t;
-      if (FOV_get_fog() == false) {
-        t = d->map[i][j];
-      } else {
-        t = d->map_observed[i][j];
-      }
-
-      switch (t) {
-      case ter_rock_immutable:
-        break;
-      case ter_rock:
-        c = ' ';
-        break;
-      case ter_wall_horizontal:
-        c = '-';
-        break;
-      case ter_wall_vertical:
-        c = '|';
-        break;
-      case ter_floor_room:
-        c = '.';
-        break;
-      case ter_floor_hall:
-        c = '#';
-        break;
-      case ter_stairs_up:
-        c = '<';
-        break;
-      case ter_stairs_down:
-        c = '>';
-        break;
-      default:
-        c = '+';
-      }
-
-      if (d->map_visible[i][j] || FOV_get_fog() == false) {
-        attron(A_BOLD);
-        attron(COLOR_PAIR(1));
-        mvprintw(y, x, "%c", c);
-        attron(COLOR_PAIR(1));
-        attroff(A_BOLD);
-      } else if (!d->map_visible[i][j] && d->map_observed[i][j] != ter_empty) {
-        attron(COLOR_PAIR(1));
-        // char temp = mvinch(y, x) & A_CHARTEXT;
-        mvprintw(y, x, "%c", c);
-        attron(COLOR_PAIR(0));
-      } else if (d->map_observed[i][j] == ter_empty) {
-        attron(COLOR_PAIR(0));
-        mvprintw(y, x, "%c", ' ');
-        attron(COLOR_PAIR(0));
-      }
-    }
     }
 
     refresh();

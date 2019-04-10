@@ -26,11 +26,15 @@
 
 #include <string>
 
-#define NPC_INTELLIGENT 0x01
-#define NPC_TELEPATHIC 0x02
-#define NPC_TUNNELING 0x04
-#define NPC_ERRATIC 0x08
-#define PC 0x80
+#define NPC_SMART         0x00000001
+#define NPC_TELEPATH      0x00000002
+#define NPC_TUNNEL        0x00000004
+#define NPC_ERRATIC       0x00000008
+#define NPC_PASS_WALL     0x00000010
+#define NPC_DESTROY_OBJ   0x00000020
+#define NPC_PICKUP_OBJ    0x00000040
+#define NPC_UNIQ          0x00000080
+#define NPC_BOSS          0x00000100
 
 class dungeon_t;
 class npc_t {

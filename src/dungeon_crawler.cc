@@ -17,17 +17,18 @@
 
 #include "dungeon_crawler.h"
 
+#include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <ncurses.h>
 
 #include "character.h"
 #include "dungeon.h"
 #include "event.h"
 #include "path.h"
 #include "util.h"
+#include "descriptions.h"
 
 static dungeon_t dungeon;
 static bool save_on_quit;
@@ -55,8 +56,14 @@ static void init_curses() {
     clear();
 }
 
-#if 0
 int main(int argc, char *argv[]) {
+
+    parse_descriptions(&dungeon);
+    print_descriptions(&dungeon);
+    destroy_descriptions(&dungeon);
+
+    return 0;
+
     /* Check arguments */
     if (argc > 5) {
         fprintf(stderr, "Ussage: %s [--save][--load][--nummon]\n", argv[0]);
@@ -68,14 +75,15 @@ int main(int argc, char *argv[]) {
     srand(seed);
 
     /* Initialize path to ~/.rlg327/ */
-    char *s = "dungeon";
+    char *s = (char *)"dungeon";
     path_init(&path, s);
 
     /* Dungeon*/
-    memset(dungeon.character_map, 0, sizeof(character_t *) * DUNGEON_Y * DUNGEON_X);
+    memset(dungeon.character_map, 0,
+           sizeof(character_t *) * DUNGEON_Y * DUNGEON_X);
 
     /* Number of monsters switch */
-    char *num_monsters_str = (char *) "--nummon";
+    char *num_monsters_str = (char *)"--nummon";
     int n = (rand() % 5) + 3;
     if (contains(argc, argv, num_monsters_str, &n)) {
         n = atoi(argv[n + 1]);
@@ -99,9 +107,9 @@ int main(int argc, char *argv[]) {
     }
 
     /* Load switch */
-    char *load_switch_str = (char *) "--load";
+    char *load_switch_str = (char *)"--load";
     if (contains(argc, argv, load_switch_str, &n)) {
-        dungeon.pc = (character_t *) malloc(sizeof(character_t));
+        dungeon.pc = (character_t *)malloc(sizeof(character_t));
         read_dungeon_from_disk(&dungeon, path);
         generate_terrain(&dungeon);
     } else {
@@ -109,7 +117,7 @@ int main(int argc, char *argv[]) {
     }
 
     /* Save switch */
-    char *save_str = (char *) "--save";
+    char *save_str = (char *)"--save";
     if (contains(argc, argv, save_str, &n)) {
         save_on_quit = true;
     }
@@ -120,7 +128,6 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
-#endif
 
 /* Function for ending the game. Frees memory, saves to disk,
  * and allows ncurses to restore terminal to stashed state.

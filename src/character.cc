@@ -98,15 +98,15 @@ static uint8_t assign_characteristics() {
     uint8_t characteristics = 0x00;
 
     if (!(rand() % 2)) {
-        characteristics += NPC_INTELLIGENT;
+        characteristics += NPC_SMART;
     }
 
     if (!(rand() % 2)) {
-        characteristics += NPC_TELEPATHIC;
+        characteristics += NPC_TELEPATH;
     }
 
     if (!(rand() % 5)) {
-        characteristics += NPC_TUNNELING;
+        characteristics += NPC_TUNNEL;
     }
 
     if (!(rand() % 2)) {

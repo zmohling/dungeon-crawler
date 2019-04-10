@@ -1,17 +1,3 @@
-1.06:
-
-I used lex and yacc to implement the parsing. Run the make file to generate those files from my tables as a dungeon_crawler executable. I ran out of time while trying to connect the parser to the game itself, so I made a jury-rigged makefile that uses the last lex file I had working. Like I said, I got too ambitious and found myself deep in a rabit hole.
-
-monster_desc.txt must be present in ~/.rlg327 or the program will not run. Relevant source code is in a temp folder I was using: src/parser/tempdir I found a bug with some monsters, but I spent too much time on the regular expressions to change it now. It may have just been my text file I parsed.
-
-
-
-
-
-
-
-
-
 NAME
     Dungeon Crawler (ASSIGNMENT_NUM) - A roguelike adventure game
 
