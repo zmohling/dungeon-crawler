@@ -1,3 +1,20 @@
+/*
+ *  Copyright (C) 2019 Zachary Mohling
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "fov.h"
 
 #include <math.h>
@@ -144,22 +161,15 @@ static int FOV_does_pass_light(dungeon_t *d, point_t *origin,
     double distance = FOV_euclidean_distance(*origin, *cur_cell);
     terrain_t cur_t = d->map[cur_cell->y][cur_cell->x];
 
-    // If PC is in a room
-    if (get_room(d, origin, 0.0) != NULL) {
-        return (!IS_SOLID(cur_t) && cur_t != ter_floor_hall);
-    } else {
-        /* If PC is in a corridor */
-        
-        if (islessequal(distance, 1.0) && !IS_SOLID(cur_t)) {
-            return 1;
-        } else {
-            return (!IS_SOLID(cur_t) && (get_room(d, cur_cell, 0.0) != NULL));
-        }
+    d->map_observed[cur_cell->y][cur_cell->x] = cur_t;
+    d->map_visible[cur_cell->y][cur_cell->x] = true;
 
+    if (!IS_SOLID(cur_t) &&
+        (islessequal(distance, 1.0) || get_room(d, cur_cell, 0.0))) {
         return true;
+    } else {
+        return false;
     }
-
-
 }
 
 static void FOV_normalize_slopes(slope_pair_t *slopes) {
@@ -177,21 +187,18 @@ void FOV_recursive_shadowcast(dungeon_t *d, point_t *origin,
         bool blocked = true;
 
         for (int j = 0; j <= i; j++) {
+            FOV_slopes_from_src(*origin, cur_cell, &cell_slopes, octant);
+
             if (slopes.start_slope < slopes.end_slope) {
                 return;
-            }
-
-            FOV_slopes_from_src(*origin, cur_cell, &cell_slopes, octant);
-            if (isgreater(cell_slopes.end_slope, slopes.start_slope)) {
+            } else if (isgreater(cell_slopes.end_slope, slopes.start_slope)) {
                 FOV_get_next_cell(&cur_cell, octant);
                 continue;
             } else if (isless(cell_slopes.start_slope, slopes.end_slope)) {
                 break;
             }
 
-            d->map_observed[cur_cell.y][cur_cell.x] = 1;
             int transparent = FOV_does_pass_light(d, origin, &cur_cell);
-
             if (blocked) {
                 if (transparent) {
                     blocked = false;
@@ -233,7 +240,9 @@ void FOV_shadowcast(dungeon_t *d, point_t *origin, int radius) {
     d_static = d;
 
     FOV_clear(d);
-    d->map_observed[origin->y][origin->x] = 1;
+
+    d->map_observed[origin->y][origin->x] = d->map[origin->y][origin->x];
+    d->map_visible[origin->y][origin->x] = true;
 
     slope_pair_t init_slopes;
     init_slopes.start_slope = 1.0;
@@ -249,16 +258,14 @@ void FOV_clear(dungeon_t *d) {
     int i, j;
     for (i = 0; i < DUNGEON_Y; i++) {
         for (j = 0; j < DUNGEON_X; j++) {
-            if (d->map_observed[i][j] == 1) {
-                d->map_observed[i][j] = 2;
+            if (d->map_visible[i][j]) {
+                d->map_visible[i][j] = false;
             }
         }
     }
 }
 
-bool FOV_get_fog() {
-    return FOV_fog_enabled;
-}
+bool FOV_get_fog() { return FOV_fog_enabled; }
 
 void FOV_toggle_fog() {
     FOV_fog_enabled = !FOV_fog_enabled;

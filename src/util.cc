@@ -1,3 +1,20 @@
+/*
+ *  Copyright (C) 2019 Zachary Mohling
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "util.h"
 
 #include <errno.h>
@@ -30,7 +47,7 @@ bool contains(int argc, char *argv[], char *s, int *n) {
  * make it if not already existent. Returns
  * complete path the dungeon file.
  */
-int path_init(char **path) {
+int path_init(char **path, char *filename) {
     /* FS setup */
     char *home = getenv("HOME");
     char *dir = (char *) malloc(strlen(home) + strlen("/.rlg327/") + 1);
@@ -48,10 +65,11 @@ int path_init(char **path) {
     }
 
     /* Dot file directory's path */
-    *path = (char *) malloc(strlen(home) + strlen("/.rlg327/dungeon") + 1);
+    *path = (char *) malloc(strlen(home) + strlen("/.rlg327/") + strlen(filename) + 1);
     //*path = malloc(strlen("bin/saved_dungeons/03.rlg327") + 1);
     strcpy(*path, home);
-    strcat(*path, "/.rlg327/dungeon");
+    strcat(*path, "/.rlg327/");
+    strcat(*path, filename);
     //strcat(*path, "bin/saved_dungeons/03.rlg327");
 
     free(dir);

@@ -1,4 +1,5 @@
 dungeon_crawler
 build/
 valgrind*
-cpplint.py
+scripts/cpplint.py
+data/temp

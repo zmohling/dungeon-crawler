@@ -1,3 +1,20 @@
+/*
+ *  Copyright (C) 2019 Zachary Mohling
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "debug.h"
 
 #include <ncurses.h>
@@ -7,13 +24,15 @@
 #include "move.h"
 
 static void DEBUG_print_teleport_pointer(dungeon_t *d, point_t pointer) {
-        attron(A_BOLD);
-        attron(COLOR_PAIR(2));
-        mvprintw(pointer.y + 1, pointer.x, "%c", '*');
-        attron(COLOR_PAIR(1));
-        attroff(A_BOLD);
+    attron(A_BOLD);
+    attron(COLOR_PAIR(2));
+    mvprintw(pointer.y + 1, pointer.x, "%c", '*');
+    attron(COLOR_PAIR(1));
+    attroff(A_BOLD);
 
-        mvprintw(0, 0, "%s", "TELEPORT MODE: Press 't' to teleport to pointer, 'r' for random.");
+    mvprintw(
+        0, 0, "%s",
+        "TELEPORT MODE: Press 't' to teleport to pointer, 'r' for random.");
 }
 
 static void DEBUG_teleport_get_new_input(int *key_is_valid, int *input) {

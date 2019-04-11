@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2019 Zachary Mohling
+ *  Copyright (C) <year> Zachary Mohling
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -14,12 +14,3 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-#ifndef DEBUG_H
-#define DEBUG_H
-
-class dungeon_t;
-
-void DEBUG_teleport_mode(dungeon_t *);
-
-#endif
