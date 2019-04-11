@@ -1,140 +1,124 @@
 #include "descriptions.h"
 
-#include <string>
-#include <cstring>
-#include <iostream>
-#include <cstdio>
-#include <fstream>
 #include <limits.h>
 #include <ncurses.h>
-#include <vector>
-#include <sstream>
+#include <cstdio>
 #include <cstdlib>
+#include <cstring>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
 
-#include "dungeon.h"
-#include "dice.h"
 #include "character.h"
+#include "dice.h"
+#include "dungeon.h"
+#include "object.h"
 #include "util.h"
 
-#define MONSTER_FILE_SEMANTIC          "RLG327 MONSTER DESCRIPTION"
-#define MONSTER_FILE_VERSION           1U
+#define MONSTER_FILE_SEMANTIC "RLG327 MONSTER DESCRIPTION"
+#define MONSTER_FILE_VERSION 1U
 #define NUM_MONSTER_DESCRIPTION_FIELDS 9
-#define OBJECT_FILE_SEMANTIC           "RLG327 OBJECT DESCRIPTION"
-#define OBJECT_FILE_VERSION            1U
-#define NUM_OBJECT_DESCRIPTION_FIELDS  14
+#define OBJECT_FILE_SEMANTIC "RLG327 OBJECT DESCRIPTION"
+#define OBJECT_FILE_VERSION 1U
+#define NUM_OBJECT_DESCRIPTION_FIELDS 14
 
 static const struct {
   const char *name;
   const uint32_t value;
 } abilities_lookup[] = {
-  /* There are only 32 bits available.  So far we're only using five *
-   * of them (but even if we were using all 32, that's a very small  *
-   * number), so it's much more efficient to do a linear search      *
-   * rather than a binary search.  Zeros on the end are sentinals to *
-   * stop the search.  Two notes: 1) Performance isn't a big deal    *
-   * here, since this is initialization, not gameplay; and           *
-   * 2) Alphabetizing these just because.                            */
-  { "BOSS",    NPC_BOSS        },
-  { "DESTROY", NPC_DESTROY_OBJ },
-  { "ERRATIC", NPC_ERRATIC     },
-  { "PASS",    NPC_PASS_WALL   },
-  { "PICKUP",  NPC_PICKUP_OBJ  },
-  { "RRTY",    0               },
-  { "SMART",   NPC_SMART       },
-  { "TELE",    NPC_TELEPATH    },
-  { "TUNNEL",  NPC_TUNNEL      },
-  { "UNIQ",    NPC_UNIQ        },
-  { 0,         0               }
-};
+    /* There are only 32 bits available.  So far we're only using five *
+     * of them (but even if we were using all 32, that's a very small  *
+     * number), so it's much more efficient to do a linear search      *
+     * rather than a binary search.  Zeros on the end are sentinals to *
+     * stop the search.  Two notes: 1) Performance isn't a big deal    *
+     * here, since this is initialization, not gameplay; and           *
+     * 2) Alphabetizing these just because.                            */
+    {"BOSS", NPC_BOSS},
+    {"DESTROY", NPC_DESTROY_OBJ},
+    {"ERRATIC", NPC_ERRATIC},
+    {"PASS", NPC_PASS_WALL},
+    {"PICKUP", NPC_PICKUP_OBJ},
+    {"RRTY", 0},
+    {"SMART", NPC_SMART},
+    {"TELE", NPC_TELEPATH},
+    {"TUNNEL", NPC_TUNNEL},
+    {"UNIQ", NPC_UNIQ},
+    {0, 0}};
 
-#define color_lu_entry(color) { #color, COLOR_##color }
+#define color_lu_entry(color) \
+  { #color, COLOR_##color }
 static const struct {
   const char *name;
   const uint32_t value;
 } colors_lookup[] = {
-  /* Same deal here as above in abilities_lookup definition. */
-  /* We can use this convenient macro here, but we can't use a *
-   * similar macro above because of PASS and TELE.             */
-  /* color_lu_entry(BLACK), Can't display COLOR_BLACK */
-  "BLACK", COLOR_WHITE,
-  color_lu_entry(BLUE),
-  color_lu_entry(CYAN),
-  color_lu_entry(GREEN),
-  color_lu_entry(MAGENTA),
-  color_lu_entry(RED),
-  color_lu_entry(WHITE),
-  color_lu_entry(YELLOW),
-  { 0, 0 }
-};
+    /* Same deal here as above in abilities_lookup definition. */
+    /* We can use this convenient macro here, but we can't use a *
+     * similar macro above because of PASS and TELE.             */
+    /* color_lu_entry(BLACK), Can't display COLOR_BLACK */
+    "BLACK",
+    COLOR_WHITE,
+    color_lu_entry(BLUE),
+    color_lu_entry(CYAN),
+    color_lu_entry(GREEN),
+    color_lu_entry(MAGENTA),
+    color_lu_entry(RED),
+    color_lu_entry(WHITE),
+    color_lu_entry(YELLOW),
+    {0, 0}};
 
-#define type_lu_entry(type) { #type, objtype_##type }
+#define type_lu_entry(type) \
+  { #type, objtype_##type }
 static const struct {
   const char *name;
   const object_type_t value;
 } types_lookup[] = {
-  type_lu_entry(WEAPON),
-  type_lu_entry(OFFHAND),
-  type_lu_entry(RANGED),
-  type_lu_entry(LIGHT),
-  type_lu_entry(ARMOR),
-  type_lu_entry(HELMET),
-  type_lu_entry(CLOAK),
-  type_lu_entry(GLOVES),
-  type_lu_entry(BOOTS),
-  type_lu_entry(AMULET),
-  type_lu_entry(RING),
-  type_lu_entry(SCROLL),
-  type_lu_entry(BOOK),
-  type_lu_entry(FLASK),
-  type_lu_entry(GOLD),
-  type_lu_entry(AMMUNITION),
-  type_lu_entry(FOOD),
-  type_lu_entry(WAND),
-  type_lu_entry(CONTAINER),
-  { 0, objtype_no_type }
-};
+    type_lu_entry(WEAPON),     type_lu_entry(OFFHAND), type_lu_entry(RANGED),
+    type_lu_entry(LIGHT),      type_lu_entry(ARMOR),   type_lu_entry(HELMET),
+    type_lu_entry(CLOAK),      type_lu_entry(GLOVES),  type_lu_entry(BOOTS),
+    type_lu_entry(AMULET),     type_lu_entry(RING),    type_lu_entry(SCROLL),
+    type_lu_entry(BOOK),       type_lu_entry(FLASK),   type_lu_entry(GOLD),
+    type_lu_entry(AMMUNITION), type_lu_entry(FOOD),    type_lu_entry(WAND),
+    type_lu_entry(CONTAINER),  {0, objtype_no_type}};
 
 extern const char object_symbol[] = {
-  '*', /* objtype_no_type */
-  '|', /* objtype_WEAPON */
-  ')', /* objtype_OFFHAND */
-  '}', /* objtype_RANGED */
-  '~', /* objtype_LIGHT */
-  '[', /* objtype_ARMOR */
-  ']', /* objtype_HELMET */
-  '(', /* objtype_CLOAK */
-  '{', /* objtype_GLOVES */
-  '\\', /* objtype_BOOTS */
-  '"', /* objtype_AMULET */
-  '=', /* objtype_RING */
-  '`', /* objtype_SCROLL */
-  '?', /* objtype_BOOK */
-  '!', /* objtype_FLASK */
-  '$', /* objtype_GOLD */
-  '/', /* objtype_AMMUNITION */
-  ',', /* objtype_FOOD */
-  '-', /* objtype_WAND */
-  '%', /* objtype_CONTAINER */
+    '*',  /* objtype_no_type */
+    '|',  /* objtype_WEAPON */
+    ')',  /* objtype_OFFHAND */
+    '}',  /* objtype_RANGED */
+    '~',  /* objtype_LIGHT */
+    '[',  /* objtype_ARMOR */
+    ']',  /* objtype_HELMET */
+    '(',  /* objtype_CLOAK */
+    '{',  /* objtype_GLOVES */
+    '\\', /* objtype_BOOTS */
+    '"',  /* objtype_AMULET */
+    '=',  /* objtype_RING */
+    '`',  /* objtype_SCROLL */
+    '?',  /* objtype_BOOK */
+    '!',  /* objtype_FLASK */
+    '$',  /* objtype_GOLD */
+    '/',  /* objtype_AMMUNITION */
+    ',',  /* objtype_FOOD */
+    '-',  /* objtype_WAND */
+    '%',  /* objtype_CONTAINER */
 };
 
-static inline void eat_whitespace(std::ifstream &f)
-{
+static inline void eat_whitespace(std::ifstream &f) {
   while (isspace(f.peek())) {
     f.get();
   }
 }
 
-static inline void eat_blankspace(std::ifstream &f)
-{
+static inline void eat_blankspace(std::ifstream &f) {
   while (isblank(f.peek())) {
     f.get();
   }
 }
 
-static uint32_t parse_name(std::ifstream &f,
-                           std::string *lookahead,
-                           std::string *name)
-{
+static uint32_t parse_name(std::ifstream &f, std::string *lookahead,
+                           std::string *name) {
   /* Always start by eating the blanks.  If we then find a newline, we *
    * know there's an error in the file.  If we eat all whitespace,     *
    * we'd consume newlines and perhaps miss a restart on the next      *
@@ -155,17 +139,13 @@ static uint32_t parse_name(std::ifstream &f,
   return 0;
 }
 
-static uint32_t parse_monster_name(std::ifstream &f,
-                                   std::string *lookahead,
-                                   std::string *name)
-{
+static uint32_t parse_monster_name(std::ifstream &f, std::string *lookahead,
+                                   std::string *name) {
   return parse_name(f, lookahead, name);
 }
 
-static uint32_t parse_monster_symb(std::ifstream &f,
-                                   std::string *lookahead,
-                                   char *symb)
-{
+static uint32_t parse_monster_symb(std::ifstream &f, std::string *lookahead,
+                                   char *symb) {
   eat_blankspace(f);
 
   if (f.peek() == '\n') {
@@ -184,10 +164,8 @@ static uint32_t parse_monster_symb(std::ifstream &f,
   return 0;
 }
 
-static uint32_t parse_integer(std::ifstream &f,
-                              std::string *lookahead,
-                              uint32_t *integer)
-{
+static uint32_t parse_integer(std::ifstream &f, std::string *lookahead,
+                              uint32_t *integer) {
   eat_blankspace(f);
 
   if (f.peek() == '\n') {
@@ -205,17 +183,13 @@ static uint32_t parse_integer(std::ifstream &f,
   return 0;
 }
 
-static uint32_t parse_monster_rrty(std::ifstream &f,
-                                   std::string *lookahead,
-                                   uint32_t *rarity)
-{
+static uint32_t parse_monster_rrty(std::ifstream &f, std::string *lookahead,
+                                   uint32_t *rarity) {
   return parse_integer(f, lookahead, rarity);
 }
 
-static uint32_t parse_color(std::ifstream &f,
-                            std::string *lookahead,
-                            uint32_t *color)
-{
+static uint32_t parse_color(std::ifstream &f, std::string *lookahead,
+                            uint32_t *color) {
   uint32_t i;
 
   *color = UINT_MAX;
@@ -249,10 +223,8 @@ static uint32_t parse_color(std::ifstream &f,
   return 0;
 }
 
-static uint32_t parse_monster_color(std::ifstream &f,
-                                    std::string *lookahead,
-                                    std::vector<uint32_t> *color)
-{
+static uint32_t parse_monster_color(std::ifstream &f, std::string *lookahead,
+                                    std::vector<uint32_t> *color) {
   uint32_t i;
   uint32_t c;
 
@@ -288,10 +260,8 @@ static uint32_t parse_monster_color(std::ifstream &f,
   return 0;
 }
 
-static uint32_t parse_desc(std::ifstream &f,
-                           std::string *lookahead,
-                           std::string *desc)
-{
+static uint32_t parse_desc(std::ifstream &f, std::string *lookahead,
+                           std::string *desc) {
   /* DESC is special.  Data doesn't follow on the same line *
    * as the keyword, so we want to eat the newline, too.    */
   eat_blankspace(f);
@@ -329,21 +299,15 @@ static uint32_t parse_desc(std::ifstream &f,
   return 0;
 }
 
-static uint32_t parse_monster_desc(std::ifstream &f,
-                                   std::string *lookahead,
-                                   std::string *desc)
-{
+static uint32_t parse_monster_desc(std::ifstream &f, std::string *lookahead,
+                                   std::string *desc) {
   return parse_desc(f, lookahead, desc);
 }
 
-typedef uint32_t (*dice_parser_func_t)(std::ifstream &f,
-                                       std::string *lookahead,
+typedef uint32_t (*dice_parser_func_t)(std::ifstream &f, std::string *lookahead,
                                        dice *hit);
 
-static uint32_t parse_dice(std::ifstream &f,
-                           std::string *lookahead,
-                           dice *d)
-{
+static uint32_t parse_dice(std::ifstream &f, std::string *lookahead, dice *d) {
   int32_t base;
   uint32_t number, sides;
 
@@ -370,10 +334,8 @@ static dice_parser_func_t parse_monster_speed = parse_dice;
 static dice_parser_func_t parse_monster_dam = parse_dice;
 static dice_parser_func_t parse_monster_hp = parse_dice;
 
-static uint32_t parse_monster_abil(std::ifstream &f,
-                                   std::string *lookahead,
-                                   uint32_t *abil)
-{
+static uint32_t parse_monster_abil(std::ifstream &f, std::string *lookahead,
+                                   uint32_t *abil) {
   uint32_t i;
 
   *abil = 0;
@@ -409,11 +371,10 @@ static uint32_t parse_monster_abil(std::ifstream &f,
 
 static uint32_t parse_monster_description(std::ifstream &f,
                                           std::string *lookahead,
-                                          std::vector<monster_description> *v)
-{
+                                          std::vector<monster_description> *v) {
   std::string s;
-  bool read_name, read_symb, read_color, read_desc,
-       read_speed, read_dam, read_hp, read_abil, read_rrty;
+  bool read_name, read_symb, read_color, read_desc, read_speed, read_dam,
+      read_hp, read_abil, read_rrty;
   std::string name, desc;
   char symb;
   uint32_t abil;
@@ -423,8 +384,8 @@ static uint32_t parse_monster_description(std::ifstream &f,
   int count;
   uint32_t rrty;
 
-  read_name = read_symb = read_color = read_desc = read_speed
-            = read_dam = read_hp = read_abil = read_rrty = false;
+  read_name = read_symb = read_color = read_desc = read_speed = read_dam =
+      read_hp = read_abil = read_rrty = false;
 
   if (*lookahead != "BEGIN") {
     std::cerr << "Discovered at " << __FILE__ << ":" << __LINE__ << "\n"
@@ -442,11 +403,10 @@ static uint32_t parse_monster_description(std::ifstream &f,
     return 1;
   }
 
-  for (f >> *lookahead, count = 0;
-       count < NUM_MONSTER_DESCRIPTION_FIELDS;
+  for (f >> *lookahead, count = 0; count < NUM_MONSTER_DESCRIPTION_FIELDS;
        count++) {
     /* This could definately be more concise. */
-    if        (*lookahead == "NAME")  {
+    if (*lookahead == "NAME") {
       if (read_name || parse_monster_name(f, lookahead, &name)) {
         std::cerr << "Discovered at " << __FILE__ << ":" << __LINE__ << "\n"
                   << "Parse error in monster name.\n"
@@ -454,7 +414,7 @@ static uint32_t parse_monster_description(std::ifstream &f,
         return 1;
       }
       read_name = true;
-    } else if (*lookahead == "DESC")  {
+    } else if (*lookahead == "DESC") {
       if (read_desc || parse_monster_desc(f, lookahead, &desc)) {
         std::cerr << "Discovered at " << __FILE__ << ":" << __LINE__ << "\n"
                   << "Parse error in monster description.\n"
@@ -462,7 +422,7 @@ static uint32_t parse_monster_description(std::ifstream &f,
         return 1;
       }
       read_desc = true;
-    } else if (*lookahead == "SYMB")  {
+    } else if (*lookahead == "SYMB") {
       if (read_symb || parse_monster_symb(f, lookahead, &symb)) {
         std::cerr << "Discovered at " << __FILE__ << ":" << __LINE__ << "\n"
                   << "Parse error in monster symbol.\n"
@@ -486,7 +446,7 @@ static uint32_t parse_monster_description(std::ifstream &f,
         return 1;
       }
       read_speed = true;
-    } else if (*lookahead == "ABIL")  {
+    } else if (*lookahead == "ABIL") {
       if (read_abil || parse_monster_abil(f, lookahead, &abil)) {
         std::cerr << "Discovered at " << __FILE__ << ":" << __LINE__ << "\n"
                   << "Parse error in monster abilities.\n"
@@ -494,7 +454,7 @@ static uint32_t parse_monster_description(std::ifstream &f,
         return 1;
       }
       read_abil = true;
-    } else if (*lookahead == "HP")    {
+    } else if (*lookahead == "HP") {
       if (read_hp || parse_monster_hp(f, lookahead, &hp)) {
         std::cerr << "Discovered at " << __FILE__ << ":" << __LINE__ << "\n"
                   << "Parse error in monster hitpoints.\n"
@@ -502,7 +462,7 @@ static uint32_t parse_monster_description(std::ifstream &f,
         return 1;
       }
       read_hp = true;
-    } else if (*lookahead == "DAM")   {
+    } else if (*lookahead == "DAM") {
       if (read_dam || parse_monster_dam(f, lookahead, &dam)) {
         std::cerr << "Discovered at " << __FILE__ << ":" << __LINE__ << "\n"
                   << "Parse error in monster damage.\n"
@@ -510,7 +470,7 @@ static uint32_t parse_monster_description(std::ifstream &f,
         return 1;
       }
       read_dam = true;
-    } else if (*lookahead == "RRTY")   {
+    } else if (*lookahead == "RRTY") {
       if (read_rrty || parse_monster_rrty(f, lookahead, &rrty)) {
         std::cerr << "Discovered at " << __FILE__ << ":" << __LINE__ << "\n"
                   << "Parse error in monster damage.\n"
@@ -518,7 +478,7 @@ static uint32_t parse_monster_description(std::ifstream &f,
         return 1;
       }
       read_rrty = true;
-    } else                           {
+    } else {
       std::cerr << "Discovered at " << __FILE__ << ":" << __LINE__ << "\n"
                 << "Parse error in monster description.\n"
                 << "Discarding monster." << std::endl;
@@ -542,18 +502,13 @@ static uint32_t parse_monster_description(std::ifstream &f,
   return 0;
 }
 
-static uint32_t parse_object_name(std::ifstream &f,
-                                  std::string *lookahead,
-                                  std::string *name)
-{
-
+static uint32_t parse_object_name(std::ifstream &f, std::string *lookahead,
+                                  std::string *name) {
   return parse_name(f, lookahead, name);
 }
 
-static uint32_t parse_object_art(std::ifstream &f,
-                                  std::string *lookahead,
-                                  bool *art)
-{
+static uint32_t parse_object_art(std::ifstream &f, std::string *lookahead,
+                                 bool *art) {
   std::string s;
 
   if (!parse_name(f, lookahead, &s)) {
@@ -569,24 +524,18 @@ static uint32_t parse_object_art(std::ifstream &f,
   return 1;
 }
 
-static uint32_t parse_object_rrty(std::ifstream &f,
-                                  std::string *lookahead,
-                                  uint32_t *rarity)
-{
+static uint32_t parse_object_rrty(std::ifstream &f, std::string *lookahead,
+                                  uint32_t *rarity) {
   return parse_integer(f, lookahead, rarity);
 }
 
-static uint32_t parse_object_desc(std::ifstream &f,
-                                  std::string *lookahead,
-                                  std::string *desc)
-{
+static uint32_t parse_object_desc(std::ifstream &f, std::string *lookahead,
+                                  std::string *desc) {
   return parse_desc(f, lookahead, desc);
 }
 
-static uint32_t parse_object_type(std::ifstream &f,
-                                  std::string *lookahead,
-                                  object_type_t *type)
-{
+static uint32_t parse_object_type(std::ifstream &f, std::string *lookahead,
+                                  object_type_t *type) {
   uint32_t i;
 
   *type = objtype_no_type;
@@ -620,10 +569,8 @@ static uint32_t parse_object_type(std::ifstream &f,
   return 0;
 }
 
-static uint32_t parse_object_color(std::ifstream &f,
-                                   std::string *lookahead,
-                                   uint32_t *color)
-{
+static uint32_t parse_object_color(std::ifstream &f, std::string *lookahead,
+                                   uint32_t *color) {
   return parse_color(f, lookahead, color);
 }
 
@@ -638,13 +585,11 @@ static dice_parser_func_t parse_object_val = parse_dice;
 
 static uint32_t parse_object_description(std::ifstream &f,
                                          std::string *lookahead,
-                                         std::vector<object_description> *v)
-{
+                                         std::vector<object_description> *v) {
   std::string s;
-  bool read_name, read_desc, read_type, read_color,
-       read_hit, read_dam, read_dodge, read_def,
-       read_weight, read_speed, read_attr, read_val,
-       read_art, read_rrty;
+  bool read_name, read_desc, read_type, read_color, read_hit, read_dam,
+      read_dodge, read_def, read_weight, read_speed, read_attr, read_val,
+      read_art, read_rrty;
   std::string name, desc;
   uint32_t color;
   object_type_t type;
@@ -654,10 +599,9 @@ static uint32_t parse_object_description(std::ifstream &f,
   object_description o;
   int count;
 
-  read_name = read_desc = read_type = read_color =
-              read_hit = read_dam = read_dodge = read_def =
-              read_weight = read_speed = read_attr = read_val =
-              read_art = read_rrty = false;
+  read_name = read_desc = read_type = read_color = read_hit = read_dam =
+      read_dodge = read_def = read_weight = read_speed = read_attr = read_val =
+          read_art = read_rrty = false;
 
   if (*lookahead != "BEGIN") {
     std::cerr << "Discovered at " << __FILE__ << ":" << __LINE__ << "\n"
@@ -675,11 +619,10 @@ static uint32_t parse_object_description(std::ifstream &f,
     return 1;
   }
 
-  for (f >> *lookahead, count = 0;
-       count < NUM_OBJECT_DESCRIPTION_FIELDS;
+  for (f >> *lookahead, count = 0; count < NUM_OBJECT_DESCRIPTION_FIELDS;
        count++) {
     /* This could definately be more concise. */
-    if        (*lookahead == "NAME")  {
+    if (*lookahead == "NAME") {
       if (read_name || parse_object_name(f, lookahead, &name)) {
         std::cerr << "Discovered at " << __FILE__ << ":" << __LINE__ << "\n"
                   << "Parse error in object name.\n"
@@ -687,7 +630,7 @@ static uint32_t parse_object_description(std::ifstream &f,
         return 1;
       }
       read_name = true;
-    } else if (*lookahead == "DESC")  {
+    } else if (*lookahead == "DESC") {
       if (read_desc || parse_object_desc(f, lookahead, &desc)) {
         std::cerr << "Discovered at " << __FILE__ << ":" << __LINE__ << "\n"
                   << "Parse error in object description.\n"
@@ -695,7 +638,7 @@ static uint32_t parse_object_description(std::ifstream &f,
         return 1;
       }
       read_desc = true;
-    } else if (*lookahead == "TYPE")  {
+    } else if (*lookahead == "TYPE") {
       if (read_type || parse_object_type(f, lookahead, &type)) {
         std::cerr << "Discovered at " << __FILE__ << ":" << __LINE__ << "\n"
                   << "Parse error in object type.\n"
@@ -711,7 +654,7 @@ static uint32_t parse_object_description(std::ifstream &f,
         return 1;
       }
       read_color = true;
-    } else if (*lookahead == "HIT")   {
+    } else if (*lookahead == "HIT") {
       if (read_hit || parse_object_hit(f, lookahead, &hit)) {
         std::cerr << "Discovered at " << __FILE__ << ":" << __LINE__ << "\n"
                   << "Parse error in object hit bonux.\n"
@@ -719,7 +662,7 @@ static uint32_t parse_object_description(std::ifstream &f,
         return 1;
       }
       read_hit = true;
-    } else if (*lookahead == "DAM")   {
+    } else if (*lookahead == "DAM") {
       if (read_dam || parse_object_dam(f, lookahead, &dam)) {
         std::cerr << "Discovered at " << __FILE__ << ":" << __LINE__ << "\n"
                   << "Parse error in object damage bonus.\n"
@@ -727,7 +670,7 @@ static uint32_t parse_object_description(std::ifstream &f,
         return 1;
       }
       read_dam = true;
-    } else if (*lookahead == "DODGE")   {
+    } else if (*lookahead == "DODGE") {
       if (read_dodge || parse_object_dodge(f, lookahead, &dodge)) {
         std::cerr << "Discovered at " << __FILE__ << ":" << __LINE__ << "\n"
                   << "Parse error in object dodge bonus.\n"
@@ -735,7 +678,7 @@ static uint32_t parse_object_description(std::ifstream &f,
         return 1;
       }
       read_dodge = true;
-    } else if (*lookahead == "DEF")   {
+    } else if (*lookahead == "DEF") {
       if (read_def || parse_object_def(f, lookahead, &def)) {
         std::cerr << "Discovered at " << __FILE__ << ":" << __LINE__ << "\n"
                   << "Parse error in object defence bonus.\n"
@@ -743,7 +686,7 @@ static uint32_t parse_object_description(std::ifstream &f,
         return 1;
       }
       read_def = true;
-    } else if (*lookahead == "WEIGHT")   {
+    } else if (*lookahead == "WEIGHT") {
       if (read_weight || parse_object_weight(f, lookahead, &weight)) {
         std::cerr << "Discovered at " << __FILE__ << ":" << __LINE__ << "\n"
                   << "Parse error in object weight.\n"
@@ -759,7 +702,7 @@ static uint32_t parse_object_description(std::ifstream &f,
         return 1;
       }
       read_speed = true;
-    } else if (*lookahead == "ATTR")  {
+    } else if (*lookahead == "ATTR") {
       if (read_attr || parse_object_attr(f, lookahead, &attr)) {
         std::cerr << "Discovered at " << __FILE__ << ":" << __LINE__ << "\n"
                   << "Parse error in object special attribute bonus.\n"
@@ -767,7 +710,7 @@ static uint32_t parse_object_description(std::ifstream &f,
         return 1;
       }
       read_attr = true;
-    } else if (*lookahead == "VAL")    {
+    } else if (*lookahead == "VAL") {
       if (read_val || parse_object_val(f, lookahead, &val)) {
         std::cerr << "Discovered at " << __FILE__ << ":" << __LINE__ << "\n"
                   << "Parse error in object value.\n"
@@ -775,7 +718,7 @@ static uint32_t parse_object_description(std::ifstream &f,
         return 1;
       }
       read_val = true;
-    } else if (*lookahead == "ART")    {
+    } else if (*lookahead == "ART") {
       if (read_art || parse_object_art(f, lookahead, &art)) {
         std::cerr << "Discovered at " << __FILE__ << ":" << __LINE__ << "\n"
                   << "Parse error in object value.\n"
@@ -783,7 +726,7 @@ static uint32_t parse_object_description(std::ifstream &f,
         return 1;
       }
       read_art = true;
-    } else if (*lookahead == "RRTY")    {
+    } else if (*lookahead == "RRTY") {
       if (read_rrty || parse_object_rrty(f, lookahead, &rrty)) {
         std::cerr << "Discovered at " << __FILE__ << ":" << __LINE__ << "\n"
                   << "Parse error in object value.\n"
@@ -791,7 +734,7 @@ static uint32_t parse_object_description(std::ifstream &f,
         return 1;
       }
       read_rrty = true;
-    } else                           {
+    } else {
       std::cerr << "Discovered at " << __FILE__ << ":" << __LINE__ << "\n"
                 << "Parse error in object description.\n"
                 << "Discarding object." << std::endl;
@@ -809,17 +752,15 @@ static uint32_t parse_object_description(std::ifstream &f,
   }
   f >> *lookahead;
 
-  o.set(name, desc, type, color, hit, dam, dodge,
-        def, weight, speed, attr, val, art, rrty);
+  o.set(name, desc, type, color, hit, dam, dodge, def, weight, speed, attr, val,
+        art, rrty);
   v->push_back(o);
 
   return 0;
 }
 
-static uint32_t parse_monster_descriptions(std::ifstream &f,
-                                           dungeon_t *d,
-                                           std::vector<monster_description> *v)
-{
+static uint32_t parse_monster_descriptions(
+    std::ifstream &f, dungeon_t *d, std::vector<monster_description> *v) {
   std::string s;
   std::stringstream expected;
   std::string lookahead;
@@ -846,10 +787,8 @@ static uint32_t parse_monster_descriptions(std::ifstream &f,
   return 0;
 }
 
-static uint32_t parse_object_descriptions(std::ifstream &f,
-                                          dungeon_t *d,
-                                          std::vector<object_description> *v)
-{
+static uint32_t parse_object_descriptions(std::ifstream &f, dungeon_t *d,
+                                          std::vector<object_description> *v) {
   std::string s;
   std::stringstream expected;
   std::string lookahead;
@@ -876,8 +815,7 @@ static uint32_t parse_object_descriptions(std::ifstream &f,
   return 0;
 }
 
-uint32_t parse_descriptions(dungeon_t *d)
-{
+uint32_t parse_descriptions(dungeon_t *d) {
   std::string file;
   std::ifstream f;
   uint32_t retval;
@@ -915,8 +853,7 @@ uint32_t parse_descriptions(dungeon_t *d)
   return retval;
 }
 
-uint32_t print_descriptions(dungeon_t *d)
-{
+uint32_t print_descriptions(dungeon_t *d) {
   std::vector<monster_description> &m = d->monster_descriptions;
   std::vector<monster_description>::iterator mi;
   std::vector<object_description> &o = d->object_descriptions;
@@ -926,7 +863,6 @@ uint32_t print_descriptions(dungeon_t *d)
     std::cout << *mi << std::endl;
   }
 
-
   for (oi = o.begin(); oi != o.end(); oi++) {
     std::cout << *oi << std::endl;
   }
@@ -935,15 +871,11 @@ uint32_t print_descriptions(dungeon_t *d)
 }
 
 void monster_description::set(const std::string &name,
-                              const std::string &description,
-                              const char symbol,
+                              const std::string &description, const char symbol,
                               const std::vector<uint32_t> &color,
-                              const dice &speed,
-                              const uint32_t abilities,
-                              const dice &hitpoints,
-                              const dice &damage,
-                              const uint32_t rrty)
-{
+                              const dice &speed, const uint32_t abilities,
+                              const dice &hitpoints, const dice &damage,
+                              const uint32_t rrty) {
   this->name = name;
   this->description = description;
   this->symbol = symbol;
@@ -955,8 +887,49 @@ void monster_description::set(const std::string &name,
   this->rarity = rrty;
 }
 
-std::ostream &monster_description::print(std::ostream& o)
-{
+static monster_description *get_valid_monster_description(dungeon_t *d) {
+  uint32_t num_monster_desc = d->object_descriptions.size();
+
+  while (true) {
+    uint32_t rand_desc_val = rand() % num_monster_desc,
+             rand_rarity_val = rand() % 100;
+
+    monster_description *md = &(d->monster_descriptions[rand_desc_val]);
+
+    if (md->get_rarity() > rand_rarity_val && md->get_validity()) {
+      // If unique, set to non valid.
+      if (md->is_unique()) {
+        md->set_validity(false);
+      }
+
+      return md;
+    }
+  }
+}
+
+character_t monster_description::generate(dungeon_t *d) {
+  monster_description &md = *get_valid_monster_description(d);
+  character_t c;
+
+  c.is_pc = false;
+  c.is_alive = true;
+
+  c.npc = (npc_t *)calloc(1, sizeof(npc_t));
+  c.symbol = md.get_symbol();
+
+  c.npc->name = md.get_name();
+  c.npc->description = md.get_description();
+  c.npc->color = md.get_color();
+  c.npc->hitpoints = md.get_hit().roll();
+  c.speed = md.get_speed().roll();
+  c.npc->characteristics = md.get_abilities();
+  c.npc->damage = md.get_damage();
+  c.position = get_valid_point(d, false);
+
+  return c;
+}
+
+std::ostream &monster_description::print(std::ostream &o) {
   uint32_t i;
   uint32_t num_abilities;
   std::vector<uint32_t>::iterator ci;
@@ -985,17 +958,17 @@ std::ostream &monster_description::print(std::ostream& o)
     o << "Monster failing to live up to full potential";
   }
 
-  return o << std::endl << hitpoints << std::endl
-           << damage << std::endl << rarity << std::endl;
+  return o << std::endl
+           << hitpoints << std::endl
+           << damage << std::endl
+           << rarity << std::endl;
 }
 
-std::ostream &operator<<(std::ostream &o, monster_description &m)
-{
+std::ostream &operator<<(std::ostream &o, monster_description &m) {
   return m.print(o);
 }
 
-uint32_t destroy_descriptions(dungeon_t *d)
-{
+uint32_t destroy_descriptions(dungeon_t *d) {
   d->monster_descriptions.clear();
   d->object_descriptions.clear();
 
@@ -1004,19 +977,12 @@ uint32_t destroy_descriptions(dungeon_t *d)
 
 void object_description::set(const std::string &name,
                              const std::string &description,
-                             const object_type_t type,
-                             const uint32_t color,
-                             const dice &hit,
-                             const dice &damage,
-                             const dice &dodge,
-                             const dice &defence,
-                             const dice &weight,
-                             const dice &speed,
-                             const dice &attrubute,
-                             const dice &value,
-                             const bool art,
-                             const uint32_t rrty)
-{
+                             const object_type_t type, const uint32_t color,
+                             const dice &hit, const dice &damage,
+                             const dice &dodge, const dice &defence,
+                             const dice &weight, const dice &speed,
+                             const dice &attrubute, const dice &value,
+                             const bool art, const uint32_t rrty) {
   this->name = name;
   this->description = description;
   this->type = type;
@@ -1033,8 +999,49 @@ void object_description::set(const std::string &name,
   this->rarity = rrty;
 }
 
-std::ostream &object_description::print(std::ostream &o)
-{
+static object_description *get_valid_object_description(dungeon_t *d) {
+  uint32_t num_object_desc = d->object_descriptions.size();
+
+  while (true) {
+    uint32_t rand_desc_val = rand() % num_object_desc,
+             rand_rarity_val = rand() % 100;
+
+    object_description *od = &(d->object_descriptions[rand_desc_val]);
+
+    if (od->get_rarity() > rand_rarity_val && od->get_validity()) {
+      // If unique, set to non valid.
+      if (od->is_artifact()) {
+        od->set_validity(false);
+      }
+
+      return od;
+    }
+  }
+}
+
+object object_description::generate(dungeon_t *d) {
+  object_description &od = *get_valid_object_description(d);
+  object o;
+
+  o.name = od.get_name();
+  o.description = od.get_description();
+  o.type = od.get_type();
+  o.color = od.get_color();
+  o.hit = od.get_hit().roll();
+  o.dodge = od.get_dodge().roll();
+  o.defence = od.get_defence().roll();
+  o.weight = od.get_weight().roll();
+  o.speed = od.get_speed().roll();
+  o.attribute = od.get_attribute().roll();
+  o.value = od.get_value().roll();
+  o.damage = od.get_damage();
+  o.artifact = od.is_artifact();
+  o.position = get_valid_point_object(d);
+
+  return o;
+}
+
+std::ostream &object_description::print(std::ostream &o) {
   uint32_t i;
 
   o << name << std::endl;
@@ -1052,13 +1059,18 @@ std::ostream &object_description::print(std::ostream &o)
     }
   }
 
-return o << hit << std::endl << damage << std::endl << dodge << std::endl
-         << defence << std::endl << weight << std::endl << speed << std::endl
-         << attribute << std::endl << value << std::endl << artifact
-         << std::endl << rarity << std::endl;
+  return o << hit << std::endl
+           << damage << std::endl
+           << dodge << std::endl
+           << defence << std::endl
+           << weight << std::endl
+           << speed << std::endl
+           << attribute << std::endl
+           << value << std::endl
+           << artifact << std::endl
+           << rarity << std::endl;
 }
 
-std::ostream &operator<<(std::ostream &o, object_description &od)
-{
+std::ostream &operator<<(std::ostream &o, object_description &od) {
   return od.print(o);
 }

@@ -2,6 +2,9 @@ NAME
     Dungeon Crawler (ASSIGNMENT_NUM) - A roguelike adventure game
 
 DESCRIPTION
+    Monster and object definitions are read from ~/.rlg327 and loaded into
+    the game. Flashing colors are not implemented.
+
     This roguelike dungeon game is now ported to C++. New features include
     incremental upgrades to the Monster List menu, in-game debugging, and
     an efficient FOV shadowcasting implementation. Navigate with vi-like

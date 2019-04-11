@@ -1,4 +1,12 @@
 CHANGELOG (GIT LOG)
+2019-04-10: Added object parsing
+2019-04-04: Deep in this lexx/yacc rabit hole...
+2019-04-03: Parse testing
+2019-04-03: Started implementing definition parser
+2019-04-02: Directory restructuring
+2019-04-02: Documentation, Fixed issue with get_room()
+2019-03-28: Add GPL license and license headers
+2019-03-28: Fixed bug that wrongly obscured monsters in Monster List
 2019-03-28: Fixed bug that'd allow unlit terrains to be shown
 2019-03-28: Port to C++, Bug fixes for v1.06
 2019-03-28: Renaming, Refactoring, and Debugging keybindings

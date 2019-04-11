@@ -20,42 +20,47 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <string>
 
+#include "dice.h"
 #include "dungeon.h"
 #include "geometry.h"
 
-#include <string>
-
-#define NPC_SMART         0x00000001
-#define NPC_TELEPATH      0x00000002
-#define NPC_TUNNEL        0x00000004
-#define NPC_ERRATIC       0x00000008
-#define NPC_PASS_WALL     0x00000010
-#define NPC_DESTROY_OBJ   0x00000020
-#define NPC_PICKUP_OBJ    0x00000040
-#define NPC_UNIQ          0x00000080
-#define NPC_BOSS          0x00000100
+#define NPC_SMART 0x00000001
+#define NPC_TELEPATH 0x00000002
+#define NPC_TUNNEL 0x00000004
+#define NPC_ERRATIC 0x00000008
+#define NPC_PASS_WALL 0x00000010
+#define NPC_DESTROY_OBJ 0x00000020
+#define NPC_PICKUP_OBJ 0x00000040
+#define NPC_UNIQ 0x00000080
+#define NPC_BOSS 0x00000100
 
 class dungeon_t;
 class npc_t {
  public:
-     int8_t characteristics;
-     bool has_seen_pc;
-     point_t pc_position;
+  std::string name, description;
+
+  uint32_t characteristics, color, hitpoints, speed;
+  dice damage;
+  bool validity;
+  bool has_seen_pc;
+
+  point_t pc_position;
 };
 
 class character_t {
-   public:
-    int8_t sequence_num;
-    bool is_alive;
+ public:
+  int8_t sequence_num;
+  bool is_alive;
 
-    char symbol;
-    int8_t speed;
+  char symbol;
+  int32_t speed;
 
-    bool is_pc;
-    npc_t *npc;
+  bool is_pc;
+  npc_t *npc;
 
-    point_t position;
+  point_t position;
 };
 
 character_t new_character(dungeon_t *);
