@@ -885,10 +885,12 @@ void monster_description::set(const std::string &name,
   this->hitpoints = hitpoints;
   this->damage = damage;
   this->rarity = rrty;
+  this->validity = true;
 }
 
 static monster_description *get_valid_monster_description(dungeon_t *d) {
-  uint32_t num_monster_desc = d->object_descriptions.size();
+  uint32_t num_monster_desc = d->monster_descriptions.size();
+  int i;
 
   while (true) {
     uint32_t rand_desc_val = rand() % num_monster_desc,
@@ -897,9 +899,29 @@ static monster_description *get_valid_monster_description(dungeon_t *d) {
     monster_description *md = &(d->monster_descriptions[rand_desc_val]);
 
     if (md->get_rarity() > rand_rarity_val && md->get_validity()) {
-      // If unique, set to non valid.
+      // If definition is unique, check if a monster of this
+      // type has spawned already.
       if (md->is_unique()) {
-        md->set_validity(false);
+        bool unspawned = true;
+
+        // Get number of monsters currently instantiated for we can iterate
+        // throught the character array
+        int num_instances;
+        for (num_instances = 0; d->characters[num_instances].is_alive;
+             num_instances++)
+          ;
+
+        // If a unique character exists, continue to next random
+        // definition.
+        for (i = 1; (i < (num_instances)) && unspawned; i++) {
+          if (d->characters[i].npc->md == md) {
+            unspawned = false;
+          }
+        }
+
+        if (!unspawned) {
+          continue;
+        }
       }
 
       return md;
@@ -917,6 +939,7 @@ character_t monster_description::generate(dungeon_t *d) {
   c.npc = (npc_t *)calloc(1, sizeof(npc_t));
   c.symbol = md.get_symbol();
 
+  c.npc->md = &md;
   c.npc->name = md.get_name();
   c.npc->description = md.get_description();
   c.npc->color = md.get_color();
@@ -997,6 +1020,7 @@ void object_description::set(const std::string &name,
   this->value = value;
   this->artifact = art;
   this->rarity = rrty;
+  this->validity = true;
 }
 
 static object_description *get_valid_object_description(dungeon_t *d) {

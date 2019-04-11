@@ -142,6 +142,7 @@ void quit() {
 
   free(path);
   deep_free_dungeon(&dungeon);
+  destroy_descriptions(&dungeon);
 
   exit(0);
 }

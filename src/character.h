@@ -22,6 +22,7 @@
 #include <stdint.h>
 #include <string>
 
+#include "descriptions.h"
 #include "dice.h"
 #include "dungeon.h"
 #include "geometry.h"
@@ -40,11 +41,12 @@ class dungeon_t;
 class npc_t {
  public:
   std::string name, description;
-
   uint32_t characteristics, color, hitpoints, speed;
   dice damage;
   bool validity;
   bool has_seen_pc;
+
+  monster_description *md;
 
   point_t pc_position;
 };
@@ -53,7 +55,6 @@ class character_t {
  public:
   int8_t sequence_num;
   bool is_alive;
-
   char symbol;
   int32_t speed;
 
