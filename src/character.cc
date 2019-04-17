@@ -27,23 +27,23 @@
  * the dungeon's characters array, will generate a PC character.
  * Otherwise, a NPC with variable speed, starting position, and characteristics.
  */
-character_t new_character(dungeon_t *d) {
-  character_t c;
+character new_character(dungeon_t *d) {
+  character c;
 
   /* Get number of pre-existing characters */
   int i;
-  for (i = 0; d->characters[i].is_alive; i++)
-    ;
+  for (i = 0; d->characters[i].is_alive; i++) {
+  }
+
   c.sequence_num = i;
 
   /* Assigns character's data fields based on
    * characer type */
-  if (c.sequence_num == 0) {
+  if (c.is_pc()) {
     point_t character_position = get_valid_point(d, true);
     c.position.x = character_position.x;
     c.position.y = character_position.y;
 
-    c.is_pc = true;
     c.is_alive = true;
     c.speed = PC_SPEED;
     c.symbol = '@';

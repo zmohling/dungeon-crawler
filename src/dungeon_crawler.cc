@@ -75,8 +75,7 @@ int main(int argc, char *argv[]) {
   path_init(&path, s);
 
   /* Dungeon*/
-  memset(dungeon.character_map, 0,
-         sizeof(character_t *) * DUNGEON_Y * DUNGEON_X);
+  memset(dungeon.character_map, 0, sizeof(character *) * DUNGEON_Y * DUNGEON_X);
 
   /* Parse descriptions into dungeon */
   parse_descriptions(&dungeon);
@@ -110,7 +109,7 @@ int main(int argc, char *argv[]) {
   /* Load switch */
   char *load_switch_str = (char *)"--load";
   if (contains(argc, argv, load_switch_str, &n)) {
-    dungeon.pc = (character_t *)malloc(sizeof(character_t));
+    dungeon.pc = (character *)malloc(sizeof(character));
     read_dungeon_from_disk(&dungeon, path);
     generate_terrain(&dungeon);
   } else {

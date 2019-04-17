@@ -26,6 +26,7 @@
 #include "dice.h"
 #include "dungeon.h"
 #include "geometry.h"
+#include "object.h"
 
 #define NPC_SMART 0x00000001
 #define NPC_TELEPATH 0x00000002
@@ -38,33 +39,35 @@
 #define NPC_BOSS 0x00000100
 
 class dungeon_t;
-class npc_t {
+
+class character {
  public:
-  std::string name, description;
-  uint32_t characteristics, color, hitpoints, speed;
-  dice damage;
-  bool validity;
-  bool has_seen_pc;
+  virtual ~character() = default;
 
-  monster_description *md;
-
-  point_t pc_position;
-};
-
-class character_t {
- public:
-  int8_t sequence_num;
+  int32_t sequence_num, speed;
   bool is_alive;
   char symbol;
-  int32_t speed;
-
-  bool is_pc;
-  npc_t *npc;
-
   point_t position;
+  dice damage;
+
+  bool is_pc() { return sequence_num == 0; }
 };
 
-character_t new_character(dungeon_t *);
+class pc : public character {
+ public:
+  object equiped[12], inventory[10];
+};
+
+class npc : public character {
+ public:
+  std::string name, description;
+  uint32_t characteristics, color, hitpoints;
+  bool validity, has_seen_pc;
+  point_t pc_position;
+  monster_description *md;
+};
+
+character new_character(dungeon_t *);
 bool npc_exists(dungeon_t *);
 
 #endif

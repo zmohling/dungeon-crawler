@@ -914,7 +914,7 @@ static monster_description *get_valid_monster_description(dungeon_t *d) {
         // If a unique character exists, continue to next random
         // definition.
         for (i = 1; (i < (num_instances)) && unspawned; i++) {
-          if (d->characters[i].npc->md == md) {
+          if (static_cast<npc *>(&d->characters[i])->md == md) {
             unspawned = false;
           }
         }
@@ -929,24 +929,22 @@ static monster_description *get_valid_monster_description(dungeon_t *d) {
   }
 }
 
-character_t monster_description::generate(dungeon_t *d) {
+character monster_description::generate(dungeon_t *d) {
   monster_description &md = *get_valid_monster_description(d);
-  character_t c;
+  npc c;
 
-  c.is_pc = false;
   c.is_alive = true;
 
-  c.npc = (npc_t *)calloc(1, sizeof(npc_t));
   c.symbol = md.get_symbol();
 
-  c.npc->md = &md;
-  c.npc->name = md.get_name();
-  c.npc->description = md.get_description();
-  c.npc->color = md.get_color();
-  c.npc->hitpoints = md.get_hit().roll();
+  c.md = &md;
+  c.name = md.get_name();
+  c.description = md.get_description();
+  c.color = md.get_color();
+  c.hitpoints = md.get_hit().roll();
   c.speed = md.get_speed().roll();
-  c.npc->characteristics = md.get_abilities();
-  c.npc->damage = md.get_damage();
+  c.characteristics = md.get_abilities();
+  c.damage = md.get_damage();
   c.position = get_valid_point(d, false);
 
   return c;

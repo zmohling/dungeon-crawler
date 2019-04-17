@@ -61,7 +61,8 @@ typedef enum __attribute__((__packed__)) terrain_type {
     terrain == ter_wall_vertical || terrain == ter_wall_horizontal) \
        ? 1                                                          \
        : 0)
-class character_t;
+
+class character;
 class event_t;
 class monster_description;
 class object_description;
@@ -81,14 +82,14 @@ class room_t {
 
 class dungeon_t {
  public:
-  character_t *pc;
+  character *pc;
   uint8_t num_monsters;
   uint8_t num_objects;
 
   heap_t event_queue;
   event_t *events;
-  character_t *character_map[DUNGEON_Y][DUNGEON_X];
-  character_t *characters;
+  character *character_map[DUNGEON_Y][DUNGEON_X];
+  character *characters;
   object *objects;
 
   uint8_t non_tunnel_distance_map[DUNGEON_Y][DUNGEON_X];

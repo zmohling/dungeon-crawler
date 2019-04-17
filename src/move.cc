@@ -31,14 +31,14 @@
 #include "input.h"
 #include "path.h"
 
-static void move_helper(dungeon_t *, character_t *, point_t *);
+static void move_helper(dungeon_t *, character *, point_t *);
 
 /* Handles PC movement. Moves and returns 0 if a valid movement,
  * or displays a message and returns a nonzero value if that
  * move connot be done.
  */
 int move_pc(dungeon_t *d, point_t *p, int ch) {
-  character_t *pc = d->pc;
+  character *pc = d->pc;
 
   point_t next_pos;
   next_pos.x = pc->position.x;
@@ -126,7 +126,7 @@ int use_stairs(dungeon_t *d, pc_movement_t p) {
   deep_free_dungeon(d);
   generate_dungeon(d);
 
-  d->pc = (character_t *)malloc(sizeof(character_t));
+  d->pc = reinterpret_cast<character *>(malloc(sizeof(character)));
   if (p == pc_up_stairs) {
     d->pc->position.x = d->stairs_down[0].x;
     d->pc->position.y = d->stairs_down[0].y;
@@ -143,15 +143,15 @@ int use_stairs(dungeon_t *d, pc_movement_t p) {
 /* Jump table for NPC move functions.
  * TODO: Implement jtable and more move functions
  */
-int move_npc(dungeon_t *d, character_t *c) {
-  if (c->npc->characteristics & 0x08) {
+int move_npc(dungeon_t *d, npc *c) {
+  if (c->characteristics & 0x08) {
     if (rand() % 2) {
       move_npc_erratic(d, c);
       return 0;
     }
   }
 
-  if (c->npc->characteristics & 0x04) {
+  if (c->characteristics & 0x04) {
     move_npc_tunnel(d, c);
   } else {
     if (d->non_tunnel_distance_map[c->position.y][c->position.x] < 12) {
@@ -166,7 +166,7 @@ int move_npc(dungeon_t *d, character_t *c) {
  * TODO: Implement a dijkstra's version for
  * smarter NPCs
  */
-int move_npc_non_tunnel(dungeon_t *d, character_t *c) {
+int move_npc_non_tunnel(dungeon_t *d, npc *c) {
   uint8_t distance = UINT8_MAX;
   point_t next_pos;
   next_pos.x = c->position.x;
@@ -202,7 +202,7 @@ int move_npc_non_tunnel(dungeon_t *d, character_t *c) {
  * TODO: Implement a dijkstra's version for
  * smarter NPCs
  */
-int move_npc_tunnel(dungeon_t *d, character_t *c) {
+int move_npc_tunnel(dungeon_t *d, npc *c) {
   uint8_t min_cost = UINT8_MAX;
   point_t next_pos;
   next_pos.x = c->position.x;
@@ -255,7 +255,7 @@ int move_npc_tunnel(dungeon_t *d, character_t *c) {
   return 0;
 }
 
-int move_npc_erratic(dungeon_t *d, character_t *c) {
+int move_npc_erratic(dungeon_t *d, npc *c) {
   point_t next_pos;
   next_pos.x = c->position.x + (rand() % 3) - 1;
   next_pos.y = c->position.y + (rand() % 3) - 1;
@@ -272,10 +272,11 @@ int move_npc_erratic(dungeon_t *d, character_t *c) {
  * character exists at (x, y), "kills" it and updates the
  * relevant data structures.
  */
-int check_for_trample(dungeon_t *d, character_t *c, int x, int y) {
+int check_for_trample(dungeon_t *d, character *c, int x, int y) {
   if (d->character_map[y][x] != NULL && d->character_map[y][x] != c) {
-    if (!(d->character_map[y][x]->is_pc)) {
-      d->character_map[y][x]->npc->md->set_validity(false);
+    if (!(c->is_pc())) {
+      npc *c = reinterpret_cast<npc *>(d->character_map[y][x]);
+      c->md->set_validity(false);
     }
 
     d->character_map[y][x]->is_alive = false;
@@ -287,7 +288,7 @@ int check_for_trample(dungeon_t *d, character_t *c, int x, int y) {
   return 1;  // no kill
 }
 
-static void move_helper(dungeon_t *d, character_t *c, point_t *next_pos) {
+static void move_helper(dungeon_t *d, character *c, point_t *next_pos) {
   d->character_map[c->position.y][c->position.x] = NULL;
   c->position.x = next_pos->x;
   c->position.y = next_pos->y;

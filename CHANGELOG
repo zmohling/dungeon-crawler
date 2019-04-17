@@ -1,4 +1,5 @@
 CHANGELOG (GIT LOG)
+2019-04-11: Monsters only become invalid once dying
 2019-04-11: Add monster and object rendering
 2019-04-10: Added object parsing
 2019-04-04: Deep in this lexx/yacc rabit hole...

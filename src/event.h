@@ -23,12 +23,12 @@
 #include "dungeon.h"
 
 class dungeon_t;
-class character_t;
+class character;
 
 class event_t {
-    public:
-    uint32_t turn;
-    character_t *c;
+ public:
+  uint32_t turn;
+  character *c;
 };
 
 int event_simulator_start(dungeon_t *);

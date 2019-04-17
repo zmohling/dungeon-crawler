@@ -10,7 +10,7 @@
 
 class dungeon_t;
 class object;
-class character_t;
+class character;
 
 uint32_t parse_descriptions(dungeon_t *d);
 uint32_t print_descriptions(dungeon_t *d);
@@ -69,7 +69,7 @@ class monster_description {
            const dice &damage, const uint32_t rarity);
 
   /* Factory method */
-  static character_t generate(dungeon_t *);
+  static character generate(dungeon_t *);
 
   std::ostream &print(std::ostream &o);
 
@@ -84,7 +84,7 @@ class monster_description {
   inline const dice &get_speed() const { return speed; }
   inline const bool is_unique() const { return (abilities & 0x80); }
   inline const bool &get_validity() const { return validity; }
-  inline const void set_validity(const bool b) { validity = b; }
+  inline const void set_validity(const bool b) { this->validity = b; }
 };
 
 class object_description {

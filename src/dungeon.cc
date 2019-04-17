@@ -78,9 +78,9 @@ void render_dungeon(dungeon_t *d) {
 
       /* Characters */
       if (d->map_visible[i][j] || FOV_get_fog() == false) {
-        character_t *character = d->character_map[i][j];
+        character *character = d->character_map[i][j];
         if (character != NULL && character->is_alive) {
-          if (character->is_pc == true) {
+          if (character->is_pc()) {
             attron(A_BOLD);
             attron(COLOR_PAIR(COLOR_BLUE));
             mvprintw(y, x, "%c", character->symbol);
@@ -88,7 +88,7 @@ void render_dungeon(dungeon_t *d) {
             attroff(A_BOLD);
           } else {
             attron(A_BOLD);
-            attron(COLOR_PAIR(character->npc->color));
+            attron(COLOR_PAIR(reinterpret_cast<npc *>(character)->color));
             mvprintw(y, x, "%c", d->character_map[i][j]->symbol);
             attron(COLOR_PAIR(COLOR_WHITE));
             attroff(A_BOLD);
@@ -284,12 +284,14 @@ int deep_free_dungeon(dungeon_t *d) {
   free(d->objects);
 
   int i, j;
-  for (i = 0; i < (d->num_monsters + 1); i++) {
-    character_t *c = &(d->characters[i]);
-    if (c->npc != NULL) {
+  /*
+    for (i = 0; i < (d->num_monsters + 1); i++) {
+      character *c = &(d->characters[i]);
+      // if (c->npc != NULL) {
       // free(c->npc);
+      //}
     }
-  }
+  */
 
   d->pc = NULL;
 

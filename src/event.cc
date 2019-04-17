@@ -42,7 +42,7 @@ static int32_t event_compare(const void *key, const void *with) {
   }
 }
 
-static event_t new_event(character_t *c) {
+static event_t new_event(character *c) {
   event_t e;
   e.turn = 0;
   e.c = c;
@@ -61,14 +61,13 @@ static int game_loop(dungeon_t *d) {
     event_t *e = (event_t *)heap_remove_min(&(d->event_queue));
 
     if (!e->c->is_alive) {
-      ;
-    } else if (e->c->is_pc) {
+    } else if (e->c->is_pc()) {
       FOV_shadowcast(d, &d->pc->position, 15);
       render_dungeon(d);
 
       handle_key(d, getch());
     } else {
-      move_npc(d, e->c);
+      move_npc(d, reinterpret_cast<npc *>(e->c));
     }
 
     e->turn += (1000 / e->c->speed);
@@ -101,8 +100,8 @@ int event_simulator_start(dungeon_t *d) {
     fprintf(stderr, "Did not allocate events array in dungeon struct.");
     exit(-122);
   }
-  if (!(d->characters = (character_t *)calloc(
-            1, sizeof(character_t) * (d->num_monsters + 1)))) {
+  if (!(d->characters = (character *)calloc(
+            1, sizeof(character) * (d->num_monsters + 1)))) {
     fprintf(stderr, "Did not allocate characters array in dungeon struct.");
     exit(-123);
   }
