@@ -27,6 +27,7 @@
 #include "dungeon.h"
 #include "dungeon_crawler.h"
 #include "fov.h"
+#include "screens/window.h"
 
 static dungeon_t *d_static;
 
@@ -194,7 +195,8 @@ void monster_list(dungeon_t *d) {
         break;
     }
 
-    delwin(w);
+    window_close(&w);
+    // delwin(w);
   }
 }
 

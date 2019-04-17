@@ -28,6 +28,7 @@
 #include "dungeon.h"
 #include "event.h"
 #include "path.h"
+#include "screens/window.h"
 #include "util.h"
 
 static dungeon_t dungeon;

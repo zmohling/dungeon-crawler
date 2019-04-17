@@ -51,11 +51,17 @@ class character {
   dice damage;
 
   bool is_pc() { return sequence_num == 0; }
+  void remove();
 };
 
 class pc : public character {
  public:
   object equiped[12], inventory[10];
+
+  void equip_object(object o, int slot_num);
+  void unequip_object(object o, int slot_num);
+  void pickup_object(object o, int slot_num);
+  void drop_object(object o, int slot_num);
 };
 
 class npc : public character {
