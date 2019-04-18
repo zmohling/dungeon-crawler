@@ -276,7 +276,7 @@ int check_for_trample(dungeon_t *d, character *c, int x, int y) {
   if (d->character_map[y][x] != NULL && d->character_map[y][x] != c) {
     if (!(c->is_pc())) {
       npc *c = reinterpret_cast<npc *>(d->character_map[y][x]);
-      c->md->set_validity(false);
+      // c->md->set_validity(false);
     }
 
     d->character_map[y][x]->is_alive = false;

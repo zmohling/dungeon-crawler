@@ -80,8 +80,19 @@ class room_t {
   uint8_t width, height;
 };
 
+// Dungeon Singleton
+// This class stores characters, map data, and object & npc definitions
 class dungeon_t {
+ private:
+  dungeon_t() {}
+  dungeon_t(dungeon_t const &) = delete;
+  dungeon_t &operator=(dungeon_t const &) = delete;
+
+  static dungeon_t *s_instance;
+
  public:
+  static dungeon_t *instance();
+
   character *pc;
   uint8_t num_monsters;
   uint8_t num_objects;

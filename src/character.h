@@ -54,9 +54,20 @@ class character {
   void remove();
 };
 
+// PC Singleton
+// This class stores data for the playable character object
 class pc : public character {
+ private:
+  pc() {}
+  pc(pc const &) = delete;
+  pc &operator=(pc const &) = delete;
+
+  static pc *s_instance;
+
  public:
   object equiped[12], inventory[10];
+
+  static pc *instance();
 
   void equip_object(object o, int slot_num);
   void unequip_object(object o, int slot_num);

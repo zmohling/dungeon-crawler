@@ -22,6 +22,7 @@
 
 class dungeon_t;
 
+void test();
 void endscreen(int);
 void monster_list(dungeon_t *);
 

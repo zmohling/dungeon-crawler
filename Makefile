@@ -5,16 +5,24 @@ LINT=cpplint
 RM=rm -rvf
 MKDIR=mkdir -p
 
-CFLAGS=-I src -Wall -ggdb3 -funroll-loops -fstack-protector-strong
-CXXFLAGS=-I src -Wall -ggdb3 -funroll-loops -fstack-protector-strong
+BIN=dungeon_crawler
+
+ROOT_DIR= .
+BUILD_DIR=$(ROOT_DIR)/build
+SRC_DIR=$(ROOT_DIR)/src
+INC_DIRS=$(SRC_DIR)
+
+INC_FLAGS=$(foreach d, $(INC_DIRS), -I$d)
+CFLAGS=$(INC_FLAGS) -Wall -ggdb3 -funroll-loops\
+	   -fstack-protector-strong
+CXXFLAGS=$(INC_FLAGS) -std=c++11 -Wall -ggdb3 -funroll-loops\
+		 -fstack-protector-strong
 LDFLAGS=-lm -lncurses 
 
-BIN=dungeon_crawler
-BUILD_DIR=build
-SRC_DIR=src
-
-C_SRC=$(wildcard **/*.c)
-CXX_SRC=$(wildcard **/*.cc)
+C_SRC=$(shell find $(SRC_DIR) -name '*.c')
+CXX_SRC=$(shell find $(SRC_DIR) -name '*.cc')
+#OBJ=$(patsubst %.c, $(BUILD_DIR)/%.o, $(lastword $(subst /, , $(C_SRC)))) \
+	$(patsubst %.cc, $(BUILD_DIR)/%.o, $(lastword $(subst /, , $(CXX_SRC))))
 OBJ=$(C_SRC:%.c=$(BUILD_DIR)/%.o) \
 	$(CXX_SRC:%.cc=$(BUILD_DIR)/%.o)
 DEP=$(OBJ:%.o=%.d)

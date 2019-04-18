@@ -10,7 +10,7 @@
 
 class dungeon_t;
 class object;
-class character;
+class npc;
 
 uint32_t parse_descriptions(dungeon_t *d);
 uint32_t print_descriptions(dungeon_t *d);
@@ -69,22 +69,22 @@ class monster_description {
            const dice &damage, const uint32_t rarity);
 
   /* Factory method */
-  static character generate(dungeon_t *);
+  static npc generate(dungeon_t *);
 
   std::ostream &print(std::ostream &o);
 
-  inline const char get_symbol() { return symbol; }
-  inline const std::string &get_name() const { return name; }
-  inline const std::string &get_description() const { return description; }
-  inline const uint32_t get_color() const { return color[0]; }
-  inline const uint32_t get_rarity() const { return rarity; }
-  inline const uint32_t get_abilities() const { return abilities; }
+  inline char get_symbol() { return symbol; }
+  inline std::string &get_name() { return name; }
+  inline std::string &get_description() { return description; }
+  inline uint32_t get_color() { return color[0]; }
+  inline uint32_t get_rarity() { return rarity; }
+  inline uint32_t get_abilities() { return abilities; }
   inline const dice &get_hit() const { return hitpoints; }
   inline const dice &get_damage() const { return damage; }
   inline const dice &get_speed() const { return speed; }
-  inline const bool is_unique() const { return (abilities & 0x80); }
+  inline bool is_unique() { return (abilities & 0x80); }
   inline const bool &get_validity() const { return validity; }
-  inline const void set_validity(const bool b) { this->validity = b; }
+  void set_validity(const bool b) { this->validity = b; }
 };
 
 class object_description {
@@ -131,9 +131,9 @@ class object_description {
    * circular dependancy that is difficult to get around.  */
   inline const std::string &get_name() const { return name; }
   inline const std::string &get_description() const { return description; }
-  inline const object_type_t get_type() const { return type; }
-  inline const uint32_t get_color() const { return color; }
-  inline const uint32_t get_rarity() const { return rarity; }
+  inline object_type_t get_type() { return type; }
+  inline uint32_t get_color() { return color; }
+  inline uint32_t get_rarity() { return rarity; }
   inline const dice &get_hit() const { return hit; }
   inline const dice &get_damage() const { return damage; }
   inline const dice &get_dodge() const { return dodge; }
@@ -144,7 +144,7 @@ class object_description {
   inline const dice &get_value() const { return value; }
   inline const bool &is_artifact() const { return artifact; }
   inline const bool &get_validity() const { return validity; }
-  inline const void set_validity(const bool b) { validity = b; }
+  inline void set_validity(bool b) { validity = b; }
 };
 
 std::ostream &operator<<(std::ostream &o, monster_description &m);

@@ -158,8 +158,9 @@ void monster_list(dungeon_t *d) {
   d_static = d;
   int ch, height = 12, width = 29;
   int starty = ((DUNGEON_Y - height) / 2) + 1, startx = (DUNGEON_X - width) / 2;
-  WINDOW *w = create_newwin(height, width, starty, startx);
-  overwrite(w, stdscr);
+  Window w(height, width);
+  w.window = create_newwin(height, width, starty, startx);
+  overwrite(w.window, stdscr);
 
   char *title = (char *)"MONSTER LIST";
   char *footer = (char *)"PRESS ESC TO EXIT";
@@ -194,10 +195,23 @@ void monster_list(dungeon_t *d) {
                                starty, startx);
         break;
     }
-
-    window_close(&w);
-    // delwin(w);
   }
+  w.close();
+}
+
+void test() {
+  int ch;
+
+  Window w(DUNGEON_Y * 0.7, DUNGEON_X * 0.7);
+  w.set_title("INVENTORY");
+  w.set_heading("SELECT SLOT TO PLACE ITEM");
+
+  w.open();
+
+  while ((ch = getch()) != 27) {
+  }
+
+  w.close();
 }
 
 /* Win and Lost endscreen */

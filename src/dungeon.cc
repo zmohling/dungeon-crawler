@@ -32,6 +32,13 @@
 #include "heap.h"
 #include "path.h"
 
+// Initialize static data members.
+dungeon_t *dungeon_t::s_instance = 0;
+dungeon_t *dungeon_t::instance() {
+  if (!s_instance) s_instance = new dungeon_t;
+  return s_instance;
+}
+
 void render_dungeon(dungeon_t *d) {
   int i, j;
   for (i = 0; i < DUNGEON_Y; i++) {

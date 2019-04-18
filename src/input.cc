@@ -96,6 +96,10 @@ void handle_key(dungeon_t *d, int c) {
         // render_dungeon(d);
         get_new_input(&key_is_valid, &input);
         break;
+      case 'w':
+        test();
+        get_new_input(&key_is_valid, &input);
+        break;
       case KEY_UP:
         break;
       case KEY_DOWN:

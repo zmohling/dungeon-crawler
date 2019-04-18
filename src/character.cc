@@ -23,46 +23,52 @@
 
 #include "dungeon.h"
 
+// Initialize static data members.
+pc *pc::s_instance = 0;
+pc *pc::instance() {
+  if (!s_instance) s_instance = new pc;
+  return s_instance;
+}
+
 /* Generates and returns a new character. If it's the first character in
  * the dungeon's characters array, will generate a PC character.
  * Otherwise, a NPC with variable speed, starting position, and characteristics.
  */
 character new_character(dungeon_t *d) {
-  character c;
-
   /* Get number of pre-existing characters */
   int i;
   for (i = 0; d->characters[i].is_alive; i++) {
   }
 
-  c.sequence_num = i;
-
   /* Assigns character's data fields based on
    * characer type */
-  if (c.is_pc()) {
+  if (i == 0) {
+    pc *pc = pc::instance();
     point_t character_position = get_valid_point(d, true);
-    c.position.x = character_position.x;
-    c.position.y = character_position.y;
+    pc->position.x = character_position.x;
+    pc->position.y = character_position.y;
 
-    c.is_alive = true;
-    c.speed = PC_SPEED;
-    c.symbol = '@';
+    pc->sequence_num = i;
+    pc->is_alive = true;
+    pc->speed = PC_SPEED;
+    pc->symbol = '@';
 
     /* Special Case for loading dungeons from disk */
     if (d->pc != NULL) {
-      c.position.x = d->pc->position.x;
-      c.position.y = d->pc->position.y;
+      pc->position.x = d->pc->position.x;
+      pc->position.y = d->pc->position.y;
       free(d->pc);  // frees temp pointer for loading purposes only
     }
 
     d->pc = &(d->characters[0]);
-  } else {
-    int temp = c.sequence_num;
-    c = monster_description::generate(d);
-    c.sequence_num = temp;
-  }
 
-  return c;
+    return *pc;
+  } else {
+    npc npc = monster_description::generate(d);
+    npc.sequence_num = i;
+
+    return npc;
+  }
 }
 
 /* Returns true if there are NPCs still alive in

@@ -31,7 +31,6 @@
 #include "screens/window.h"
 #include "util.h"
 
-static dungeon_t dungeon;
 static bool save_on_quit;
 static char *path;
 
@@ -61,6 +60,8 @@ static void init_curses() {
 }
 
 int main(int argc, char *argv[]) {
+  dungeon_t *dungeon = dungeon_t::instance();
+
   /* Check arguments */
   if (argc > 5) {
     fprintf(stderr, "Ussage: %s [--save][--load][--nummon]\n", argv[0]);
@@ -76,12 +77,13 @@ int main(int argc, char *argv[]) {
   path_init(&path, s);
 
   /* Dungeon*/
-  memset(dungeon.character_map, 0, sizeof(character *) * DUNGEON_Y * DUNGEON_X);
+  memset(dungeon->character_map, 0,
+         sizeof(character *) * DUNGEON_Y * DUNGEON_X);
 
   /* Parse descriptions into dungeon */
-  parse_descriptions(&dungeon);
+  parse_descriptions(dungeon);
 
-  dungeon.num_objects = 10;
+  dungeon->num_objects = 10;
 
   /* Number of monsters switch */
   char *num_monsters_str = (char *)"--nummon";
@@ -90,31 +92,31 @@ int main(int argc, char *argv[]) {
     n = atoi(argv[n + 1]);
 
     if (n > MONSTERS_MAX) {
-      dungeon.num_monsters = MONSTERS_MAX;
+      dungeon->num_monsters = MONSTERS_MAX;
       fprintf(stderr, "Exceded maxium monster count of 30.\n");
 
       fprintf(stderr, "Ussage: %s [--save][--load][--nummon]\n", argv[0]);
       exit(1);
     } else if (n < 0) {
-      dungeon.num_monsters = 1;
+      dungeon->num_monsters = 1;
       fprintf(stderr, "At least one monster is requred.\n");
       fprintf(stderr, "Ussage: %s [--save][--load][--nummon]\n", argv[0]);
       exit(1);
     } else {
-      dungeon.num_monsters = n;
+      dungeon->num_monsters = n;
     }
   } else {
-    dungeon.num_monsters = n;
+    dungeon->num_monsters = n;
   }
 
   /* Load switch */
   char *load_switch_str = (char *)"--load";
   if (contains(argc, argv, load_switch_str, &n)) {
-    dungeon.pc = (character *)malloc(sizeof(character));
-    read_dungeon_from_disk(&dungeon, path);
-    generate_terrain(&dungeon);
+    dungeon->pc = (character *)malloc(sizeof(character));
+    read_dungeon_from_disk(dungeon, path);
+    generate_terrain(dungeon);
   } else {
-    generate_dungeon(&dungeon);
+    generate_dungeon(dungeon);
   }
 
   /* Save switch */
@@ -125,7 +127,7 @@ int main(int argc, char *argv[]) {
 
   /* Start Game */
   init_curses();
-  event_simulator_start(&dungeon);
+  event_simulator_start(dungeon);
 
   return 0;
 }
@@ -134,15 +136,17 @@ int main(int argc, char *argv[]) {
  * and allows ncurses to restore terminal to stashed state.
  */
 void quit() {
+  dungeon_t *dungeon = dungeon_t::instance();
+
   endwin();
 
   if (save_on_quit) {
-    write_dungeon_to_disk(&dungeon, path);
+    write_dungeon_to_disk(dungeon, path);
   }
 
   free(path);
-  deep_free_dungeon(&dungeon);
-  destroy_descriptions(&dungeon);
+  deep_free_dungeon(dungeon);
+  destroy_descriptions(dungeon);
 
   exit(0);
 }

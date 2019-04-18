@@ -929,7 +929,7 @@ static monster_description *get_valid_monster_description(dungeon_t *d) {
   }
 }
 
-character monster_description::generate(dungeon_t *d) {
+npc monster_description::generate(dungeon_t *d) {
   monster_description &md = *get_valid_monster_description(d);
   npc c;
 
